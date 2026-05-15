@@ -42,7 +42,7 @@ body { background: #080d18; color: var(--text); font-family: 'Poppins', sans-ser
 .err-box { background: rgba(200,16,46,0.12); border: 1px solid rgba(200,16,46,0.3); color: #f87a8a; font-size: 12px; padding: 9px 12px; border-radius: 7px; margin-top: .75rem; display: none; }
 
 /* ── APP ── */
-#appPage { display: none; }
+#appPage { display: block; }
 .page-inner { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
 
 .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.5rem; }
@@ -143,7 +143,7 @@ body { background: #080d18; color: var(--text); font-family: 'Poppins', sans-ser
 <body>
 
 <!-- APP -->
-<div id="appPage">
+<div id="appPage" style="display:none;">
   <div class="topbar">
     <div class="logo">County <span>Sports</span> <span class="logo-badge">Admin</span></div>
     <div style="display:flex;align-items:center;gap:.75rem;">
@@ -212,13 +212,12 @@ async function sbFetch(path, opts={}) {
   return fetch(SB_URL+path, {...opts, headers:h});
 }
 
-// On load — check if we have a token passed from index.html via sessionStorage
+// On load — check sessionStorage for valid admin token
 window.addEventListener('load', () => {
   const storedToken = sessionStorage.getItem('cs_admin_token');
   const storedEmail = sessionStorage.getItem('cs_admin_email');
   if (storedToken && storedEmail && ADMIN_EMAILS.includes(storedEmail.toLowerCase())) {
     token = storedToken;
-    document.getElementById('loginPage').style.display = 'none';
     document.getElementById('appPage').style.display = 'block';
     document.getElementById('userEmail').textContent = storedEmail;
     loadProfiles();
