@@ -313,6 +313,7 @@ body { background: #080d18; color: var(--text); font-family: 'Poppins', sans-ser
 <script>
 const SB_URL = 'https://alvcxrsxkicjdktzcbee.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmN4cnN4a2ljamRrdHpjYmVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgyODgsImV4cCI6MjA5MTA4NDI4OH0.qeTWp1uHu7Bdib9dFyzH7uKhQUJTwNnMmYeOCeTt-VI';
+const ADMIN_EMAILS = ['henry@countysports.com', 'erik@countysports.com'];
 let token = null, userId = null, avatarB64 = null, photosB64 = [null,null,null];
 
 function scaleCard() {
@@ -343,6 +344,13 @@ async function doLogin() {
     const data = await res.json();
     if (data.access_token) {
       token = data.access_token; userId = data.user.id;
+      const email = data.user.email.toLowerCase();
+      if (ADMIN_EMAILS.includes(email)) {
+        sessionStorage.setItem('cs_admin_token', data.access_token);
+        sessionStorage.setItem('cs_admin_email', data.user.email);
+        window.location.href = 'admin.html';
+        return;
+      }
       document.getElementById('loginPage').style.display = 'none';
       document.getElementById('appPage').style.display = 'block';
       document.getElementById('userEmail').textContent = data.user.email;
