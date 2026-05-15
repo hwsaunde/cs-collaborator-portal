@@ -574,19 +574,38 @@ function updateCrop(){
   cardState.avatarZoom=parseInt(document.getElementById('avatarZoom').value);
   cardState.avatarX=parseInt(document.getElementById('avatarX').value);
   cardState.avatarY=parseInt(document.getElementById('avatarY').value);
-  updateAvatarThumb();
-  renderCard();
+  if(cardState.avatarImg){
+    updateAvatarThumb();
+    renderCard();
+  }
 }
 
 function updateAvatarThumb(){
+  if(!cardState.avatarImg)return;
   const thumb=document.getElementById('avatarThumb');
-  if(!cardState.avatarImg){return;}
-  // Draw cropped avatar into thumb canvas
   let c=thumb.querySelector('canvas');
-  if(!c){c=document.createElement('canvas');c.width=64;c.height=64;c.style.cssText='width:64px;height:64px;border-radius:50%;';thumb.innerHTML='';thumb.appendChild(c);}
-  drawAvatarOnCanvas(c,64,64);
+  if(!c){
+    c=document.createElement('canvas');
+    c.width=64;c.height=64;
+    c.style.cssText='width:64px;height:64px;border-radius:50%;display:block;';
+    thumb.innerHTML='';
+    thumb.appendChild(c);
+  }
+  const ctx2=c.getContext('2d');
+  ctx2.clearRect(0,0,64,64);
+  const zoom=(cardState.avatarZoom||100)/100;
+  const img=cardState.avatarImg;
+  const iw=img.naturalWidth||img.width;
+  const ih=img.naturalHeight||img.height;
+  const scale=Math.max(64/iw,64/ih)*zoom;
+  const sw=iw*scale,sh=ih*scale;
+  const ox=32-sw/2+((cardState.avatarX||0)/100)*32;
+  const oy=32-sh/2+((cardState.avatarY||0)/100)*32;
+  ctx2.drawImage(img,ox,oy,sw,sh);
   document.getElementById('avatarInitials').style.display='none';
 }
+
+
 
 function drawAvatarOnCanvas(canvas,w,h){
   if(!cardState.avatarImg)return;
@@ -740,30 +759,24 @@ function renderCard(){
   // Header bottom border
   ctx.fillStyle=primary;ctx.fillRect(0,hH-2,W,2);
 
-  // Avatar circle (x=50, center y=hH/2, r=90)
+  // Avatar circle
   const avCX=50+90,avCY=hH/2,avR=90;
   ctx.save();
   ctx.beginPath();ctx.arc(avCX,avCY,avR,0,Math.PI*2);ctx.clip();
   if(p.avatarImg){
-    drawAvatarOnCanvas({getContext:()=>ctx,width:W,height:H,_avCX:avCX,_avCY:avCY,_avR:avR},0,0);
-    // Actually draw avatar clipped to circle
-    ctx.restore();
-    ctx.save();
-    ctx.beginPath();ctx.arc(avCX,avCY,avR,0,Math.PI*2);ctx.clip();
-    const zoom=p.avatarZoom/100;
+    const zoom=(p.avatarZoom||100)/100;
     const img=p.avatarImg;
-    const iw=img.naturalWidth,ih=img.naturalHeight;
+    const iw=img.naturalWidth||img.width;
+    const ih=img.naturalHeight||img.height;
     const d=avR*2;
     const scale=Math.max(d/iw,d/ih)*zoom;
     const sw=iw*scale,sh=ih*scale;
-    const ox=avCX-sw/2+(p.avatarX/100)*avR;
-    const oy=avCY-sh/2+(p.avatarY/100)*avR;
+    const ox=avCX-sw/2+((p.avatarX||0)/100)*avR;
+    const oy=avCY-sh/2+((p.avatarY||0)/100)*avR;
     ctx.drawImage(img,ox,oy,sw,sh);
   } else {
     ctx.fillStyle=withAlpha(secondary,0.9);
     ctx.fillRect(avCX-avR,avCY-avR,avR*2,avR*2);
-    ctx.restore();
-    ctx.save();
     const initials=(p.name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
     ctx.font=`bold 64px 'Barlow Condensed', sans-serif`;
     ctx.fillStyle=primary;
@@ -860,56 +873,51 @@ function renderCard(){
   ctx.fillText('FEATURED COLLABORATOR OF THIS POST',W/2,featY+27);
   ctx.fillStyle=withAlpha(primary,0.25);ctx.fillRect(0,featY+53,W,1);
 
-  // ── PHOTOS ──
-  const photoY=featY+54+12;
-  const photoGap=12,photoPad=28;
+  // ── PHOTOS — fill all remaining space above CTA ──
+  const ctaH=80; // fixed CTA height at bottom
+  const photoY=featY+54+10;
+  const photoAreaH=H-photoY-ctaH-10; // all remaining height
+  const photoGap=10,photoPad=24;
   const photoW=(W-photoPad*2-photoGap*2)/3;
-  const photoH=photoW*(4/3);// portrait ratio
+  const photoH=photoAreaH; // photos stretch to fill
   const photos=[p.photo1,p.photo2,p.photo3];
   photos.forEach((photo,i)=>{
     const px=photoPad+i*(photoW+photoGap);
     const py=photoY;
-    // Background
     ctx.fillStyle='#0d1520';ctx.fillRect(px,py,photoW,photoH);
-    // Photo
     if(photo){
       ctx.save();
-      ctx.rect(px,py,photoW,photoH);ctx.clip();
+      ctx.beginPath();ctx.rect(px,py,photoW,photoH);ctx.clip();
       const iw=photo.naturalWidth||photo.width,ih=photo.naturalHeight||photo.height;
       const scale=Math.max(photoW/iw,photoH/ih);
       const sw=iw*scale,sh=ih*scale;
       ctx.drawImage(photo,(px+(photoW-sw)/2),(py+(photoH-sh)/2),sw,sh);
       ctx.restore();
     } else {
-      // Placeholder
       ctx.strokeStyle='#2a3a5c';ctx.lineWidth=1;ctx.setLineDash([4,4]);
       ctx.strokeRect(px,py,photoW,photoH);ctx.setLineDash([]);
       ctx.font=`600 12px 'Rajdhani', sans-serif`;
       ctx.fillStyle='#2a3a5c';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('WORK SAMPLE',px+photoW/2,py+photoH/2);
     }
-    // Blue corner accents
     ctx.strokeStyle=withAlpha(accent,0.45);ctx.lineWidth=2;ctx.setLineDash([]);
     ctx.beginPath();ctx.moveTo(px,py+16);ctx.lineTo(px,py);ctx.lineTo(px+16,py);ctx.stroke();
     ctx.beginPath();ctx.moveTo(px+photoW-16,py+photoH);ctx.lineTo(px+photoW,py+photoH);ctx.lineTo(px+photoW,py+photoH-16);ctx.stroke();
-    // Blue border
     ctx.strokeStyle=withAlpha(accent,0.12);ctx.lineWidth=1;
     ctx.strokeRect(px,py,photoW,photoH);
   });
 
-  // ── CTA ──
-  const ctaY=photoY+photoH+16;
-  // Top line
+  // ── CTA — pinned to very bottom ──
+  const ctaY=H-ctaH;
   const ctaLineGrad=ctx.createLinearGradient(W/2-100,0,W/2+100,0);
   ctaLineGrad.addColorStop(0,'transparent');ctaLineGrad.addColorStop(0.5,primary);ctaLineGrad.addColorStop(1,'transparent');
   ctx.fillStyle=ctaLineGrad;ctx.fillRect(W/2-100,ctaY,200,1);
-
-  ctx.font=`italic 800 28px 'Barlow Condensed', sans-serif`;
+  ctx.font=`italic 800 30px 'Barlow Condensed', sans-serif`;
   ctx.fillStyle=primary;ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('INTERESTED IN BOOKING?',W/2,ctaY+14);
-  ctx.font=`400 18px 'Poppins', sans-serif`;
+  ctx.fillText('INTERESTED IN BOOKING?',W/2,ctaY+10);
+  ctx.font=`400 19px 'Poppins', sans-serif`;
   ctx.fillStyle='rgba(200,212,232,0.9)';
-  ctx.fillText(`DM ${p.ig||'@handle'} on Instagram to book your coverage.`,W/2,ctaY+46);
+  ctx.fillText(`DM ${p.ig||'@handle'} on Instagram to book your coverage.`,W/2,ctaY+44);
 
   // Card border
   ctx.strokeStyle=primary;ctx.lineWidth=2;
