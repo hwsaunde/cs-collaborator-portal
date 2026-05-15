@@ -486,10 +486,15 @@ async function saveProfile(){
     updated_at:new Date().toISOString()
   };
   try{
-    const res=await sbFetch('/rest/v1/collaborator_profiles',{
-      method:'POST',headers:{'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(payload)
+    const checkRes=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=id');
+    const existing=await checkRes.json();
+    const isNew=!existing||existing.length===0;
+    const method=isNew?'POST':'PATCH';
+    const url=isNew?'/rest/v1/collaborator_profiles':'/rest/v1/collaborator_profiles?user_id=eq.'+userId;
+    const res=await sbFetch(url,{
+      method,headers:{'Prefer':'return=representation'},body:JSON.stringify(payload)
     });
-    if(res.ok||res.status===201){msg.textContent='Profile saved!';msg.className='status-msg ok';}
+    if(res.ok||res.status===201||res.status===200){msg.textContent='Profile saved!';msg.className='status-msg ok';}
     else{const err=await res.json();msg.textContent='Error: '+(err.message||'Could not save.');msg.className='status-msg err';}
   }catch(e){msg.textContent='Connection error.';msg.className='status-msg err';}
 }
