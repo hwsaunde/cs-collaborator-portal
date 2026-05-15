@@ -699,6 +699,13 @@ function renderCard(){
   const bg=p.bg;
   const textCol=p.textColor;
   const accent=p.accent;
+  // Section heights — must sum to H=1350
+  const hH=310;       // header
+  const aboutH=110;   // about section
+  const statsH=110;   // stats
+  const featH=58;     // featured banner
+  const ctaH=82;      // CTA at bottom
+  const photoH=H-hH-aboutH-statsH-featH-ctaH; // remaining = photos
 
   ctx.clearRect(0,0,W,H);
 
@@ -713,7 +720,7 @@ function renderCard(){
   }
 
   // ── HEADER (0 to 330) ──
-  const hH=330;
+  // hH defined above
   // Header base
   if(p.headerBgImg){
     // Draw bg image
@@ -820,66 +827,58 @@ function renderCard(){
   });
 
   // ── ABOUT ──
-  const aboutY=hH+10;
-  // Section divider
+  const aboutY=hH;
   ctx.fillStyle=withAlpha(primary,0.18);ctx.fillRect(0,aboutY,W,1);
 
-  ctx.font=`800 32px 'Barlow Condensed', sans-serif`;
+  ctx.font=`800 34px 'Barlow Condensed', sans-serif`;
   ctx.fillStyle=primary;ctx.textAlign='left';ctx.textBaseline='top';
-  ctx.fillText(`ABOUT ${(p.name||'').split(' ')[0].toUpperCase()}`,50,aboutY+22);
+  ctx.fillText(`ABOUT ${(p.name||'').split(' ')[0].toUpperCase()}`,50,aboutY+16);
 
   // Hud dashes
   const dashX=50+(ctx.measureText(`ABOUT ${(p.name||'').split(' ')[0].toUpperCase()}`).width)+16;
   [20,12,8].forEach((dw,i)=>{
     ctx.fillStyle=withAlpha(primary,0.6-i*0.18);
-    ctx.fillRect(dashX+i*26,aboutY+34,dw,3);
+    ctx.fillRect(dashX+i*26,aboutY+28,dw,3);
   });
 
-  ctx.font=`italic 400 20px 'Poppins', sans-serif`;
+  ctx.font=`italic 400 21px 'Poppins', sans-serif`;
   ctx.fillStyle='rgba(200,212,232,0.9)';
-  const bioLines=wrapText(ctx,p.bio||'Your bio will appear here...',W-100,20);
-  bioLines.forEach((line,i)=>ctx.fillText(line,50,aboutY+56+i*28));
+  const bioLines=wrapText(ctx,p.bio||'Your bio will appear here...',W-100,21);
+  bioLines.forEach((line,i)=>ctx.fillText(line,50,aboutY+52+i*30));
 
   // ── STATS ──
-  const statsY=aboutY+56+Math.max(bioLines.length,1)*28+10;
+  const statsY=hH+aboutH;
   ctx.fillStyle=withAlpha(primary,0.18);ctx.fillRect(0,statsY,W,1);
   const statW=W/4;
   ['s1','s2','s3','s4'].forEach((s,i)=>{
     const sx=i*statW,sy=statsY;
-    // Corner deco
     ctx.strokeStyle=withAlpha(primary,0.45);ctx.lineWidth=1;
-    ctx.strokeRect(sx+6,sy+6,12,12);// TL
-    ctx.strokeRect(sx+statW-18,sy+88,12,12);// BR
-    // Stat num
-    ctx.font=`800 58px 'Barlow Condensed', sans-serif`;
+    ctx.strokeRect(sx+6,sy+6,12,12);
+    ctx.strokeRect(sx+statW-18,sy+statsH-22,12,12);
+    ctx.font=`800 60px 'Barlow Condensed', sans-serif`;
     ctx.fillStyle=textCol;ctx.textAlign='center';ctx.textBaseline='top';
-    ctx.fillText(p[s+'v']||'—',sx+statW/2,sy+16);
-    // Stat label
-    ctx.font=`600 13px 'Rajdhani', sans-serif`;
+    ctx.fillText(p[s+'v']||'—',sx+statW/2,sy+12);
+    ctx.font=`600 14px 'Rajdhani', sans-serif`;
     ctx.fillStyle=withAlpha('#6a80a0',1);
-    ctx.fillText((p[s+'l']||'STAT').toUpperCase(),sx+statW/2,sy+72);
-    // Divider
-    if(i<3){ctx.fillStyle=withAlpha(primary,0.12);ctx.fillRect(sx+statW-0.5,sy+10,1,80);}
+    ctx.fillText((p[s+'l']||'STAT').toUpperCase(),sx+statW/2,sy+74);
+    if(i<3){ctx.fillStyle=withAlpha(primary,0.12);ctx.fillRect(sx+statW-0.5,sy+10,1,statsH-20);}
   });
 
   // ── FEATURED BANNER ──
-  const featY=statsY+100;
+  const featY=hH+aboutH+statsH;
   ctx.fillStyle=withAlpha(primary,0.12);ctx.fillRect(0,featY,W,1);
   const featGrad=ctx.createLinearGradient(0,featY,W,featY);
   featGrad.addColorStop(0,withAlpha(primary,0.12));featGrad.addColorStop(0.5,withAlpha(primary,0.04));featGrad.addColorStop(1,withAlpha(primary,0.12));
-  ctx.fillStyle=featGrad;ctx.fillRect(0,featY,W,54);
-  ctx.font=`800 34px 'Barlow Condensed', sans-serif`;
+  ctx.fillStyle=featGrad;ctx.fillRect(0,featY,W,featH);
+  ctx.font=`800 36px 'Barlow Condensed', sans-serif`;
   ctx.fillStyle=primary;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('FEATURED COLLABORATOR OF THIS POST',W/2,featY+27);
-  ctx.fillStyle=withAlpha(primary,0.25);ctx.fillRect(0,featY+53,W,1);
+  ctx.fillText('FEATURED COLLABORATOR OF THIS POST',W/2,featY+featH/2);
+  ctx.fillStyle=withAlpha(primary,0.25);ctx.fillRect(0,featY+featH-1,W,1);
 
   // ── PHOTOS — fill all remaining space above CTA ──
-  const ctaH=80; // fixed CTA height at bottom
-  const photoY=featY+54+10;
-  const photoAreaH=H-photoY-ctaH-10; // all remaining height
+  const photoY=hH+aboutH+statsH+featH;
   const photoGap=10,photoPad=24;
   const photoW=(W-photoPad*2-photoGap*2)/3;
-  const photoH=photoAreaH; // photos stretch to fill
   const photos=[p.photo1,p.photo2,p.photo3];
   photos.forEach((photo,i)=>{
     const px=photoPad+i*(photoW+photoGap);
