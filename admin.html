@@ -6,185 +6,219 @@
 <title>County Sports — Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&family=Poppins:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#1A2744;--red:#C8102E;--card-bg:#111d30;--border:rgba(255,255,255,0.08);--text:#e8edf5;--muted:#6a80a0;}
+body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-height:100vh;}
 
-:root {
-  --navy: #1A2744;
-  --red: #C8102E;
-  --card-bg: #111d30;
-  --border: rgba(255,255,255,0.08);
-  --text: #e8edf5;
-  --muted: #6a80a0;
-}
+/* TOPBAR */
+.topbar{background:var(--navy);border-bottom:2px solid var(--red);padding:0 2rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:1px;}
+.logo span{color:var(--red);}
+.logo-badge{font-size:11px;font-weight:600;background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;margin-left:10px;letter-spacing:.05em;vertical-align:middle;}
+.signout-btn{background:none;border:0.5px solid rgba(255,255,255,0.15);color:var(--muted);padding:5px 12px;border-radius:6px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;}
+.signout-btn:hover{color:#fff;}
+.user-pill{font-size:12px;color:var(--muted);margin-right:.5rem;}
+.portal-link{font-size:12px;color:var(--muted);text-decoration:none;border:0.5px solid rgba(255,255,255,0.1);padding:5px 12px;border-radius:6px;margin-right:8px;}
+.portal-link:hover{color:#fff;}
 
-body { background: #080d18; color: var(--text); font-family: 'Poppins', sans-serif; min-height: 100vh; }
+/* APP */
+#appPage{display:none;}
+.page-inner{max-width:1300px;margin:0 auto;padding:1.5rem 1.5rem;}
 
-/* ── TOPBAR ── */
-.topbar { background: var(--navy); border-bottom: 2px solid var(--red); padding: 0 2rem; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-.logo { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-.logo span { color: var(--red); }
-.logo-badge { font-size: 11px; font-weight: 600; background: var(--red); color: #fff; padding: 2px 8px; border-radius: 4px; margin-left: 10px; letter-spacing: .05em; vertical-align: middle; }
-.signout-btn { background: none; border: 0.5px solid rgba(255,255,255,0.15); color: var(--muted); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: 'Poppins', sans-serif; cursor: pointer; }
-.signout-btn:hover { color: #fff; }
-.user-pill { font-size: 12px; color: var(--muted); margin-right: .5rem; }
+/* TABS */
+.tabs{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border);}
+.tab-btn{padding:10px 22px;font-size:13px;font-weight:500;font-family:'Poppins',sans-serif;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:all .2s;position:relative;}
+.tab-btn.active{color:#fff;font-weight:600;border-bottom-color:var(--red);}
+.tab-badge{position:absolute;top:6px;right:6px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center;}
+.tab-page{display:none;}
+.tab-page.active{display:block;}
 
-/* ── LOGIN ── */
-#loginPage { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-.login-card { width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-top: 3px solid var(--red); border-radius: 12px; padding: 2.5rem; }
-.login-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: #fff; text-transform: uppercase; margin-bottom: 4px; }
-.login-logo span { color: var(--red); }
-.login-sub { font-size: 13px; color: var(--muted); margin-bottom: 2rem; }
-.field { margin-bottom: 1rem; }
-.field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
-.field input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 7px; padding: 10px 12px; font-size: 13px; color: var(--text); font-family: 'Poppins', sans-serif; outline: none; transition: border-color .2s; }
-.field input:focus { border-color: var(--red); }
-.login-btn { width: 100%; padding: 11px; border: none; border-radius: 7px; font-size: 13px; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; background: var(--red); color: #fff; margin-top: .5rem; }
-.err-box { background: rgba(200,16,46,0.12); border: 1px solid rgba(200,16,46,0.3); color: #f87a8a; font-size: 12px; padding: 9px 12px; border-radius: 7px; margin-top: .75rem; display: none; }
+/* STAT PILLS */
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.5rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:#fff;text-transform:uppercase;}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.stat-pills{display:flex;gap:10px;}
+.stat-pill{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px 16px;text-align:center;}
+.stat-pill-num{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1;display:block;}
+.stat-pill-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
 
-/* ── APP ── */
-#appPage { display: block; }
-.page-inner { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;margin-bottom:1.5rem;}
+.search-input{flex:1;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;}
+.search-input:focus{border-color:var(--red);}
+.search-input::placeholder{color:var(--muted);}
+.sort-select{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;}
+.filter-select{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;}
 
-.page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.5rem; }
-.page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: #fff; text-transform: uppercase; }
-.page-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.stat-pills { display: flex; gap: 10px; }
-.stat-pill { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; text-align: center; }
-.stat-pill-num { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; color: #fff; line-height: 1; display: block; }
-.stat-pill-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+/* COLLABORATOR GRID */
+.collaborator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.collab-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s;}
+.collab-card:hover{border-color:rgba(200,16,46,0.35);}
+.collab-card-header{background:var(--navy);padding:16px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--red);}
+.collab-avatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--red);background:#2a3a5c;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.collab-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.collab-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#fff;text-transform:uppercase;line-height:1;margin-bottom:2px;}
+.collab-role{font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
+.collab-card-body{padding:14px 16px;}
+.collab-detail{font-size:12px;color:var(--muted);margin-bottom:6px;}
+.collab-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:12px 0;}
+.collab-stat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:7px 10px;}
+.collab-stat-num{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#fff;line-height:1;}
+.collab-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.collab-updated{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.collab-updated span{color:var(--text);}
+.collab-actions{display:flex;gap:8px;}
+.btn-preview{flex:1;padding:8px;background:var(--navy);border:1px solid rgba(255,255,255,0.1);color:var(--text);border-radius:6px;font-size:12px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;}
+.btn-preview:hover{background:#223366;}
+.btn-download{flex:1;padding:8px;background:var(--red);border:none;color:#fff;border-radius:6px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+.btn-download:hover{opacity:.85;}
 
-/* ── SEARCH / FILTER ── */
-.toolbar { display: flex; gap: 10px; margin-bottom: 1.5rem; }
-.search-input { flex: 1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; font-size: 13px; color: var(--text); font-family: 'Poppins', sans-serif; outline: none; }
-.search-input:focus { border-color: var(--red); }
-.search-input::placeholder { color: var(--muted); }
-.sort-select { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; font-size: 13px; color: var(--text); font-family: 'Poppins', sans-serif; outline: none; cursor: pointer; }
+/* SUBMISSIONS */
+.submissions-list{display:flex;flex-direction:column;gap:12px;}
+.sub-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s;}
+.sub-card:hover{border-color:rgba(255,255,255,0.12);}
+.sub-card-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px;}
+.sub-card-header-left{flex:1;}
+.sub-event{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px;}
+.sub-meta{font-size:12px;color:var(--muted);}
+.sub-meta strong{color:var(--text);font-weight:500;}
+.sub-card-body{padding:14px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;border-bottom:1px solid var(--border);}
+.sub-detail{font-size:12px;color:var(--muted);}
+.sub-detail strong{display:block;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;font-weight:600;}
+.sub-players{padding:12px 18px;border-bottom:1px solid var(--border);}
+.sub-players-label{font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px;}
+.sub-players-text{font-size:12px;color:var(--muted);white-space:pre-line;}
+.sub-notes{padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);font-style:italic;}
+.sub-actions{padding:12px 18px;display:flex;align-items:center;gap:10px;}
+.sub-files{flex:1;font-size:11px;color:var(--muted);}
+.sub-files strong{color:var(--text);}
+.btn-approve{padding:8px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:6px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-approve:hover{background:rgba(74,222,128,0.2);}
+.btn-deny{padding:8px 18px;background:rgba(200,16,46,0.1);border:1px solid rgba(200,16,46,0.3);color:#f87a8a;border-radius:6px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-deny:hover{background:rgba(200,16,46,0.2);}
+.btn-pending{padding:8px 18px;background:rgba(250,180,0,0.08);border:1px solid rgba(250,180,0,0.2);color:#facc15;border-radius:6px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
 
-/* ── GRID ── */
-.collaborator-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+/* STATUS BADGES */
+.badge{font-size:10px;font-weight:600;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.badge-pending{background:rgba(250,180,0,0.12);color:#facc15;border:1px solid rgba(250,180,0,0.2);}
+.badge-approved{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2);}
+.badge-denied{background:rgba(200,16,46,0.1);color:#f87a8a;border:1px solid rgba(200,16,46,0.2);}
 
-.collab-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color .2s; }
-.collab-card:hover { border-color: rgba(200,16,46,0.35); }
+/* EMPTY / LOADING */
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:14px;}
+.loading{text-align:center;padding:4rem;color:var(--muted);font-size:14px;}
 
-.collab-card-header { background: var(--navy); padding: 16px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid var(--red); }
-.collab-avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--red); background: #2a3a5c; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0; overflow: hidden; }
-.collab-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.collab-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: #fff; text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
-.collab-role { font-size: 10px; color: var(--red); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; }
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:none;align-items:center;justify-content:center;padding:2rem;}
+.modal-overlay.open{display:flex;}
+.modal-inner{position:relative;max-width:500px;width:100%;}
+.modal-close{position:absolute;top:-40px;right:0;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;font-family:'Poppins',sans-serif;}
+.modal-close:hover{color:#fff;}
+.modal-dl-btn{width:100%;margin-top:12px;padding:11px;background:var(--red);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
 
-.collab-card-body { padding: 14px 16px; }
-.collab-detail { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-.collab-detail strong { color: var(--text); font-weight: 500; }
-
-.collab-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; margin: 12px 0; }
-.collab-stat { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; }
-.collab-stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: #fff; line-height: 1; }
-.collab-stat-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 1px; }
-
-.collab-updated { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
-.collab-updated span { color: var(--text); }
-
-.collab-actions { display: flex; gap: 8px; }
-.btn-preview { flex: 1; padding: 8px; background: var(--navy); border: 1px solid rgba(255,255,255,0.1); color: var(--text); border-radius: 6px; font-size: 12px; font-weight: 500; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background .2s; }
-.btn-preview:hover { background: #223366; }
-.btn-download { flex: 1; padding: 8px; background: var(--red); border: none; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; transition: opacity .2s; }
-.btn-download:hover { opacity: .85; }
-
-/* ── EMPTY / LOADING ── */
-.empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-.empty-state p { font-size: 14px; margin-top: 8px; }
-.loading { text-align: center; padding: 4rem; color: var(--muted); font-size: 14px; }
-
-/* ── MODAL (card preview) ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; align-items: center; justify-content: center; padding: 2rem; }
-.modal-overlay.open { display: flex; }
-.modal-inner { position: relative; max-width: 500px; width: 100%; }
-.modal-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; font-family: 'Poppins', sans-serif; }
-.modal-close:hover { color: #fff; }
-.modal-dl-btn { width: 100%; margin-top: 12px; padding: 11px; background: var(--red); border: none; color: #fff; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; }
-
-/* ── CARD (same styles as collaborator portal) ── */
-.card { width: 100%; background: #060c14; border: 2px solid var(--red); border-radius: 10px; overflow: hidden; font-family: 'Rajdhani', sans-serif; }
-.c-header { position: relative; background: linear-gradient(135deg, #0a0f1a 0%, #190810 60%, #0a0f1a 100%); border-bottom: 2px solid var(--red); overflow: hidden; display: flex; align-items: center; padding: 20px 24px; gap: 18px; }
-.c-header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
-.header-lights { position: absolute; top: -20px; right: -20px; width: 250px; height: 180px; background: radial-gradient(ellipse at 80% 20%, rgba(200,16,46,0.15) 0%, transparent 60%); pointer-events: none; }
-.c-avatar-wrap { position: relative; flex-shrink: 0; width: 80px; height: 80px; }
-.c-avatar-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--red); box-shadow: 0 0 15px rgba(200,16,46,0.6); }
-.c-avatar-img { width: 80px; height: 80px; border-radius: 50%; background: #1a0a12; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--red); overflow: hidden; }
-.c-avatar-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.c-name { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; color: #fff; text-transform: uppercase; line-height: .95; margin-bottom: 4px; }
-.c-role { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-style: italic; color: var(--red); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
-.c-contact-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #c8d4e8; margin-bottom: 2px; font-family: 'Poppins', sans-serif; }
-.c-contact-icon { width: 13px; height: 13px; opacity: .6; }
-.c-about { padding: 14px 22px 10px; border-bottom: 1px solid rgba(200,16,46,0.15); }
-.c-about-title { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-.c-bio { font-size: 11px; color: #c8d4e8; line-height: 1.6; font-style: italic; font-family: 'Poppins', sans-serif; }
-.c-stats { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid rgba(200,16,46,0.15); }
-.c-stat { padding: 10px 6px; text-align: center; border-right: 1px solid rgba(200,16,46,0.1); }
-.c-stat:last-child { border-right: none; }
-.c-stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; color: #fff; line-height: 1; display: block; }
-.c-stat-label { font-size: 7px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; display: block; }
-.c-featured { padding: 8px 22px; background: linear-gradient(90deg, rgba(200,16,46,0.1) 0%, rgba(200,16,46,0.03) 50%, rgba(200,16,46,0.1) 100%); border-bottom: 1px solid rgba(200,16,46,0.2); text-align: center; }
-.c-featured-text { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: 3px; }
-.c-photos { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; padding: 10px 14px; }
-.c-photo { position: relative; aspect-ratio: 3/4; background: #0d1520; border: 1px solid rgba(100,150,255,0.1); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; }
-.c-photo::before, .c-photo::after { content: ''; position: absolute; width: 10px; height: 10px; border-color: rgba(100,150,255,0.4); border-style: solid; z-index: 2; }
-.c-photo::before { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; }
-.c-photo::after { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
-.c-photo svg { width: 18px; height: 18px; stroke: #2a3a5c; }
-.c-photo-label { font-size: 7px; color: #2a3a5c; text-transform: uppercase; letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; }
-.c-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.c-cta { padding: 8px 22px 14px; text-align: center; margin-top: auto; }
-.c-cta-title { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; font-style: italic; color: var(--red); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px; }
-.c-cta-sub { font-size: 10px; color: #c8d4e8; font-family: 'Poppins', sans-serif; }
-.c-cta-sub strong { color: #fff; font-weight: 600; }
+/* CARD PREVIEW STYLES */
+.card{width:100%;background:#060c14;border:2px solid var(--red);border-radius:10px;overflow:hidden;font-family:'Rajdhani',sans-serif;}
+.c-header{position:relative;background:linear-gradient(135deg,#0a0f1a 0%,#190810 60%,#0a0f1a 100%);border-bottom:2px solid var(--red);overflow:hidden;display:flex;align-items:center;padding:20px 24px;gap:18px;}
+.c-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);}
+.header-lights{position:absolute;top:-20px;right:-20px;width:250px;height:180px;background:radial-gradient(ellipse at 80% 20%,rgba(200,16,46,0.15) 0%,transparent 60%);pointer-events:none;}
+.c-avatar-wrap{position:relative;flex-shrink:0;width:80px;height:80px;}
+.c-avatar-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--red);box-shadow:0 0 15px rgba(200,16,46,0.6);}
+.c-avatar-img{width:80px;height:80px;border-radius:50%;background:#1a0a12;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--red);overflow:hidden;}
+.c-avatar-img img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.c-name{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;color:#fff;text-transform:uppercase;line-height:.95;margin-bottom:4px;}
+.c-role{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-style:italic;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.c-contact-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#c8d4e8;margin-bottom:2px;font-family:'Poppins',sans-serif;}
+.c-contact-icon{width:13px;height:13px;opacity:.6;}
+.c-about{padding:14px 22px 10px;border-bottom:1px solid rgba(200,16,46,0.15);}
+.c-about-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:5px;}
+.c-bio{font-size:11px;color:#c8d4e8;line-height:1.6;font-style:italic;font-family:'Poppins',sans-serif;}
+.c-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid rgba(200,16,46,0.15);}
+.c-stat{padding:10px 6px;text-align:center;border-right:1px solid rgba(200,16,46,0.1);}
+.c-stat:last-child{border-right:none;}
+.c-stat-num{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1;display:block;}
+.c-stat-label{font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;display:block;}
+.c-featured{padding:8px 22px;background:linear-gradient(90deg,rgba(200,16,46,0.1) 0%,rgba(200,16,46,0.03) 50%,rgba(200,16,46,0.1) 100%);border-bottom:1px solid rgba(200,16,46,0.2);text-align:center;}
+.c-featured-text{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:3px;}
+.c-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 14px;}
+.c-photo{position:relative;aspect-ratio:3/4;background:#0d1520;border:1px solid rgba(100,150,255,0.1);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.c-photo::before,.c-photo::after{content:'';position:absolute;width:10px;height:10px;border-color:rgba(100,150,255,0.4);border-style:solid;z-index:2;}
+.c-photo::before{top:0;left:0;border-width:1.5px 0 0 1.5px;}
+.c-photo::after{bottom:0;right:0;border-width:0 1.5px 1.5px 0;}
+.c-photo svg{width:18px;height:18px;stroke:#2a3a5c;}
+.c-photo-label{font-size:7px;color:#2a3a5c;text-transform:uppercase;letter-spacing:1px;font-family:'Rajdhani',sans-serif;}
+.c-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.c-cta{padding:8px 22px 14px;text-align:center;margin-top:auto;}
+.c-cta-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;font-style:italic;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:2px;}
+.c-cta-sub{font-size:10px;color:#c8d4e8;font-family:'Poppins',sans-serif;}
+.c-cta-sub strong{color:#fff;font-weight:600;}
 </style>
 </head>
 <body>
 
-<!-- APP -->
 <div id="appPage" style="display:none;">
   <div class="topbar">
     <div class="logo">County <span>Sports</span> <span class="logo-badge">Admin</span></div>
-    <div style="display:flex;align-items:center;gap:.75rem;">
+    <div style="display:flex;align-items:center;gap:.5rem;">
+      <a href="index.html" class="portal-link">← Collaborator portal</a>
       <span class="user-pill" id="userEmail"></span>
       <button class="signout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </div>
 
   <div class="page-inner">
-    <div class="page-header">
-      <div>
-        <div class="page-title">Collaborator profiles</div>
-        <div class="page-sub">View, preview, and download any collaborator's profile card</div>
+
+    <!-- STAT PILLS -->
+    <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div class="stat-pill"><span class="stat-pill-num" id="totalProfiles">—</span><span class="stat-pill-label">Collaborators</span></div>
+      <div class="stat-pill"><span class="stat-pill-num" id="totalSubmissions">—</span><span class="stat-pill-label">Total submissions</span></div>
+      <div class="stat-pill"><span class="stat-pill-num" id="pendingCount" style="color:#facc15;">—</span><span class="stat-pill-label">Pending review</span></div>
+      <div class="stat-pill"><span class="stat-pill-num" id="approvedCount" style="color:#4ade80;">—</span><span class="stat-pill-label">Approved</span></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-profiles" onclick="switchTab('profiles')">Collaborator profiles</button>
+      <button class="tab-btn" id="tab-submissions" onclick="switchTab('submissions')">Submissions inbox <span class="tab-badge" id="pendingBadge" style="display:none;">0</span></button>
+    </div>
+
+    <!-- ── PROFILES TAB ── -->
+    <div class="tab-page active" id="tabPage-profiles">
+      <div class="toolbar">
+        <input class="search-input" type="text" id="searchInput" placeholder="Search by name, role, or location..." oninput="filterCards()">
+        <select class="sort-select" id="sortSelect" onchange="filterCards()">
+          <option value="updated">Recently updated</option>
+          <option value="name">Name A–Z</option>
+        </select>
       </div>
-      <div class="stat-pills">
-        <div class="stat-pill">
-          <span class="stat-pill-num" id="totalCount">—</span>
-          <span class="stat-pill-label">Total profiles</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-pill-num" id="completeCount">—</span>
-          <span class="stat-pill-label">Complete</span>
-        </div>
+      <div class="collaborator-grid" id="collabGrid">
+        <div class="loading">Loading collaborators...</div>
       </div>
     </div>
 
-    <div class="toolbar">
-      <input class="search-input" type="text" id="searchInput" placeholder="Search by name, role, or location..." oninput="filterCards()">
-      <select class="sort-select" id="sortSelect" onchange="filterCards()">
-        <option value="updated">Recently updated</option>
-        <option value="name">Name A–Z</option>
-      </select>
+    <!-- ── SUBMISSIONS TAB ── -->
+    <div class="tab-page" id="tabPage-submissions">
+      <div class="toolbar">
+        <input class="search-input" type="text" id="subSearchInput" placeholder="Search by event, sport, or collaborator..." oninput="filterSubmissions()">
+        <select class="filter-select" id="subFilter" onchange="filterSubmissions()">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="denied">Denied</option>
+        </select>
+        <select class="sort-select" id="subSort" onchange="filterSubmissions()">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
+      <div class="submissions-list" id="submissionsList">
+        <div class="loading">Loading submissions...</div>
+      </div>
     </div>
 
-    <div class="collaborator-grid" id="collabGrid">
-      <div class="loading">Loading collaborators...</div>
-    </div>
   </div>
 </div>
 
-<!-- PREVIEW MODAL -->
+<!-- CARD PREVIEW MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal-inner">
     <button class="modal-close" onclick="closeModalBtn()">✕</button>
@@ -195,107 +229,99 @@ body { background: #080d18; color: var(--text); font-family: 'Poppins', sans-ser
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-const SB_URL = 'https://alvcxrsxkicjdktzcbee.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmN4cnN4a2ljamRrdHpjYmVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgyODgsImV4cCI6MjA5MTA4NDI4OH0.qeTWp1uHu7Bdib9dFyzH7uKhQUJTwNnMmYeOCeTt-VI';
+const SB_URL='https://alvcxrsxkicjdktzcbee.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmN4cnN4a2ljamRrdHpjYmVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgyODgsImV4cCI6MjA5MTA4NDI4OH0.qeTWp1uHu7Bdib9dFyzH7uKhQUJTwNnMmYeOCeTt-VI';
+const ADMIN_EMAILS=['henry@countysports.com','erik@countysports.com'];
+let token=null, allProfiles=[], allSubmissions=[];
 
-// ── ADMIN WHITELIST ── add emails here
-const ADMIN_EMAILS = [
-  'henry@countysports.com',
-  'erik@countysports.com'
-];
-
-let token = null, allProfiles = [], currentProfile = null;
-
-async function sbFetch(path, opts={}) {
-  const h = {'apikey':SB_KEY,'Content-Type':'application/json',...(opts.headers||{})};
-  if (token) h['Authorization'] = 'Bearer '+token;
-  return fetch(SB_URL+path, {...opts, headers:h});
+async function sbFetch(path,opts={}){
+  const h={'apikey':SB_KEY,'Content-Type':'application/json',...(opts.headers||{})};
+  if(token) h['Authorization']='Bearer '+token;
+  return fetch(SB_URL+path,{...opts,headers:h});
 }
 
-// On load — check sessionStorage for valid admin token
-window.addEventListener('load', () => {
-  const storedToken = sessionStorage.getItem('cs_admin_token');
-  const storedEmail = sessionStorage.getItem('cs_admin_email');
-  if (storedToken && storedEmail && ADMIN_EMAILS.includes(storedEmail.toLowerCase())) {
-    token = storedToken;
-    document.getElementById('appPage').style.display = 'block';
-    document.getElementById('userEmail').textContent = storedEmail;
-    loadProfiles();
+window.addEventListener('load',()=>{
+  const t=sessionStorage.getItem('cs_admin_token');
+  const e=sessionStorage.getItem('cs_admin_email');
+  if(t&&e&&ADMIN_EMAILS.includes(e.toLowerCase())){
+    token=t;
+    document.getElementById('appPage').style.display='block';
+    document.getElementById('userEmail').textContent=e;
+    loadAll();
   } else {
-    window.location.href = 'index.html';
+    window.location.href='index.html';
   }
 });
 
-function doLogout() {
+function doLogout(){
   sessionStorage.removeItem('cs_admin_token');
   sessionStorage.removeItem('cs_admin_email');
-  token = null; allProfiles = [];
-  window.location.href = 'index.html';
+  window.location.href='index.html';
 }
 
-async function loadProfiles() {
-  const grid = document.getElementById('collabGrid');
-  grid.innerHTML = '<div class="loading">Loading collaborators...</div>';
-  try {
-    const res = await sbFetch('/rest/v1/collaborator_profiles?select=*&order=updated_at.desc');
-    allProfiles = await res.json();
-    document.getElementById('totalCount').textContent = allProfiles.length;
-    const complete = allProfiles.filter(p => p.name && p.bio && p.avatar_url).length;
-    document.getElementById('completeCount').textContent = complete;
+function switchTab(tab){
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tabPage-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+async function loadAll(){
+  await Promise.all([loadProfiles(), loadSubmissions()]);
+}
+
+// ── PROFILES ──
+async function loadProfiles(){
+  const grid=document.getElementById('collabGrid');
+  try{
+    const res=await sbFetch('/rest/v1/collaborator_profiles?select=*&order=updated_at.desc');
+    allProfiles=await res.json();
+    document.getElementById('totalProfiles').textContent=allProfiles.length;
     renderCards(allProfiles);
-  } catch(e) {
-    grid.innerHTML = '<div class="empty-state"><p>Could not load profiles.</p></div>';
-  }
+  }catch(e){grid.innerHTML='<div class="empty-state">Could not load profiles.</div>';}
 }
 
-function filterCards() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const sort = document.getElementById('sortSelect').value;
-  let filtered = allProfiles.filter(p =>
-    (p.name||'').toLowerCase().includes(q) ||
-    (p.role||'').toLowerCase().includes(q) ||
+function filterCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sort=document.getElementById('sortSelect').value;
+  let filtered=allProfiles.filter(p=>
+    (p.name||'').toLowerCase().includes(q)||
+    (p.role||'').toLowerCase().includes(q)||
     (p.location||'').toLowerCase().includes(q)
   );
-  if (sort === 'name') filtered.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  if(sort==='name') filtered.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   renderCards(filtered);
 }
 
-function getInitials(name) {
-  return (name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
-}
+function getInitials(name){return(name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');}
 
-function timeAgo(dateStr) {
-  if (!dateStr) return 'Never';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff/60000);
-  if (mins < 60) return mins + 'm ago';
-  const hrs = Math.floor(mins/60);
-  if (hrs < 24) return hrs + 'h ago';
-  const days = Math.floor(hrs/24);
-  if (days < 30) return days + 'd ago';
+function timeAgo(dateStr){
+  if(!dateStr)return'Never';
+  const diff=Date.now()-new Date(dateStr).getTime();
+  const mins=Math.floor(diff/60000);
+  if(mins<60)return mins+'m ago';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24)return hrs+'h ago';
+  const days=Math.floor(hrs/24);
+  if(days<30)return days+'d ago';
   return new Date(dateStr).toLocaleDateString();
 }
 
-function renderCards(profiles) {
-  const grid = document.getElementById('collabGrid');
-  if (!profiles.length) {
-    grid.innerHTML = '<div class="empty-state"><p>No collaborators found.</p></div>';
-    return;
-  }
-  grid.innerHTML = profiles.map((p, i) => `
+function renderCards(profiles){
+  const grid=document.getElementById('collabGrid');
+  if(!profiles.length){grid.innerHTML='<div class="empty-state">No collaborators found.</div>';return;}
+  grid.innerHTML=profiles.map((p,i)=>`
     <div class="collab-card">
       <div class="collab-card-header">
-        <div class="collab-avatar">
-          ${p.avatar_url ? `<img src="${p.avatar_url}" alt="Avatar">` : getInitials(p.name)}
-        </div>
+        <div class="collab-avatar">${p.avatar_url?`<img src="${p.avatar_url}" alt="Avatar">`:getInitials(p.name)}</div>
         <div>
-          <div class="collab-name">${p.name || 'Unnamed'}</div>
-          <div class="collab-role">${p.role || 'No role set'}</div>
+          <div class="collab-name">${p.name||'Unnamed'}</div>
+          <div class="collab-role">${p.role||'No role set'}</div>
         </div>
       </div>
       <div class="collab-card-body">
-        <div class="collab-detail">${p.location || '<span style="color:var(--muted)">No location</span>'}</div>
-        <div class="collab-detail">${p.instagram || '<span style="color:var(--muted)">No handle</span>'}</div>
+        <div class="collab-detail">${p.location||'<span style="color:var(--muted)">No location</span>'}</div>
+        <div class="collab-detail">${p.instagram||'<span style="color:var(--muted)">No handle</span>'}</div>
         <div class="collab-stats">
           <div class="collab-stat"><div class="collab-stat-num">${p.stat1_val||'—'}</div><div class="collab-stat-label">${p.stat1_label||'Stat 1'}</div></div>
           <div class="collab-stat"><div class="collab-stat-num">${p.stat2_val||'—'}</div><div class="collab-stat-label">${p.stat2_label||'Stat 2'}</div></div>
@@ -312,111 +338,174 @@ function renderCards(profiles) {
   `).join('');
 }
 
-function buildCardHTML(p) {
-  return `
-    <div class="card" id="previewCard" style="display:flex;flex-direction:column;">
-      <div class="c-header">
-        <div class="header-lights"></div>
-        <div class="c-avatar-wrap">
-          <div class="c-avatar-ring"></div>
-          <div class="c-avatar-img">${p.avatar_url ? `<img src="${p.avatar_url}" alt="Avatar">` : getInitials(p.name)}</div>
+// ── SUBMISSIONS ──
+async function loadSubmissions(){
+  try{
+    const res=await sbFetch('/rest/v1/media_submissions?select=*&order=submitted_at.desc');
+    allSubmissions=await res.json();
+    const pending=allSubmissions.filter(s=>s.status==='pending').length;
+    const approved=allSubmissions.filter(s=>s.status==='approved').length;
+    document.getElementById('totalSubmissions').textContent=allSubmissions.length;
+    document.getElementById('pendingCount').textContent=pending;
+    document.getElementById('approvedCount').textContent=approved;
+    const badge=document.getElementById('pendingBadge');
+    if(pending>0){badge.textContent=pending;badge.style.display='inline-block';}
+    renderSubmissions(allSubmissions);
+  }catch(e){
+    document.getElementById('submissionsList').innerHTML='<div class="empty-state">Could not load submissions.</div>';
+  }
+}
+
+function filterSubmissions(){
+  const q=document.getElementById('subSearchInput').value.toLowerCase();
+  const filter=document.getElementById('subFilter').value;
+  const sort=document.getElementById('subSort').value;
+  let filtered=allSubmissions.filter(s=>{
+    const matchQ=(s.event_name||'').toLowerCase().includes(q)||(s.sport||'').toLowerCase().includes(q)||(s.teams||'').toLowerCase().includes(q);
+    const matchF=filter==='all'||s.status===filter;
+    return matchQ&&matchF;
+  });
+  if(sort==='oldest') filtered.sort((a,b)=>new Date(a.submitted_at)-new Date(b.submitted_at));
+  renderSubmissions(filtered);
+}
+
+function renderSubmissions(subs){
+  const list=document.getElementById('submissionsList');
+  if(!subs.length){list.innerHTML='<div class="empty-state">No submissions found.</div>';return;}
+  list.innerHTML=subs.map(s=>`
+    <div class="sub-card" id="sub-${s.id}">
+      <div class="sub-card-header">
+        <div class="sub-card-header-left">
+          <div class="sub-event">${s.event_name||'Untitled event'}</div>
+          <div class="sub-meta">
+            <strong>${s.sport||'—'}</strong> &nbsp;·&nbsp;
+            ${s.event_date||'No date'} &nbsp;·&nbsp;
+            Submitted ${timeAgo(s.submitted_at)}
+          </div>
         </div>
-        <div>
-          <div class="c-name">${(p.name||'YOUR NAME').toUpperCase()}</div>
-          <div class="c-role">${(p.role||'YOUR ROLE').toUpperCase()}</div>
-          <div class="c-contact-item">
-            <svg class="c-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-8-4.5-8-11a8 8 0 0 1 16 0c0 6.5-8 11-8 11z"/><circle cx="12" cy="10" r="3"/></svg>
-            ${p.location||''}
-          </div>
-          <div class="c-contact-item">
-            <svg class="c-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-            ${p.email||''}
-          </div>
-          <div class="c-contact-item">
-            <svg class="c-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-            ${p.instagram||''}
-          </div>
-        </div>
+        <span class="badge badge-${s.status||'pending'}">${s.status||'Pending'}</span>
       </div>
-      <div class="c-about">
-        <div class="c-about-title">ABOUT ${(p.name||'').split(' ')[0].toUpperCase()}</div>
-        <div class="c-bio">${p.bio||''}</div>
+      <div class="sub-card-body">
+        <div class="sub-detail"><strong>Teams</strong>${s.teams||'—'}</div>
+        <div class="sub-detail"><strong>Score</strong>${s.score_home&&s.score_away?s.score_home+' – '+s.score_away:'—'}</div>
+        <div class="sub-detail"><strong>Media type</strong>${s.media_type||'—'}</div>
+        <div class="sub-detail"><strong>Files</strong>${s.file_count||0} file${s.file_count!==1?'s':''}</div>
       </div>
-      <div class="c-stats">
-        <div class="c-stat"><span class="c-stat-num">${p.stat1_val||'—'}</span><span class="c-stat-label">${(p.stat1_label||'').toUpperCase()}</span></div>
-        <div class="c-stat"><span class="c-stat-num">${p.stat2_val||'—'}</span><span class="c-stat-label">${(p.stat2_label||'').toUpperCase()}</span></div>
-        <div class="c-stat"><span class="c-stat-num">${p.stat3_val||'—'}</span><span class="c-stat-label">${(p.stat3_label||'').toUpperCase()}</span></div>
-        <div class="c-stat"><span class="c-stat-num">${p.stat4_val||'—'}</span><span class="c-stat-label">${(p.stat4_label||'').toUpperCase()}</span></div>
-      </div>
-      <div class="c-featured"><div class="c-featured-text">FEATURED COLLABORATOR OF THIS POST</div></div>
-      <div class="c-photos">
-        <div class="c-photo">${p.photo1_url ? `<img src="${p.photo1_url}" alt="Work sample">` : '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><div class="c-photo-label">WORK SAMPLE</div>'}</div>
-        <div class="c-photo">${p.photo2_url ? `<img src="${p.photo2_url}" alt="Work sample">` : '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><div class="c-photo-label">WORK SAMPLE</div>'}</div>
-        <div class="c-photo">${p.photo3_url ? `<img src="${p.photo3_url}" alt="Work sample">` : '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><div class="c-photo-label">WORK SAMPLE</div>'}</div>
-      </div>
-      <div class="c-cta" style="margin-top:auto;">
-        <div class="c-cta-title">INTERESTED IN BOOKING?</div>
-        <div class="c-cta-sub">DM <strong>${p.instagram||'@handle'}</strong> on Instagram to book your coverage.</div>
+      ${s.players?`<div class="sub-players"><div class="sub-players-label">Players to tag</div><div class="sub-players-text">${s.players}</div></div>`:''}
+      ${s.notes?`<div class="sub-notes">"${s.notes}"</div>`:''}
+      <div class="sub-actions">
+        <div class="sub-files"><strong>Files:</strong> ${s.file_names||'None listed'}</div>
+        ${s.status==='pending'?`
+          <button class="btn-approve" onclick="updateStatus('${s.id}','approved')">✓ Approve</button>
+          <button class="btn-deny" onclick="updateStatus('${s.id}','denied')">✕ Deny</button>
+        `:s.status==='approved'?`
+          <button class="btn-deny" onclick="updateStatus('${s.id}','denied')">✕ Deny</button>
+          <button class="btn-pending" onclick="updateStatus('${s.id}','pending')">↩ Reset</button>
+        `:`
+          <button class="btn-approve" onclick="updateStatus('${s.id}','approved')">✓ Approve</button>
+          <button class="btn-pending" onclick="updateStatus('${s.id}','pending')">↩ Reset</button>
+        `}
       </div>
     </div>
-  `;
+  `).join('');
 }
 
-function openPreview(idx) {
-  currentProfile = allProfiles[idx] || filterCards()[idx];
-  const p = currentProfile;
-  document.getElementById('modalCardWrap').innerHTML = buildCardHTML(p);
+async function updateStatus(id, status){
+  try{
+    const res=await sbFetch(`/rest/v1/media_submissions?id=eq.${id}`,{
+      method:'PATCH',
+      headers:{'Prefer':'return=representation'},
+      body:JSON.stringify({status})
+    });
+    if(res.ok){
+      // Update local data and re-render
+      const idx=allSubmissions.findIndex(s=>s.id===id);
+      if(idx>-1) allSubmissions[idx].status=status;
+      filterSubmissions();
+      // Update stat pills
+      const pending=allSubmissions.filter(s=>s.status==='pending').length;
+      const approved=allSubmissions.filter(s=>s.status==='approved').length;
+      document.getElementById('pendingCount').textContent=pending;
+      document.getElementById('approvedCount').textContent=approved;
+      const badge=document.getElementById('pendingBadge');
+      if(pending>0){badge.textContent=pending;badge.style.display='inline-block';}
+      else{badge.style.display='none';}
+    }
+  }catch(e){alert('Could not update status.');}
+}
+
+// ── CARD PREVIEW / DOWNLOAD ──
+function buildCardHTML(p){
+  return`<div class="card" style="display:flex;flex-direction:column;">
+    <div class="c-header">
+      <div class="header-lights"></div>
+      <div class="c-avatar-wrap"><div class="c-avatar-ring"></div>
+        <div class="c-avatar-img">${p.avatar_url?`<img src="${p.avatar_url}" alt="">`:getInitials(p.name)}</div>
+      </div>
+      <div>
+        <div class="c-name">${(p.name||'YOUR NAME').toUpperCase()}</div>
+        <div class="c-role">${(p.role||'YOUR ROLE').toUpperCase()}</div>
+        <div class="c-contact-item"><svg class="c-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-8-4.5-8-11a8 8 0 0 1 16 0c0 6.5-8 11-8 11z"/><circle cx="12" cy="10" r="3"/></svg>${p.location||''}</div>
+        <div class="c-contact-item"><svg class="c-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>${p.email||''}</div>
+        <div class="c-contact-item"><svg class="c-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>${p.instagram||''}</div>
+      </div>
+    </div>
+    <div class="c-about">
+      <div class="c-about-title">ABOUT ${(p.name||'').split(' ')[0].toUpperCase()}</div>
+      <div class="c-bio">${p.bio||''}</div>
+    </div>
+    <div class="c-stats">
+      <div class="c-stat"><span class="c-stat-num">${p.stat1_val||'—'}</span><span class="c-stat-label">${(p.stat1_label||'').toUpperCase()}</span></div>
+      <div class="c-stat"><span class="c-stat-num">${p.stat2_val||'—'}</span><span class="c-stat-label">${(p.stat2_label||'').toUpperCase()}</span></div>
+      <div class="c-stat"><span class="c-stat-num">${p.stat3_val||'—'}</span><span class="c-stat-label">${(p.stat3_label||'').toUpperCase()}</span></div>
+      <div class="c-stat"><span class="c-stat-num">${p.stat4_val||'—'}</span><span class="c-stat-label">${(p.stat4_label||'').toUpperCase()}</span></div>
+    </div>
+    <div class="c-featured"><div class="c-featured-text">FEATURED COLLABORATOR OF THIS POST</div></div>
+    <div class="c-photos">
+      <div class="c-photo">${p.photo1_url?`<img src="${p.photo1_url}" alt="">`:''}</div>
+      <div class="c-photo">${p.photo2_url?`<img src="${p.photo2_url}" alt="">`:''}</div>
+      <div class="c-photo">${p.photo3_url?`<img src="${p.photo3_url}" alt="">`:''}</div>
+    </div>
+    <div class="c-cta" style="margin-top:auto;">
+      <div class="c-cta-title">INTERESTED IN BOOKING?</div>
+      <div class="c-cta-sub">DM <strong>${p.instagram||'@handle'}</strong> on Instagram to book your coverage.</div>
+    </div>
+  </div>`;
+}
+
+function openPreview(idx){
+  const p=allProfiles[idx];
+  document.getElementById('modalCardWrap').innerHTML=buildCardHTML(p);
   document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('modalDlBtn').onclick = () => downloadCard(idx);
+  document.getElementById('modalDlBtn').onclick=()=>downloadCard(idx);
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
-}
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalBtn();}
+function closeModalBtn(){document.getElementById('modalOverlay').classList.remove('open');}
 
-function closeModalBtn() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
-
-async function downloadCard(idx) {
-  const filtered = allProfiles.filter(p => {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    return (p.name||'').toLowerCase().includes(q) || (p.role||'').toLowerCase().includes(q) || (p.location||'').toLowerCase().includes(q);
-  });
-  const p = filtered[idx] !== undefined ? filtered[idx] : allProfiles[idx];
-  if (!p) return;
-
-  // Build an offscreen 1080x1350 card for export
-  const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:1080px;height:1350px;';
-
-  // Clone all styles
-  const styleEl = document.createElement('style');
-  styleEl.textContent = Array.from(document.styleSheets).map(s => { try { return Array.from(s.cssRules).map(r=>r.cssText).join(''); } catch(e){return '';} }).join('');
+async function downloadCard(idx){
+  const p=allProfiles[idx]; if(!p)return;
+  const container=document.createElement('div');
+  container.style.cssText='position:fixed;left:-9999px;top:0;width:1080px;height:1350px;';
+  const styleEl=document.createElement('style');
+  styleEl.textContent=Array.from(document.styleSheets).map(s=>{try{return Array.from(s.cssRules).map(r=>r.cssText).join('');}catch(e){return '';}}).join('');
   container.appendChild(styleEl);
-
-  const cardWrap = document.createElement('div');
-  cardWrap.style.cssText = 'width:1080px;height:1350px;overflow:hidden;display:flex;flex-direction:column;';
-  cardWrap.innerHTML = buildCardHTML(p);
-
-  // Scale up text/sizes proportionally for 1080px width
-  const cardEl = cardWrap.querySelector('.card');
-  if (cardEl) {
-    cardEl.style.cssText = 'width:1080px;height:1350px;background:#060c14;border:2px solid #C8102E;border-radius:12px;overflow:hidden;font-family:Rajdhani,sans-serif;display:flex;flex-direction:column;';
-  }
-
+  const cardWrap=document.createElement('div');
+  cardWrap.style.cssText='width:1080px;height:1350px;overflow:hidden;display:flex;flex-direction:column;';
+  cardWrap.innerHTML=buildCardHTML(p);
+  const cardEl=cardWrap.querySelector('.card');
+  if(cardEl) cardEl.style.cssText='width:1080px;height:1350px;background:#060c14;border:2px solid #C8102E;border-radius:12px;overflow:hidden;font-family:Rajdhani,sans-serif;display:flex;flex-direction:column;';
   container.appendChild(cardWrap);
   document.body.appendChild(container);
-
-  setTimeout(() => {
-    html2canvas(cardWrap, { scale: 1, width: 1080, height: 1350, backgroundColor: '#060c14', useCORS: true, allowTaint: true }).then(canvas => {
+  setTimeout(()=>{
+    html2canvas(cardWrap,{scale:1,width:1080,height:1350,backgroundColor:'#060c14',useCORS:true,allowTaint:true}).then(canvas=>{
       document.body.removeChild(container);
-      const a = document.createElement('a');
-      a.download = (p.name||'collaborator').toLowerCase().replace(/\s+/g,'-') + '-profile-card.png';
-      a.href = canvas.toDataURL('image/png');
+      const a=document.createElement('a');
+      a.download=(p.name||'collaborator').toLowerCase().replace(/\s+/g,'-')+'-profile-card.png';
+      a.href=canvas.toDataURL('image/png');
       a.click();
     });
-  }, 300);
+  },300);
 }
 </script>
 </body>
