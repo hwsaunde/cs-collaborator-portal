@@ -699,15 +699,15 @@ function renderCard(){
   const bg=p.bg;
   const textCol=p.textColor;
   const accent=p.accent;
-  // Section heights — must sum to H=1350
+  // Section heights — fixed, must sum to H=1350
   const hH=310;       // header
+  const aboutH=155;   // about/bio — enough for label + 3 lines
   const statsH=110;   // stats
   const featH=58;     // featured banner
   const ctaH=82;      // CTA at bottom
   const photoGap=10,photoPad=24;
   const photoW=(W-photoPad*2-photoGap*2)/3;
-  const photoH=Math.round(photoW*(5/4)); // 4:5 ratio (portrait)
-  const aboutH=H-hH-statsH-featH-ctaH-photoH; // bio gets remaining space
+  const photoH=H-hH-aboutH-statsH-featH-ctaH; // photos get remaining space
 
   ctx.clearRect(0,0,W,H);
 
