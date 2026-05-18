@@ -477,8 +477,7 @@ function buildCaption(){
 
   // Parse player handles from players field
   // Format: Name | #Jersey | Position | School | @handle
-  const playerLines=(s.players||'').split('
-').filter(Boolean);
+  const playerLines=(s.players||'').split('\n').filter(Boolean);
   const handles=playerLines.map(line=>{
     const parts=line.split('|').map(p=>p.trim());
     return parts.find(p=>p.startsWith('@'))||null;
