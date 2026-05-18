@@ -104,6 +104,10 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .badge-approved{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2);}
 .badge-denied{background:rgba(200,16,46,0.1);color:#f87a8a;border:1px solid rgba(200,16,46,0.2);}
 
+/* SUB TABS */
+.sub-tab-btn{padding:8px 18px;font-size:13px;font-weight:500;font-family:'Poppins',sans-serif;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:all .2s;}
+.sub-tab-btn.active{color:#fff;font-weight:600;border-bottom-color:var(--red);}
+
 /* EMPTY / LOADING */
 .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:14px;}
 .loading{text-align:center;padding:4rem;color:var(--muted);font-size:14px;}
@@ -197,14 +201,20 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 
     <!-- ── SUBMISSIONS TAB ── -->
     <div class="tab-page" id="tabPage-submissions">
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:0;margin-bottom:1.25rem;border-bottom:1px solid var(--border);">
+        <button class="sub-tab-btn active" id="subtab-pending" onclick="switchSubTab('pending')">
+          Pending <span id="pendingSubCount" style="background:rgba(250,180,0,0.15);color:#facc15;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:5px;">0</span>
+        </button>
+        <button class="sub-tab-btn" id="subtab-approved" onclick="switchSubTab('approved')">
+          Approved <span id="approvedSubCount" style="background:rgba(74,222,128,0.1);color:#4ade80;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:5px;">0</span>
+        </button>
+        <button class="sub-tab-btn" id="subtab-denied" onclick="switchSubTab('denied')">
+          Denied <span id="deniedSubCount" style="background:rgba(200,16,46,0.1);color:#f87a8a;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:5px;">0</span>
+        </button>
+      </div>
       <div class="toolbar">
-        <input class="search-input" type="text" id="subSearchInput" placeholder="Search by event, sport, or collaborator..." oninput="filterSubmissions()">
-        <select class="filter-select" id="subFilter" onchange="filterSubmissions()">
-          <option value="all">All statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="denied">Denied</option>
-        </select>
+        <input class="search-input" type="text" id="subSearchInput" placeholder="Search by event, sport, or teams..." oninput="filterSubmissions()">
         <select class="sort-select" id="subSort" onchange="filterSubmissions()">
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
@@ -352,33 +362,51 @@ function renderCards(profiles){
 }
 
 // ── SUBMISSIONS ──
+let currentSubTab = 'pending';
+
+function switchSubTab(tab){
+  currentSubTab = tab;
+  document.querySelectorAll('.sub-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('subtab-'+tab).classList.add('active');
+  filterSubmissions();
+}
+
 async function loadSubmissions(){
   try{
     const res=await sbFetch('/rest/v1/media_submissions?select=*&order=submitted_at.desc');
     allSubmissions=await res.json();
-    const pending=allSubmissions.filter(s=>s.status==='pending').length;
-    const approved=allSubmissions.filter(s=>s.status==='approved').length;
-    document.getElementById('totalSubmissions').textContent=allSubmissions.length;
-    document.getElementById('pendingCount').textContent=pending;
-    document.getElementById('approvedCount').textContent=approved;
-    const badge=document.getElementById('pendingBadge');
-    if(pending>0){badge.textContent=pending;badge.style.display='inline-block';}
-    renderSubmissions(allSubmissions);
+    updateCounts();
+    filterSubmissions();
   }catch(e){
     document.getElementById('submissionsList').innerHTML='<div class="empty-state">Could not load submissions.</div>';
   }
 }
 
+function updateCounts(){
+  const pending=allSubmissions.filter(s=>s.status==='pending').length;
+  const approved=allSubmissions.filter(s=>s.status==='approved').length;
+  const denied=allSubmissions.filter(s=>s.status==='denied').length;
+  document.getElementById('totalSubmissions').textContent=allSubmissions.length;
+  document.getElementById('pendingCount').textContent=pending;
+  document.getElementById('approvedCount').textContent=approved;
+  document.getElementById('pendingSubCount').textContent=pending;
+  document.getElementById('approvedSubCount').textContent=approved;
+  document.getElementById('deniedSubCount').textContent=denied;
+  const badge=document.getElementById('pendingBadge');
+  if(pending>0){badge.textContent=pending;badge.style.display='inline-block';}
+  else{badge.style.display='none';}
+}
+
 function filterSubmissions(){
-  const q=document.getElementById('subSearchInput').value.toLowerCase();
-  const filter=document.getElementById('subFilter').value;
-  const sort=document.getElementById('subSort').value;
+  const q=(document.getElementById('subSearchInput')?.value||'').toLowerCase();
+  const sort=document.getElementById('subSort')?.value||'newest';
   let filtered=allSubmissions.filter(s=>{
     const matchQ=(s.event_name||'').toLowerCase().includes(q)||(s.sport||'').toLowerCase().includes(q)||(s.teams||'').toLowerCase().includes(q);
-    const matchF=filter==='all'||s.status===filter;
-    return matchQ&&matchF;
+    const matchStatus=s.status===currentSubTab||(currentSubTab==='pending'&&!s.status);
+    return matchQ&&matchStatus;
   });
   if(sort==='oldest') filtered.sort((a,b)=>new Date(a.submitted_at)-new Date(b.submitted_at));
+  else filtered.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
   renderSubmissions(filtered);
 }
 
@@ -427,24 +455,19 @@ async function updateStatus(id, status){
   try{
     const res=await sbFetch(`/rest/v1/media_submissions?id=eq.${id}`,{
       method:'PATCH',
-      headers:{'Prefer':'return=representation'},
-      body:JSON.stringify({status})
+      headers:{'Prefer':'return=representation','Content-Type':'application/json'},
+      body:JSON.stringify({status, reviewed_at: new Date().toISOString()})
     });
-    if(res.ok){
-      // Update local data and re-render
+    if(res.ok||res.status===204){
       const idx=allSubmissions.findIndex(s=>s.id===id);
       if(idx>-1) allSubmissions[idx].status=status;
+      updateCounts();
       filterSubmissions();
-      // Update stat pills
-      const pending=allSubmissions.filter(s=>s.status==='pending').length;
-      const approved=allSubmissions.filter(s=>s.status==='approved').length;
-      document.getElementById('pendingCount').textContent=pending;
-      document.getElementById('approvedCount').textContent=approved;
-      const badge=document.getElementById('pendingBadge');
-      if(pending>0){badge.textContent=pending;badge.style.display='inline-block';}
-      else{badge.style.display='none';}
+    } else {
+      const err=await res.json().catch(()=>({}));
+      alert('Could not update: '+(err.message||res.status+' — make sure the admin RLS policy is in place.'));
     }
-  }catch(e){alert('Could not update status.');}
+  }catch(e){alert('Connection error updating status.');}
 }
 
 // ── CARD PREVIEW / DOWNLOAD ──
