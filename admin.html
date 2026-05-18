@@ -240,17 +240,30 @@ async function sbFetch(path,opts={}){
   return fetch(SB_URL+path,{...opts,headers:h});
 }
 
-window.addEventListener('load',()=>{
-  const t=sessionStorage.getItem('cs_admin_token');
-  const e=sessionStorage.getItem('cs_admin_email');
+window.addEventListener('load',async ()=>{
+  // Check sessionStorage first, fall back to localStorage
+  let t=sessionStorage.getItem('cs_admin_token') || localStorage.getItem('cs_token');
+  let e=sessionStorage.getItem('cs_admin_email') || localStorage.getItem('cs_user_email');
   if(t&&e&&ADMIN_EMAILS.includes(e.toLowerCase())){
-    token=t;
-    document.getElementById('appPage').style.display='block';
-    document.getElementById('userEmail').textContent=e;
-    loadAll();
-  } else {
-    window.location.href='index.html';
+    // Verify token is still valid
+    try{
+      const res=await fetch(SB_URL+'/auth/v1/user',{
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+t}
+      });
+      const user=await res.json();
+      if(user&&user.id){
+        token=t;
+        // Keep sessionStorage in sync
+        sessionStorage.setItem('cs_admin_token',t);
+        sessionStorage.setItem('cs_admin_email',e);
+        document.getElementById('appPage').style.display='block';
+        document.getElementById('userEmail').textContent=e;
+        loadAll();
+        return;
+      }
+    }catch(err){}
   }
+  window.location.href='index.html';
 });
 
 function doLogout(){
