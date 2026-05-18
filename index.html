@@ -135,7 +135,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 
 <div id="appPage">
   <div class="topbar">
-    <div class="logo">County <span>Sports</span></div>
+    <div class="logo"><img src="CS.png" alt="County Sports" style="height:38px;width:38px;object-fit:contain;border-radius:50%;margin-right:10px;vertical-align:middle;">County <span>Sports</span></div>
     <div style="display:flex;align-items:center;gap:.75rem;">
       <span class="user-pill" id="userEmail"></span>
       <button class="signout-btn" onclick="doLogout()">Sign out</button>
@@ -402,6 +402,8 @@ async function doLogin(){
       if(ADMIN_EMAILS.includes(em)){
         sessionStorage.setItem('cs_admin_token',data.access_token);
         sessionStorage.setItem('cs_admin_email',data.user.email);
+        window.location.href='admin.html';
+        return;
       }
       document.getElementById('loginPage').style.display='none';
       document.getElementById('appPage').style.display='block';
@@ -1070,6 +1072,12 @@ function timeAgo(dateStr){
         if(ADMIN_EMAILS.includes(em)){
           sessionStorage.setItem('cs_admin_token',savedToken);
           sessionStorage.setItem('cs_admin_email',savedEmail);
+        }
+        if(ADMIN_EMAILS.includes(em)){
+          sessionStorage.setItem('cs_admin_token',savedToken);
+          sessionStorage.setItem('cs_admin_email',savedEmail);
+          window.location.href='admin.html';
+          return;
         }
         document.getElementById('loginPage').style.display='none';
         document.getElementById('appPage').style.display='block';
