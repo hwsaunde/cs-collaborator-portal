@@ -983,6 +983,23 @@ function renderFileList(){
     </div>`).join('');
 }
 
+async function uploadFileToStorage(file, submissionId){
+  const ext=file.name.split('.').pop();
+  const path=`${userId}/${submissionId}/${Date.now()}_${file.name}`;
+  const res=await fetch(`${SB_URL}/storage/v1/object/media-submissions/${path}`,{
+    method:'POST',
+    headers:{
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+token,
+      'Content-Type':file.type||'application/octet-stream',
+      'x-upsert':'true'
+    },
+    body:file
+  });
+  if(!res.ok) throw new Error('Upload failed: '+file.name);
+  return`${SB_URL}/storage/v1/object/public/media-submissions/${path}`;
+}
+
 async function submitMedia(){
   const evName=document.getElementById('ev-name').value.trim();
   const evDate=document.getElementById('ev-date').value;
@@ -991,35 +1008,69 @@ async function submitMedia(){
   const status=document.getElementById('submitStatus');
   const btn=document.getElementById('submitBtn');
   if(!evName||!evDate||!evSport||!evTeams){status.textContent='Please fill in all required fields.';status.className='submit-status err';return;}
-  btn.disabled=true;status.textContent='Submitting...';status.className='submit-status';
+  btn.disabled=true;status.textContent='Creating submission...';status.className='submit-status';
   const progressWrap=document.getElementById('progressWrap');
   const progressBar=document.getElementById('progressBar');
-  progressWrap.style.display='block';progressBar.style.width='10%';
-  const fileNames=selectedFiles.map(f=>f.name).join(', ');
-  progressBar.style.width='50%';
-  const payload={
-    user_id:userId,event_name:evName,event_date:evDate,sport:evSport,teams:evTeams,
-    score_home:document.getElementById('ev-score-home').value,
-    score_away:document.getElementById('ev-score-away').value,
-    players:document.getElementById('ev-players').value,
-    media_type:document.getElementById('ev-media-type').value,
-    notes:document.getElementById('ev-notes').value,
-    file_names:fileNames,file_count:selectedFiles.length,
-    status:'pending',submitted_at:new Date().toISOString()
-  };
+  progressWrap.style.display='block';progressBar.style.width='5%';
+
   try{
-    progressBar.style.width='80%';
-    const res=await sbFetch('/rest/v1/media_submissions',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(payload)});
-    progressBar.style.width='100%';
-    if(res.ok||res.status===201){
-      status.textContent='Submitted! Our team will review your coverage shortly.';status.className='submit-status ok';
-      ['ev-name','ev-date','ev-sport','ev-teams','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-      selectedFiles=[];renderFileList();
-      setTimeout(()=>{progressWrap.style.display='none';progressBar.style.width='0%';},1000);
-    } else {
-      const err=await res.json();status.textContent='Error: '+(err.message||'Could not submit.');status.className='submit-status err';progressWrap.style.display='none';
+    // Step 1: Create the submission record first to get an ID
+    const payload={
+      user_id:userId,event_name:evName,event_date:evDate,sport:evSport,teams:evTeams,
+      score_home:document.getElementById('ev-score-home').value,
+      score_away:document.getElementById('ev-score-away').value,
+      players:document.getElementById('ev-players').value,
+      media_type:document.getElementById('ev-media-type').value,
+      notes:document.getElementById('ev-notes').value,
+      file_names:selectedFiles.map(f=>f.name).join(', '),
+      file_count:selectedFiles.length,
+      status:'pending',submitted_at:new Date().toISOString()
+    };
+    const res=await sbFetch('/rest/v1/media_submissions',{
+      method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(payload)
+    });
+    if(!res.ok&&res.status!==201){
+      const err=await res.json();
+      status.textContent='Error: '+(err.message||'Could not submit.');status.className='submit-status err';
+      progressWrap.style.display='none';btn.disabled=false;return;
     }
-  }catch(e){status.textContent='Connection error.';status.className='submit-status err';progressWrap.style.display='none';}
+    const created=await res.json();
+    const submissionId=Array.isArray(created)?created[0]?.id:created?.id;
+    progressBar.style.width='20%';
+
+    // Step 2: Upload files if any
+    if(selectedFiles.length>0&&submissionId){
+      const fileUrls=[];
+      for(let i=0;i<selectedFiles.length;i++){
+        status.textContent=`Uploading file ${i+1} of ${selectedFiles.length}...`;
+        try{
+          const url=await uploadFileToStorage(selectedFiles[i],submissionId);
+          fileUrls.push(url);
+        }catch(uploadErr){
+          console.warn('File upload failed:',uploadErr);
+        }
+        progressBar.style.width=`${20+((i+1)/selectedFiles.length)*70}%`;
+      }
+      // Step 3: Update submission with file URLs
+      if(fileUrls.length>0&&submissionId){
+        await sbFetch('/rest/v1/media_submissions?id=eq.'+submissionId,{
+          method:'PATCH',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({file_urls:fileUrls.join(',')})
+        });
+      }
+    }
+
+    progressBar.style.width='100%';
+    status.textContent='Submitted! Our team will review your coverage shortly.';
+    status.className='submit-status ok';
+    ['ev-name','ev-date','ev-sport','ev-teams','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    selectedFiles=[];renderFileList();
+    setTimeout(()=>{progressWrap.style.display='none';progressBar.style.width='0%';},1000);
+  }catch(e){
+    status.textContent='Connection error. Please try again.';status.className='submit-status err';
+    progressWrap.style.display='none';
+  }
   btn.disabled=false;
 }
 
