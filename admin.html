@@ -562,18 +562,17 @@ Platform guide:
 Always end with relevant hashtags including #CountySports #NChsaa. Tag athlete handles if provided. Write only the caption text, nothing else.`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('/api/caption',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
-      })
+      body:JSON.stringify({prompt})
     });
     const data=await res.json();
-    const text=data.content?.[0]?.text||'Could not generate caption.';
-    captionEl.value=text.trim();
+    if(data.error){
+      captionEl.value='Error: '+data.error;
+    } else {
+      captionEl.value=data.caption||'Could not generate caption.';
+    }
   }catch(e){
     captionEl.value='Error generating caption. Check your connection and try again.';
   }
