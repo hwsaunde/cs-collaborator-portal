@@ -280,7 +280,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <textarea id="captionText" style="width:100%;background:#0d1520;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;font-size:13px;color:#e8edf5;font-family:'Poppins',sans-serif;line-height:1.7;resize:none;height:220px;outline:none;" placeholder="Caption will appear here..."></textarea>
 
     <div style="display:flex;gap:8px;margin-top:6px;">
-      <button onclick="buildCaption()" style="flex:1;padding:9px;background:#1A2744;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;">↻ Regenerate</button>
+      <button id="regenBtn" onclick="buildCaption()" style="flex:1;padding:9px;background:#1A2744;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;">↻ Regenerate with AI</button>
       <button onclick="copyCaption()" style="flex:1;padding:9px;background:#1A2744;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;" id="copyBtn">Copy caption</button>
     </div>
 
@@ -512,151 +512,73 @@ function closeCaptionModal(e){
   }
 }
 
-function buildCaption(){
-  // Always read fresh from global
+async function buildCaption(){
   const s=window._currentPipelineSub||currentPipelineSub;
   if(!s){console.warn('buildCaption: no submission loaded');return;}
+
   const platform=document.getElementById('captionPlatform').value;
   const tone=document.getElementById('captionTone').value;
+  const captionEl=document.getElementById('captionText');
+  const regenBtn=document.getElementById('regenBtn');
 
-  const teams=s.teams||'';
-  const sport=s.sport||'';
-  const date=s.event_date?new Date(s.event_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'';
-  const score=s.score_home&&s.score_away?`Final: ${s.score_home} – ${s.score_away}`:'';
-  const notes=s.notes||'';
+  captionEl.value='Generating caption with AI...';
+  if(regenBtn){regenBtn.disabled=true;regenBtn.textContent='Generating...';}
 
-  // Parse player handles from players field
-  // Format: Name | #Jersey | Position | School | @handle
   const playerLines=(s.players||'').split('\n').filter(Boolean);
   const handles=playerLines.map(line=>{
     const parts=line.split('|').map(p=>p.trim());
     return parts.find(p=>p.startsWith('@'))||null;
   }).filter(Boolean);
   const names=playerLines.map(line=>{
-    const parts=line.split('|').map(p=>p.trim());
-    return parts[0]||null;
+    return line.split('|')[0]?.trim()||null;
   }).filter(Boolean);
 
-  const tagLine=handles.length?handles.join(' '):'';
-  const nameLine=names.length?names.join(', '):'';
+  const scoreText=s.score_home&&s.score_away?s.score_home+' – '+s.score_away:'not provided';
 
-  let caption='';
+  const prompt=`You are a social media manager for County Sports, a North Carolina high school athletics media brand. Write a ${tone} caption for a ${platform} post.
 
-  if(tone==='hype'){
-    if(platform==='instagram'){
-      caption=`🔥 ${teams} | ${sport.toUpperCase()}
+Event details:
+- Event: ${s.event_name||''}
+- Sport: ${s.sport||''}
+- Date: ${s.event_date||''}
+- Teams: ${s.teams||''}
+- Score: ${scoreText}
+- Players featured: ${names.join(', ')||'not specified'}
+- Player social handles: ${handles.join(', ')||'not specified'}
+- Notes from collaborator: ${s.notes||'none'}
 
-`;
-      if(score) caption+=`${score}
+Tone guide:
+- hype: energetic, emojis, excitement, short punchy sentences
+- informative: factual, clear, professional
+- storytelling: narrative, emotional, builds anticipation
+- minimal: clean, simple, no fluff
 
-`;
-      if(nameLine) caption+=`📸 Featuring: ${nameLine}
+Platform guide:
+- instagram: up to 2200 chars, hashtags at end, tag athletes with @ handles
+- tiktok: short and punchy, under 300 chars ideal
+- facebook: conversational, minimal hashtags
+- twitter: under 280 chars, 1-2 hashtags max
 
-`;
-      if(notes) caption+=`${notes}
+Always end with relevant hashtags including #CountySports #NChsaa. Tag athlete handles if provided. Write only the caption text, nothing else.`;
 
-`;
-      caption+=`Coverage powered by County Sports — your home for North Carolina high school athletics.
-
-`;
-      caption+=`${tagLine}
-
-`;
-      caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')} #NorthCarolina #HighSchoolSports #PrepSports`;
-    } else if(platform==='tiktok'){
-      caption=`${teams} 🔥 ${score||sport}
-
-`;
-      if(nameLine) caption+=`Watch ${nameLine} work 👀
-
-`;
-      caption+=`${tagLine}
-
-`;
-      caption+=`#CountySports #${sport.replace(/\s/g,'')} #NChsaa #HighSchoolSports #NCPreps`;
-    } else if(platform==='facebook'){
-      caption=`🎉 Game coverage: ${teams}
-
-`;
-      if(score) caption+=`${score}
-
-`;
-      if(notes) caption+=`${notes}
-
-`;
-      if(nameLine) caption+=`Great work by ${nameLine}!
-
-`;
-      caption+=`Follow County Sports for the best high school athletics coverage in North Carolina.
-
-`;
-      caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')}`;
-    } else {
-      caption=`🔥 ${teams} | ${score||sport}
-`;
-      if(nameLine) caption+=`Featuring: ${nameLine}
-`;
-      caption+=`${tagLine}
-#CountySports #NChsaa #${sport.replace(/\s/g,'')}`;
-    }
-  } else if(tone==='informative'){
-    caption=`${teams} met on ${date}`;
-    if(score) caption+=` with a final score of ${score}`;
-    caption+=`.
-
-`;
-    if(nameLine) caption+=`Players featured: ${nameLine}.
-
-`;
-    if(notes) caption+=`${notes}
-
-`;
-    caption+=`Coverage by County Sports — following North Carolina high school athletics across all associations.
-
-`;
-    caption+=`${tagLine}
-
-`;
-    caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')} #NorthCarolina #HighSchoolSports`;
-  } else if(tone==='storytelling'){
-    caption=`Every game tells a story. 📖
-
-`;
-    caption+=`${teams}${date?' on '+date:''}`;
-    if(score) caption+=` — ${score}`;
-    caption+=`.
-
-`;
-    if(notes) caption+=`${notes}
-
-`;
-    if(nameLine) caption+=`Spotlight: ${nameLine}
-
-`;
-    caption+=`We're here to capture the moments that matter — from Friday night lights to championship floors.
-
-`;
-    caption+=`${tagLine}
-
-`;
-    caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')} #NorthCarolina #HighSchoolAthletics`;
-  } else {
-    // minimal
-    caption=`${teams}`;
-    if(score) caption+=` · ${score}`;
-    caption+=`
-
-`;
-    if(nameLine) caption+=`${nameLine}
-
-`;
-    caption+=`${tagLine}
-
-`;
-    caption+=`#CountySports #${sport.replace(/\s/g,'')} #NChsaa`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'Could not generate caption.';
+    captionEl.value=text.trim();
+  }catch(e){
+    captionEl.value='Error generating caption. Check your connection and try again.';
   }
 
-  document.getElementById('captionText').value=caption.trim();
+  if(regenBtn){regenBtn.disabled=false;regenBtn.textContent='↻ Regenerate with AI';}
 }
 
 function copyCaption(){
