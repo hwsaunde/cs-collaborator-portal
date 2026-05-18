@@ -24,7 +24,8 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .field input,.field textarea,.field select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--red);}
 .field textarea{resize:none;height:68px;line-height:1.6;}
-.field select{appearance:none;cursor:pointer;}
+.field select{appearance:none;cursor:pointer;background:#ffffff;color:#111111;}
+  .field select option{background:#ffffff;color:#111111;}
 .login-btn{width:100%;padding:11px;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;background:var(--red);color:#fff;margin-top:.5rem;}
 .err-box{background:rgba(200,16,46,0.12);border:1px solid rgba(200,16,46,0.3);color:#f87a8a;font-size:12px;padding:9px 12px;border-radius:7px;margin-top:.75rem;display:none;}
 #appPage{display:none;}
@@ -298,7 +299,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
           </div>
           <div class="panel-section">
             <div class="section-title">Players to tag</div>
-            <div class="field"><textarea id="ev-players" style="height:90px;" placeholder="Name, #jersey, school — one per line&#10;e.g. Jordan Smith, #12, Ardrey Kell"></textarea></div>
+            <div class="field"><textarea id="ev-players" style="height:130px;" placeholder="One athlete per line. Format:&#10;Name | #Jersey | Position | School | @SocialHandle&#10;&#10;e.g. Jordan Smith | #12 | WR | Ardrey Kell | @jordansmith_12"></textarea></div>
           </div>
           <div class="panel-section">
             <div class="section-title">Notes for content team</div>
@@ -394,6 +395,10 @@ async function doLogin(){
     if(data.access_token){
       token=data.access_token;userId=data.user.id;
       const em=data.user.email.toLowerCase();
+      // Persist session across refreshes
+      localStorage.setItem('cs_token', data.access_token);
+      localStorage.setItem('cs_user_id', data.user.id);
+      localStorage.setItem('cs_user_email', data.user.email);
       if(ADMIN_EMAILS.includes(em)){
         sessionStorage.setItem('cs_admin_token',data.access_token);
         sessionStorage.setItem('cs_admin_email',data.user.email);
@@ -412,6 +417,11 @@ async function doLogin(){
 
 function doLogout(){
   token=null;userId=null;selectedFiles=[];
+  localStorage.removeItem('cs_token');
+  localStorage.removeItem('cs_user_id');
+  localStorage.removeItem('cs_user_email');
+  sessionStorage.removeItem('cs_admin_token');
+  sessionStorage.removeItem('cs_admin_email');
   document.getElementById('appPage').style.display='none';
   document.getElementById('loginPage').style.display='flex';
   document.getElementById('loginPass').value='';
@@ -1041,6 +1051,40 @@ function timeAgo(dateStr){
   if(hrs<24)return hrs+'h ago';
   return Math.floor(hrs/24)+'d ago';
 }
+
+// Auto-restore session from localStorage on page load
+(async function restoreSession(){
+  const savedToken=localStorage.getItem('cs_token');
+  const savedUserId=localStorage.getItem('cs_user_id');
+  const savedEmail=localStorage.getItem('cs_user_email');
+  if(savedToken && savedUserId){
+    // Verify token is still valid
+    try{
+      const res=await fetch(SB_URL+'/auth/v1/user',{
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+savedToken}
+      });
+      const user=await res.json();
+      if(user && user.id){
+        token=savedToken;userId=savedUserId;
+        const em=savedEmail.toLowerCase();
+        if(ADMIN_EMAILS.includes(em)){
+          sessionStorage.setItem('cs_admin_token',savedToken);
+          sessionStorage.setItem('cs_admin_email',savedEmail);
+        }
+        document.getElementById('loginPage').style.display='none';
+        document.getElementById('appPage').style.display='block';
+        document.getElementById('userEmail').textContent=savedEmail;
+        await loadProfile();
+        renderCard();
+        return;
+      }
+    }catch(e){}
+    // Token expired — clear and show login
+    localStorage.removeItem('cs_token');
+    localStorage.removeItem('cs_user_id');
+    localStorage.removeItem('cs_user_email');
+  }
+})();
 
 // Auth redirect handler
 const hash=window.location.hash;
