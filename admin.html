@@ -183,6 +183,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <div class="tabs">
       <button class="tab-btn active" id="tab-profiles" onclick="switchTab('profiles')">Collaborator profiles</button>
       <button class="tab-btn" id="tab-submissions" onclick="switchTab('submissions')">Submissions inbox <span class="tab-badge" id="pendingBadge" style="display:none;">0</span></button>
+      <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">Ready to post <span class="tab-badge" id="pipelineBadge" style="display:none;background:#4ade80;">0</span></button>
     </div>
 
     <!-- ── PROFILES TAB ── -->
@@ -225,6 +226,68 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
       </div>
     </div>
 
+    <!-- ── PIPELINE TAB ── -->
+    <div class="tab-page" id="tabPage-pipeline">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;">Ready to post</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">Approved submissions waiting to be posted. Build your caption and mark as posted when done.</div>
+        </div>
+      </div>
+      <div class="submissions-list" id="pipelineList">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CAPTION BUILDER MODAL -->
+<div class="modal-overlay" id="captionModal" onclick="closeCaptionModal(event)" style="display:none;align-items:center;justify-content:center;">
+  <div style="background:#111d30;border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:2rem;position:relative;">
+    <button onclick="closeCaptionModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:4px;" id="captionEventTitle">Caption builder</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1.5rem;" id="captionEventMeta"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Platform</div>
+        <select id="captionPlatform" onchange="buildCaption()" style="width:100%;background:#1A2744;border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:9px 12px;font-size:13px;color:#fff;font-family:'Poppins',sans-serif;outline:none;">
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="facebook">Facebook</option>
+          <option value="twitter">Twitter / X</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Tone</div>
+        <select id="captionTone" onchange="buildCaption()" style="width:100%;background:#1A2744;border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:9px 12px;font-size:13px;color:#fff;font-family:'Poppins',sans-serif;outline:none;">
+          <option value="hype">Hype / Energetic</option>
+          <option value="informative">Informative</option>
+          <option value="storytelling">Storytelling</option>
+          <option value="minimal">Clean / Minimal</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Generated caption</div>
+    <textarea id="captionText" style="width:100%;background:#0d1520;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;font-size:13px;color:#e8edf5;font-family:'Poppins',sans-serif;line-height:1.7;resize:none;height:220px;outline:none;" placeholder="Caption will appear here..."></textarea>
+
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button onclick="buildCaption()" style="flex:1;padding:9px;background:#1A2744;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;">↻ Regenerate</button>
+      <button onclick="copyCaption()" style="flex:1;padding:9px;background:#1A2744;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;" id="copyBtn">Copy caption</button>
+    </div>
+
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);">
+      <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Post notes (internal)</div>
+      <textarea id="postNotes" style="width:100%;background:#0d1520;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;font-size:12px;color:#e8edf5;font-family:'Poppins',sans-serif;resize:none;height:60px;outline:none;" placeholder="Any internal notes for this post..."></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem;">
+      <button onclick="markAsPosted()" style="padding:11px;background:#4ade80;border:none;color:#000;border-radius:7px;font-size:13px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;">✓ Mark as posted</button>
+      <button onclick="moveBackToPending()" style="padding:11px;background:none;border:1px solid rgba(255,255,255,0.1);color:var(--muted);border-radius:7px;font-size:13px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;">↩ Move back to inbox</button>
+    </div>
+    <div style="font-size:12px;text-align:center;color:var(--muted);margin-top:8px;min-height:16px;" id="captionSaveMsg"></div>
   </div>
 </div>
 
@@ -287,6 +350,7 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tabPage-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='pipeline') loadPipeline();
 }
 
 async function loadAll(){
@@ -328,6 +392,273 @@ function timeAgo(dateStr){
   const days=Math.floor(hrs/24);
   if(days<30)return days+'d ago';
   return new Date(dateStr).toLocaleDateString();
+}
+
+// ── PIPELINE (READY TO POST) ──
+let currentPipelineSub = null;
+
+async function loadPipeline(){
+  const list=document.getElementById('pipelineList');
+  list.innerHTML='<div class="loading">Loading...</div>';
+  try{
+    const approved=allSubmissions.filter(s=>s.status==='approved'&&s.posted_at===undefined||s.posted_at===null);
+    // Re-fetch to get latest
+    const res=await sbFetch('/rest/v1/media_submissions?status=eq.approved&posted_at=is.null&select=*&order=reviewed_at.desc');
+    const data=await res.json();
+    if(!data||!data.length){
+      list.innerHTML='<div class="empty-state">No approved submissions ready to post yet.<br>Approve submissions from the inbox to populate this queue.</div>';
+      return;
+    }
+    list.innerHTML=data.map(s=>`
+      <div class="sub-card">
+        <div class="sub-card-header">
+          <div class="sub-card-header-left">
+            <div class="sub-event">${s.event_name||'Untitled event'}</div>
+            <div class="sub-meta"><strong>${s.sport||'—'}</strong> &nbsp;·&nbsp; ${s.event_date||'No date'} &nbsp;·&nbsp; Approved ${timeAgo(s.reviewed_at)}</div>
+          </div>
+          <span class="badge badge-approved">Ready to post</span>
+        </div>
+        <div class="sub-card-body">
+          <div class="sub-detail"><strong>Teams</strong>${s.teams||'—'}</div>
+          <div class="sub-detail"><strong>Score</strong>${s.score_home&&s.score_away?s.score_home+' – '+s.score_away:'—'}</div>
+          <div class="sub-detail"><strong>Media type</strong>${s.media_type||'—'}</div>
+          <div class="sub-detail"><strong>Files</strong>${s.file_count||0} file${s.file_count!==1?'s':''}</div>
+        </div>
+        ${s.players?`<div class="sub-players"><div class="sub-players-label">Players to tag</div><div class="sub-players-text">${s.players}</div></div>`:''}
+        ${s.notes?`<div class="sub-notes">"${s.notes}"</div>`:''}
+        <div class="sub-actions">
+          <div class="sub-files"><strong>Files:</strong> ${s.file_names||'None listed'}</div>
+          <button class="btn-approve" onclick="openCaptionBuilder('${s.id}')">✎ Build caption & post</button>
+        </div>
+      </div>
+    `).join('');
+  }catch(e){list.innerHTML='<div class="empty-state">Could not load pipeline.</div>';}
+}
+
+function openCaptionBuilder(id){
+  currentPipelineSub = allSubmissions.find(s=>s.id===id) || null;
+  if(!currentPipelineSub){
+    // Fetch fresh if not in memory
+    sbFetch('/rest/v1/media_submissions?id=eq.'+id+'&select=*')
+      .then(r=>r.json()).then(data=>{
+        if(data&&data[0]){ currentPipelineSub=data[0]; _openModal(); }
+      });
+  } else { _openModal(); }
+}
+
+function _openModal(){
+  const s=currentPipelineSub;
+  document.getElementById('captionEventTitle').textContent=(s.event_name||'Event').toUpperCase();
+  document.getElementById('captionEventMeta').textContent=`${s.sport||''} · ${s.event_date||''} · ${s.teams||''}`;
+  document.getElementById('captionModal').style.display='flex';
+  document.getElementById('captionSaveMsg').textContent='';
+  document.getElementById('postNotes').value='';
+  buildCaption();
+}
+
+function closeCaptionModal(e){
+  if(!e||e.target===document.getElementById('captionModal')){
+    document.getElementById('captionModal').style.display='none';
+    currentPipelineSub=null;
+  }
+}
+
+function buildCaption(){
+  const s=currentPipelineSub;
+  if(!s)return;
+  const platform=document.getElementById('captionPlatform').value;
+  const tone=document.getElementById('captionTone').value;
+
+  const teams=s.teams||'';
+  const sport=s.sport||'';
+  const date=s.event_date?new Date(s.event_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'';
+  const score=s.score_home&&s.score_away?`Final: ${s.score_home} – ${s.score_away}`:'';
+  const notes=s.notes||'';
+
+  // Parse player handles from players field
+  // Format: Name | #Jersey | Position | School | @handle
+  const playerLines=(s.players||'').split('
+').filter(Boolean);
+  const handles=playerLines.map(line=>{
+    const parts=line.split('|').map(p=>p.trim());
+    return parts.find(p=>p.startsWith('@'))||null;
+  }).filter(Boolean);
+  const names=playerLines.map(line=>{
+    const parts=line.split('|').map(p=>p.trim());
+    return parts[0]||null;
+  }).filter(Boolean);
+
+  const tagLine=handles.length?handles.join(' '):'';
+  const nameLine=names.length?names.join(', '):'';
+
+  let caption='';
+
+  if(tone==='hype'){
+    if(platform==='instagram'){
+      caption=`🔥 ${teams} | ${sport.toUpperCase()}
+
+`;
+      if(score) caption+=`${score}
+
+`;
+      if(nameLine) caption+=`📸 Featuring: ${nameLine}
+
+`;
+      if(notes) caption+=`${notes}
+
+`;
+      caption+=`Coverage powered by County Sports — your home for North Carolina high school athletics.
+
+`;
+      caption+=`${tagLine}
+
+`;
+      caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')} #NorthCarolina #HighSchoolSports #PrepSports`;
+    } else if(platform==='tiktok'){
+      caption=`${teams} 🔥 ${score||sport}
+
+`;
+      if(nameLine) caption+=`Watch ${nameLine} work 👀
+
+`;
+      caption+=`${tagLine}
+
+`;
+      caption+=`#CountySports #${sport.replace(/\s/g,'')} #NChsaa #HighSchoolSports #NCPreps`;
+    } else if(platform==='facebook'){
+      caption=`🎉 Game coverage: ${teams}
+
+`;
+      if(score) caption+=`${score}
+
+`;
+      if(notes) caption+=`${notes}
+
+`;
+      if(nameLine) caption+=`Great work by ${nameLine}!
+
+`;
+      caption+=`Follow County Sports for the best high school athletics coverage in North Carolina.
+
+`;
+      caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')}`;
+    } else {
+      caption=`🔥 ${teams} | ${score||sport}
+`;
+      if(nameLine) caption+=`Featuring: ${nameLine}
+`;
+      caption+=`${tagLine}
+#CountySports #NChsaa #${sport.replace(/\s/g,'')}`;
+    }
+  } else if(tone==='informative'){
+    caption=`${teams} met on ${date}`;
+    if(score) caption+=` with a final score of ${score}`;
+    caption+=`.
+
+`;
+    if(nameLine) caption+=`Players featured: ${nameLine}.
+
+`;
+    if(notes) caption+=`${notes}
+
+`;
+    caption+=`Coverage by County Sports — following North Carolina high school athletics across all associations.
+
+`;
+    caption+=`${tagLine}
+
+`;
+    caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')} #NorthCarolina #HighSchoolSports`;
+  } else if(tone==='storytelling'){
+    caption=`Every game tells a story. 📖
+
+`;
+    caption+=`${teams}${date?' on '+date:''}`;
+    if(score) caption+=` — ${score}`;
+    caption+=`.
+
+`;
+    if(notes) caption+=`${notes}
+
+`;
+    if(nameLine) caption+=`Spotlight: ${nameLine}
+
+`;
+    caption+=`We're here to capture the moments that matter — from Friday night lights to championship floors.
+
+`;
+    caption+=`${tagLine}
+
+`;
+    caption+=`#CountySports #NChsaa #${sport.replace(/\s/g,'')} #NorthCarolina #HighSchoolAthletics`;
+  } else {
+    // minimal
+    caption=`${teams}`;
+    if(score) caption+=` · ${score}`;
+    caption+=`
+
+`;
+    if(nameLine) caption+=`${nameLine}
+
+`;
+    caption+=`${tagLine}
+
+`;
+    caption+=`#CountySports #${sport.replace(/\s/g,'')} #NChsaa`;
+  }
+
+  document.getElementById('captionText').value=caption.trim();
+}
+
+function copyCaption(){
+  const text=document.getElementById('captionText').value;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✓ Copied!';
+    setTimeout(()=>btn.textContent='Copy caption',2000);
+  });
+}
+
+async function markAsPosted(){
+  if(!currentPipelineSub)return;
+  const msg=document.getElementById('captionSaveMsg');
+  msg.textContent='Saving...';msg.style.color='var(--muted)';
+  const notes=document.getElementById('postNotes').value;
+  const caption=document.getElementById('captionText').value;
+  try{
+    const res=await sbFetch('/rest/v1/media_submissions?id=eq.'+currentPipelineSub.id,{
+      method:'PATCH',
+      headers:{'Prefer':'return=representation','Content-Type':'application/json'},
+      body:JSON.stringify({
+        status:'posted',
+        posted_at:new Date().toISOString(),
+        post_caption:caption,
+        post_notes:notes
+      })
+    });
+    if(res.ok||res.status===204){
+      msg.textContent='✓ Marked as posted!';msg.style.color='#4ade80';
+      // Update local
+      const idx=allSubmissions.findIndex(s=>s.id===currentPipelineSub.id);
+      if(idx>-1){allSubmissions[idx].status='posted';allSubmissions[idx].posted_at=new Date().toISOString();}
+      updateCounts();
+      setTimeout(()=>{
+        document.getElementById('captionModal').style.display='none';
+        currentPipelineSub=null;
+        loadPipeline();
+      },1200);
+    } else {
+      msg.textContent='Error saving.';msg.style.color='#f87a8a';
+    }
+  }catch(e){msg.textContent='Connection error.';msg.style.color='#f87a8a';}
+}
+
+async function moveBackToPending(){
+  if(!currentPipelineSub)return;
+  await updateStatus(currentPipelineSub.id,'pending');
+  document.getElementById('captionModal').style.display='none';
+  currentPipelineSub=null;
+  loadPipeline();
 }
 
 function renderCards(profiles){
@@ -383,9 +714,10 @@ async function loadSubmissions(){
 }
 
 function updateCounts(){
-  const pending=allSubmissions.filter(s=>s.status==='pending').length;
+  const pending=allSubmissions.filter(s=>s.status==='pending'||!s.status).length;
   const approved=allSubmissions.filter(s=>s.status==='approved').length;
   const denied=allSubmissions.filter(s=>s.status==='denied').length;
+  const posted=allSubmissions.filter(s=>s.status==='posted').length;
   document.getElementById('totalSubmissions').textContent=allSubmissions.length;
   document.getElementById('pendingCount').textContent=pending;
   document.getElementById('approvedCount').textContent=approved;
@@ -395,6 +727,9 @@ function updateCounts(){
   const badge=document.getElementById('pendingBadge');
   if(pending>0){badge.textContent=pending;badge.style.display='inline-block';}
   else{badge.style.display='none';}
+  const pBadge=document.getElementById('pipelineBadge');
+  if(approved>0){pBadge.textContent=approved;pBadge.style.display='inline-block';}
+  else{pBadge.style.display='none';}
 }
 
 function filterSubmissions(){
