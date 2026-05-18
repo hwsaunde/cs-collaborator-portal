@@ -553,6 +553,23 @@ function clearHeaderBg(){
 }
 
 // ── AVATAR CROP ──
+
+// Single source of truth: draw avatar centered in a box of size (w x h)
+// offsetX/Y are -100 to +100, representing % of the box half-size
+function drawAvatarInBox(ctx, img, cx, cy, r){
+  const zoom=(cardState.avatarZoom||100)/100;
+  const iw=img.naturalWidth||img.width;
+  const ih=img.naturalHeight||img.height;
+  const d=r*2;
+  // Scale so image covers the circle at zoom=1, then multiply by zoom
+  const scale=Math.max(d/iw,d/ih)*zoom;
+  const sw=iw*scale, sh=ih*scale;
+  // Center the image, then apply position offset (% of radius)
+  const ox=cx - sw/2 + ((cardState.avatarX||0)/100)*r;
+  const oy=cy - sh/2 + ((cardState.avatarY||0)/100)*r;
+  ctx.drawImage(img, ox, oy, sw, sh);
+}
+
 function handleAvatar(input){
   const file=input.files[0];if(!file)return;
   const r=new FileReader();
@@ -560,10 +577,14 @@ function handleAvatar(input){
     const img=new Image();
     img.onload=()=>{
       cardState.avatarImg=img;
+      cardState.avatarZoom=100;
+      cardState.avatarX=0;
+      cardState.avatarY=0;
       document.getElementById('avatarZoom').value=100;
       document.getElementById('avatarX').value=0;
       document.getElementById('avatarY').value=0;
-      updateCrop();
+      updateAvatarThumb();
+      renderCard();
     };
     img.src=ev.target.result;
   };
@@ -574,10 +595,7 @@ function updateCrop(){
   cardState.avatarZoom=parseInt(document.getElementById('avatarZoom').value);
   cardState.avatarX=parseInt(document.getElementById('avatarX').value);
   cardState.avatarY=parseInt(document.getElementById('avatarY').value);
-  if(cardState.avatarImg){
-    updateAvatarThumb();
-    renderCard();
-  }
+  if(cardState.avatarImg){ updateAvatarThumb(); renderCard(); }
 }
 
 function updateAvatarThumb(){
@@ -586,47 +604,29 @@ function updateAvatarThumb(){
   let c=thumb.querySelector('canvas');
   if(!c){
     c=document.createElement('canvas');
-    c.width=64;c.height=64;
+    c.width=128;c.height=128;
     c.style.cssText='width:64px;height:64px;border-radius:50%;display:block;';
     thumb.innerHTML='';
     thumb.appendChild(c);
   }
   const ctx2=c.getContext('2d');
-  ctx2.clearRect(0,0,64,64);
-  const zoom=(cardState.avatarZoom||100)/100;
-  const img=cardState.avatarImg;
-  const iw=img.naturalWidth||img.width;
-  const ih=img.naturalHeight||img.height;
-  const scale=Math.max(64/iw,64/ih)*zoom;
-  const sw=iw*scale,sh=ih*scale;
-  const ox=32-sw/2+((cardState.avatarX||0)/100)*32;
-  const oy=32-sh/2+((cardState.avatarY||0)/100)*32;
-  ctx2.drawImage(img,ox,oy,sw,sh);
+  ctx2.clearRect(0,0,128,128);
+  ctx2.save();
+  ctx2.beginPath();ctx2.arc(64,64,64,0,Math.PI*2);ctx2.clip();
+  drawAvatarInBox(ctx2, cardState.avatarImg, 64, 64, 64);
+  ctx2.restore();
   document.getElementById('avatarInitials').style.display='none';
-}
-
-
-
-function drawAvatarOnCanvas(canvas,w,h){
-  if(!cardState.avatarImg)return;
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,w,h);
-  const img=cardState.avatarImg;
-  const zoom=cardState.avatarZoom/100;
-  const iw=img.naturalWidth,ih=img.naturalHeight;
-  const scale=Math.max(w/iw,h/ih)*zoom;
-  const sw=iw*scale,sh=ih*scale;
-  const ox=(w-sw)/2+(cardState.avatarX/100)*w;
-  const oy=(h-sh)/2+(cardState.avatarY/100)*h;
-  ctx.drawImage(img,ox,oy,sw,sh);
 }
 
 function getAvatarDataUrl(){
   if(!cardState.avatarImg)return null;
   const c=document.createElement('canvas');c.width=400;c.height=400;
-  drawAvatarOnCanvas(c,400,400);
+  const ctx=c.getContext('2d');
+  drawAvatarInBox(ctx, cardState.avatarImg, 200, 200, 200);
   return c.toDataURL('image/jpeg',0.9);
 }
+
+
 
 // ── WORK SAMPLE PHOTOS ──
 function handlePhoto(input,idx,slotId,cardId){
@@ -773,16 +773,7 @@ function renderCard(){
   ctx.save();
   ctx.beginPath();ctx.arc(avCX,avCY,avR,0,Math.PI*2);ctx.clip();
   if(p.avatarImg){
-    const zoom=(p.avatarZoom||100)/100;
-    const img=p.avatarImg;
-    const iw=img.naturalWidth||img.width;
-    const ih=img.naturalHeight||img.height;
-    const d=avR*2;
-    const scale=Math.max(d/iw,d/ih)*zoom;
-    const sw=iw*scale,sh=ih*scale;
-    const ox=avCX-sw/2+((p.avatarX||0)/100)*avR;
-    const oy=avCY-sh/2+((p.avatarY||0)/100)*avR;
-    ctx.drawImage(img,ox,oy,sw,sh);
+    drawAvatarInBox(ctx, p.avatarImg, avCX, avCY, avR);
   } else {
     ctx.fillStyle=withAlpha(secondary,0.9);
     ctx.fillRect(avCX-avR,avCY-avR,avR*2,avR*2);
