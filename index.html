@@ -1467,6 +1467,18 @@ async function deletePost(postId){
   }catch(e){ alert('Could not delete post.'); }
 }
 
+// ── PIN / UNPIN POST ──
+async function togglePin(postId, currentlyPinned){
+  try{
+    await sbFetch('/rest/v1/news_posts?id=eq.'+postId,{
+      method:'PATCH',
+      headers:{'Prefer':'return=representation'},
+      body:JSON.stringify({pinned: !currentlyPinned})
+    });
+    loadNews();
+  }catch(e){ alert('Could not update pin status.'); }
+}
+
 // ── LOAD NEWS ──
 async function loadNews(){
   const list = document.getElementById('newsList');
@@ -1476,7 +1488,7 @@ async function loadNews(){
 
   try{
     const [postsRes, profileRes] = await Promise.all([
-      sbFetch('/rest/v1/news_posts?select=*&order=created_at.desc'),
+      sbFetch('/rest/v1/news_posts?select=*&order=pinned.desc,created_at.desc'),
       sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=name,avatar_url')
     ]);
     const posts = await postsRes.json();
@@ -1508,16 +1520,21 @@ async function loadNews(){
         }).join('')}
       </div>` : '';
 
+      const pinnedBadge = post.pinned ? `<span style="font-size:9px;font-weight:700;background:rgba(250,180,0,0.15);color:#facc15;border:1px solid rgba(250,180,0,0.3);padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;">📌 Pinned</span>` : '';
+
       const adminPostControls = currentUserIsAdmin ? `
         <div class="news-post-actions">
+          <button class="news-post-action-btn" onclick="togglePin('${post.id}',${!!post.pinned})" style="${post.pinned?'color:#facc15;border-color:rgba(250,180,0,0.4);':''}">
+            ${post.pinned ? '📌 Unpin' : '📌 Pin'}
+          </button>
           <button class="news-post-action-btn" onclick='openComposeModal(${JSON.stringify({id:post.id,title:post.title,body:post.body,category:post.category})})'>Edit</button>
           <button class="news-post-action-btn delete" onclick="deletePost('${post.id}')">Delete</button>
           <span class="news-post-badge">${catLabel}</span>
-        </div>` : `<span class="news-post-badge">${catLabel}</span>`;
+        </div>` : `<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${pinnedBadge}<span class="news-post-badge">${catLabel}</span></div>`;
 
       const commentsHtml = comments.map(c => buildCommentHtml(c)).join('');
 
-      return `<div class="news-post" id="newspost-${post.id}">
+      return `<div class="news-post" id="newspost-${post.id}" style="${post.pinned?'border-color:rgba(250,180,0,0.35);border-top:2px solid #facc15;':''}">
         <div class="news-post-header">
           <div>
             <div class="news-post-title">${escHtml(post.title)}</div>
