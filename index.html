@@ -463,6 +463,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <div class="compose-field">
       <label>Message</label>
       <textarea id="news-body" placeholder="Write your update here..."></textarea>
+      <div style="font-size:10px;color:var(--muted);margin-top:5px;">Paste a URL to auto-link it, or use <span style="color:rgba(255,255,255,0.4);font-family:monospace;">[link text](url)</span> for hyperlinked text.</div>
     </div>
 
     <!-- Media attachments -->
@@ -1334,6 +1335,19 @@ function setAdminFlag(email){
 
 function escHtml(str){ return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// Render post body: escape HTML, then convert [text](url) and bare URLs to clickable links
+function renderPostBody(str){
+  // 1. Escape HTML
+  let s = escHtml(str||'');
+  // 2. Convert markdown-style links: [text](url)
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    (_,text,url)=>`<a href="${url}" target="_blank" rel="noopener" style="color:#6496ff;text-decoration:underline;">${text}</a>`);
+  // 3. Auto-link bare URLs not already inside an href
+  s = s.replace(/(?<!href=")(https?:\/\/[^\s<]+)/g,
+    url=>`<a href="${url}" target="_blank" rel="noopener" style="color:#6496ff;text-decoration:underline;">${url}</a>`);
+  return s;
+}
+
 // ── COMPOSE MODAL ──
 function openComposeModal(postData){
   editingPostId = postData ? postData.id : null;
@@ -1542,7 +1556,7 @@ async function loadNews(){
           </div>
           ${adminPostControls}
         </div>
-        <div class="news-post-body">${escHtml(post.body)}</div>
+        <div class="news-post-body">${renderPostBody(post.body)}</div>
         ${mediaHtml}
         <div class="news-comments">
           <div class="news-comments-title">Comments (${comments.length})</div>
