@@ -120,6 +120,9 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .empty-history{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:14px;}
 
 /* NEWS TAB */
+.news-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.news-new-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;background:var(--red);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:opacity .15s;}
+.news-new-btn:hover{opacity:.85;}
 .news-list{display:flex;flex-direction:column;gap:14px;}
 .news-post{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;}
 .news-post:hover{border-color:rgba(200,16,46,0.25);}
@@ -127,19 +130,55 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .news-post-badge{font-size:9px;font-weight:700;background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;margin-top:2px;}
 .news-post-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px;}
 .news-post-meta{font-size:11px;color:var(--muted);}
+.news-post-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.news-post-action-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;color:var(--muted);transition:all .15s;}
+.news-post-action-btn:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
+.news-post-action-btn.delete{border-color:rgba(200,16,46,0.3);}
+.news-post-action-btn.delete:hover{color:#f87a8a;border-color:rgba(200,16,46,0.6);}
 .news-post-body{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;}
+.news-post-media{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px;}
+.news-post-media-thumb{width:100px;height:100px;border-radius:8px;border:1px solid var(--border);overflow:hidden;cursor:pointer;position:relative;background:#0d1520;}
+.news-post-media-thumb img,.news-post-media-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+.news-post-media-thumb .play-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);}
 .news-comments{padding:10px 18px 14px;border-top:1px solid var(--border);background:rgba(0,0,0,0.15);}
 .news-comments-title{font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
-.news-comment{display:flex;gap:8px;margin-bottom:8px;}
+.news-comment{display:flex;gap:8px;margin-bottom:8px;position:relative;}
 .news-comment-avatar{width:24px;height:24px;border-radius:50%;background:var(--navy);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;font-family:'Barlow Condensed',sans-serif;}
 .news-comment-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .news-comment-bubble{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:7px 10px;flex:1;font-size:12px;color:var(--text);line-height:1.5;}
 .news-comment-name{font-size:10px;font-weight:600;color:var(--red);margin-bottom:2px;}
 .news-comment-time{font-size:10px;color:var(--muted);margin-left:6px;font-weight:400;}
+.news-comment-menu{display:flex;gap:4px;margin-top:5px;}
+.news-comment-menu-btn{background:none;border:none;font-size:10px;color:var(--muted);cursor:pointer;padding:0;font-family:'Poppins',sans-serif;}
+.news-comment-menu-btn:hover{color:#fff;}
+.news-comment-menu-btn.del:hover{color:#f87a8a;}
 .news-comment-input-row{display:flex;gap:8px;margin-top:10px;}
 .news-comment-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;resize:none;height:36px;line-height:1.4;}
 .news-comment-input:focus{border-color:var(--red);}
 .news-comment-btn{padding:0 14px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+
+/* NEW POST MODAL */
+.compose-modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:300;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.compose-modal.open{display:flex;}
+.compose-inner{background:#111d30;border:1px solid rgba(255,255,255,0.09);border-top:2px solid var(--red);border-radius:14px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:1.75rem;position:relative;}
+.compose-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:1.25rem;}
+.compose-field{margin-bottom:1rem;}
+.compose-field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.compose-field input,.compose-field textarea,.compose-field select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.compose-field input:focus,.compose-field textarea:focus,.compose-field select:focus{border-color:var(--red);}
+.compose-field textarea{resize:vertical;min-height:110px;line-height:1.6;}
+.compose-field select{appearance:none;cursor:pointer;}
+.compose-media-drop{border:2px dashed var(--border);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:border-color .2s;}
+.compose-media-drop:hover{border-color:var(--red);}
+.compose-media-drop p{font-size:12px;color:var(--muted);margin-top:4px;}
+.compose-media-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.compose-thumb{position:relative;width:72px;height:72px;border-radius:6px;border:1px solid var(--border);overflow:hidden;background:#0d1520;}
+.compose-thumb img,.compose-thumb video{width:100%;height:100%;object-fit:cover;}
+.compose-thumb-remove{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.75);border:none;border-radius:50%;width:16px;height:16px;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.compose-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);}
+.compose-submit-btn{padding:10px 24px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+.compose-cancel-btn{padding:10px 18px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;font-family:'Poppins',sans-serif;cursor:pointer;}
+.compose-cancel-btn:hover{color:#fff;}
 
 /* ACCOUNT SETTINGS MODAL */
 .settings-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:2rem;}
@@ -181,14 +220,14 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 
   <div class="page-inner">
     <div class="tabs">
-      <button class="tab-btn active" id="tab-profile" onclick="switchTab('profile')">Profile Card</button>
+      <button class="tab-btn active" id="tab-news" onclick="switchTab('news')">News <span id="newsTabBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;">0</span></button>
+      <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">Profile Card</button>
       <button class="tab-btn" id="tab-submit" onclick="switchTab('submit')">Submit Media</button>
       <button class="tab-btn" id="tab-history" onclick="switchTab('history')">My Submissions</button>
-      <button class="tab-btn" id="tab-news" onclick="switchTab('news')">News <span id="newsTabBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;">0</span></button>
     </div>
 
     <!-- PROFILE TAB -->
-    <div class="tab-page active" id="tabPage-profile">
+    <div class="tab-page" id="tabPage-profile">
       <div class="page-title">Your profile card</div>
       <div class="page-sub">Customize your card — changes appear live in the preview. Save and download as PNG anytime.</div>
       <div class="main-grid">
@@ -382,30 +421,66 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     </div>
 
     <!-- NEWS TAB -->
-    <div class="tab-page" id="tabPage-news">
-      <div class="page-title">News &amp; Updates</div>
-      <div class="page-sub" id="newsPageSub">Updates from the County Sports team — available gigs, big games, schedules, and more.</div>
-      <!-- Admin compose box (shown only to admins) -->
-      <div id="newsComposeBox" style="display:none;background:var(--card-bg);border:1px solid var(--border);border-top:2px solid var(--red);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
-        <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Post an update</div>
-        <div class="field"><label>Title</label><input type="text" id="news-title" placeholder="e.g. New gig available — Wake County playoffs"></div>
-        <div class="field"><label>Category</label>
-          <select id="news-category" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
-            <option value="gig">Available Gig</option>
-            <option value="game">Big Game</option>
-            <option value="schedule">Schedule Update</option>
-            <option value="rankings">Rankings</option>
-            <option value="competition">Competition Update</option>
-            <option value="general">General</option>
-          </select>
+    <div class="tab-page active" id="tabPage-news">
+      <div class="news-topbar">
+        <div>
+          <div class="page-title">News &amp; Updates</div>
+          <div class="page-sub" style="margin-bottom:0;">Available gigs, big games, schedules, rankings, and more.</div>
         </div>
-        <div class="field"><label>Message</label><textarea id="news-body" style="height:100px;" placeholder="Write your update here..."></textarea></div>
-        <button onclick="postNews()" style="padding:10px 24px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;">Post update</button>
-        <span id="newsPostMsg" style="font-size:12px;color:var(--muted);margin-left:12px;"></span>
+        <!-- Button only visible to admins -->
+        <button class="news-new-btn" id="newsNewPostBtn" style="display:none;" onclick="openComposeModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Post
+        </button>
       </div>
       <div class="news-list" id="newsList"><div class="empty-history">Loading updates...</div></div>
     </div>
 
+  </div>
+</div>
+
+<!-- COMPOSE / NEW POST MODAL -->
+<div class="compose-modal" id="composeModal" onclick="closeComposeOnBg(event)">
+  <div class="compose-inner">
+    <button onclick="closeComposeModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    <div class="compose-title" id="composeModalTitle">New post</div>
+
+    <div class="compose-field">
+      <label>Title</label>
+      <input type="text" id="news-title" placeholder="e.g. New gig available — Wake County playoffs">
+    </div>
+    <div class="compose-field">
+      <label>Category</label>
+      <select id="news-category">
+        <option value="gig">Available Gig</option>
+        <option value="game">Big Game</option>
+        <option value="schedule">Schedule Update</option>
+        <option value="rankings">Rankings</option>
+        <option value="competition">Competition Update</option>
+        <option value="general">General</option>
+      </select>
+    </div>
+    <div class="compose-field">
+      <label>Message</label>
+      <textarea id="news-body" placeholder="Write your update here..."></textarea>
+    </div>
+
+    <!-- Media attachments -->
+    <div class="compose-field">
+      <label>Attach photos / videos <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <div class="compose-media-drop" id="composeDropZone" onclick="document.getElementById('composeMediaInput').click()" ondragover="composeHandleDragOver(event)" ondragleave="composeHandleDragLeave(event)" ondrop="composeHandleDrop(event)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" style="display:block;margin:0 auto;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <p>Click or drag photos/videos here</p>
+      </div>
+      <input type="file" id="composeMediaInput" multiple accept="image/*,video/*" style="display:none" onchange="composeHandleFiles(this.files)">
+      <div class="compose-media-preview" id="composeMediaPreview"></div>
+    </div>
+
+    <div class="compose-footer">
+      <button class="compose-cancel-btn" onclick="closeComposeModal()">Cancel</button>
+      <button class="compose-submit-btn" id="composeSubmitBtn" onclick="submitPost()">Post update</button>
+    </div>
+    <div style="font-size:12px;text-align:center;color:var(--muted);min-height:16px;margin-top:8px;" id="newsPostMsg"></div>
   </div>
 </div>
 
@@ -459,6 +534,11 @@ function switchTab(tab){
   if(tab==='news') loadNews();
 }
 
+function initAfterLogin(){
+  // Always land on News tab after login
+  switchTab('news');
+}
+
 // ── AUTH ──
 async function sbFetch(path,opts={}){
   const h={'apikey':SB_KEY,'Content-Type':'application/json',...(opts.headers||{})};
@@ -500,7 +580,7 @@ async function doLogin(){
         document.getElementById('adminLink').style.display='inline-block';
       }
       await loadProfile();
-      renderCard();
+      initAfterLogin();
     } else {
       errEl.textContent=data.error_description||'Invalid email or password.';
       errEl.style.display='block';
@@ -1229,7 +1309,7 @@ function timeAgo(dateStr){
           document.getElementById('adminLink').style.display='inline-block';
         }
         await loadProfile();
-        renderCard();
+        initAfterLogin();
         return;
       }
     }catch(e){}
@@ -1243,17 +1323,157 @@ function timeAgo(dateStr){
 // ── NEWS ──
 let currentUserIsAdmin = false;
 let currentUserProfile = null;
+let composeMediaFiles = []; // files staged in compose modal
+let editingPostId = null;   // null = new post, uuid = editing existing
 
 function setAdminFlag(email){
   currentUserIsAdmin = ADMIN_EMAILS.includes((email||'').toLowerCase());
+  const btn = document.getElementById('newsNewPostBtn');
+  if(btn) btn.style.display = currentUserIsAdmin ? 'flex' : 'none';
 }
 
+function escHtml(str){ return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── COMPOSE MODAL ──
+function openComposeModal(postData){
+  editingPostId = postData ? postData.id : null;
+  document.getElementById('composeModalTitle').textContent = editingPostId ? 'Edit post' : 'New post';
+  document.getElementById('news-title').value = postData ? (postData.title||'') : '';
+  document.getElementById('news-body').value = postData ? (postData.body||'') : '';
+  document.getElementById('news-category').value = postData ? (postData.category||'general') : 'gig';
+  document.getElementById('newsPostMsg').textContent = '';
+  composeMediaFiles = [];
+  document.getElementById('composeMediaPreview').innerHTML = '';
+  document.getElementById('composeModal').classList.add('open');
+}
+
+function closeComposeModal(){
+  document.getElementById('composeModal').classList.remove('open');
+  editingPostId = null;
+  composeMediaFiles = [];
+}
+
+function closeComposeOnBg(e){
+  if(e.target === document.getElementById('composeModal')) closeComposeModal();
+}
+
+function composeHandleDragOver(e){ e.preventDefault(); document.getElementById('composeDropZone').style.borderColor='var(--red)'; }
+function composeHandleDragLeave(){ document.getElementById('composeDropZone').style.borderColor=''; }
+function composeHandleDrop(e){ e.preventDefault(); composeHandleDragLeave(); composeHandleFiles(e.dataTransfer.files); }
+
+function composeHandleFiles(files){
+  Array.from(files).forEach(f=>{
+    if(!composeMediaFiles.find(x=>x.name===f.name&&x.size===f.size)) composeMediaFiles.push(f);
+  });
+  renderComposeMediaPreview();
+}
+
+function removeComposeFile(idx){
+  composeMediaFiles.splice(idx,1);
+  renderComposeMediaPreview();
+}
+
+function renderComposeMediaPreview(){
+  const wrap = document.getElementById('composeMediaPreview');
+  wrap.innerHTML = composeMediaFiles.map((f,i)=>{
+    const url = URL.createObjectURL(f);
+    const isVideo = f.type.startsWith('video/');
+    return `<div class="compose-thumb">
+      ${isVideo
+        ? `<video src="${url}" style="width:100%;height:100%;object-fit:cover;"></video>`
+        : `<img src="${url}" alt="">`}
+      <button class="compose-thumb-remove" onclick="removeComposeFile(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+async function uploadNewsMedia(postId){
+  const urls = [];
+  for(const file of composeMediaFiles){
+    const path = `news/${postId}/${Date.now()}_${file.name}`;
+    const res = await fetch(`${SB_URL}/storage/v1/object/media-submissions/${path}`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+      body:file
+    });
+    if(res.ok) urls.push(`${SB_URL}/storage/v1/object/public/media-submissions/${path}`);
+  }
+  return urls;
+}
+
+async function submitPost(){
+  const title = document.getElementById('news-title').value.trim();
+  const body = document.getElementById('news-body').value.trim();
+  const category = document.getElementById('news-category').value;
+  const msg = document.getElementById('newsPostMsg');
+  const btn = document.getElementById('composeSubmitBtn');
+  if(!title||!body){ msg.textContent='Title and message are required.'; msg.style.color='#f87a8a'; return; }
+  btn.disabled = true;
+  msg.textContent = editingPostId ? 'Saving...' : 'Posting...';
+  msg.style.color = 'var(--muted)';
+
+  try{
+    let postId = editingPostId;
+
+    if(editingPostId){
+      // Update existing post
+      const res = await sbFetch('/rest/v1/news_posts?id=eq.'+editingPostId,{
+        method:'PATCH',
+        headers:{'Prefer':'return=representation'},
+        body:JSON.stringify({title, body, category})
+      });
+      if(!res.ok&&res.status!==204){ msg.textContent='Could not update post.'; msg.style.color='#f87a8a'; btn.disabled=false; return; }
+    } else {
+      // Create new post
+      const res = await sbFetch('/rest/v1/news_posts',{
+        method:'POST',
+        headers:{'Prefer':'return=representation'},
+        body:JSON.stringify({title, body, category, author_id:userId, media_urls:''})
+      });
+      if(!res.ok&&res.status!==201){ msg.textContent='Could not create post.'; msg.style.color='#f87a8a'; btn.disabled=false; return; }
+      const created = await res.json();
+      postId = Array.isArray(created) ? created[0].id : created.id;
+    }
+
+    // Upload any attached media
+    if(composeMediaFiles.length && postId){
+      const urls = await uploadNewsMedia(postId);
+      if(urls.length){
+        // Fetch existing media_urls and append
+        const existing = await sbFetch('/rest/v1/news_posts?id=eq.'+postId+'&select=media_urls');
+        const existingData = await existing.json();
+        const existingUrls = existingData[0]?.media_urls ? existingData[0].media_urls.split(',').filter(Boolean) : [];
+        const allUrls = [...existingUrls, ...urls].join(',');
+        await sbFetch('/rest/v1/news_posts?id=eq.'+postId,{
+          method:'PATCH',
+          headers:{'Prefer':'return=representation'},
+          body:JSON.stringify({media_urls: allUrls})
+        });
+      }
+    }
+
+    msg.textContent = '✓ Posted!'; msg.style.color='#4ade80';
+    setTimeout(()=>{ closeComposeModal(); loadNews(); }, 700);
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+  btn.disabled = false;
+}
+
+// ── DELETE POST ──
+async function deletePost(postId){
+  if(!confirm('Delete this post? This cannot be undone.')) return;
+  try{
+    await sbFetch('/rest/v1/news_posts?id=eq.'+postId,{ method:'DELETE' });
+    loadNews();
+  }catch(e){ alert('Could not delete post.'); }
+}
+
+// ── LOAD NEWS ──
 async function loadNews(){
   const list = document.getElementById('newsList');
   list.innerHTML = '<div class="empty-history">Loading...</div>';
-  if(currentUserIsAdmin){
-    document.getElementById('newsComposeBox').style.display = 'block';
-  }
+  const newBtn = document.getElementById('newsNewPostBtn');
+  if(newBtn) newBtn.style.display = currentUserIsAdmin ? 'flex' : 'none';
+
   try{
     const [postsRes, profileRes] = await Promise.all([
       sbFetch('/rest/v1/news_posts?select=*&order=created_at.desc'),
@@ -1263,75 +1483,84 @@ async function loadNews(){
     const profileData = await profileRes.json();
     currentUserProfile = profileData&&profileData[0] ? profileData[0] : null;
 
-    if(!posts||!posts.length){list.innerHTML='<div class="empty-history">No updates yet. Check back soon.</div>';return;}
+    if(!posts||!posts.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
 
-    // Load comments for all posts
     const postIds = posts.map(p=>p.id);
     const commentsRes = await sbFetch('/rest/v1/news_comments?post_id=in.('+postIds.join(',')+')'+'&select=*&order=created_at.asc');
     const allComments = await commentsRes.json() || [];
 
+    const categoryLabels = {gig:'Available Gig',game:'Big Game',schedule:'Schedule Update',rankings:'Rankings',competition:'Competition Update',general:'General'};
+
     list.innerHTML = posts.map(post => {
       const comments = allComments.filter(c=>c.post_id===post.id);
-      const categoryLabels = {gig:'Available Gig',game:'Big Game',schedule:'Schedule Update',rankings:'Rankings',competition:'Competition Update',general:'Update'};
       const catLabel = categoryLabels[post.category] || 'Update';
-      const commentsHtml = comments.map(c=>{
-        const initials = (c.author_name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
-        const avatarHtml = c.author_avatar ? `<img src="${c.author_avatar}" alt="">` : initials;
-        return `<div class="news-comment">
-          <div class="news-comment-avatar">${avatarHtml}</div>
-          <div class="news-comment-bubble">
-            <div class="news-comment-name">${c.author_name||'Collaborator'}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
-            ${escHtml(c.body)}
-          </div>
-        </div>`;
-      }).join('');
+      const mediaUrls = post.media_urls ? post.media_urls.split(',').filter(Boolean) : [];
+
+      const mediaHtml = mediaUrls.length ? `<div class="news-post-media">
+        ${mediaUrls.map(url=>{
+          const isVideo = /\.(mp4|mov|avi|webm|mkv)$/i.test(url);
+          return isVideo
+            ? `<div class="news-post-media-thumb" onclick="window.open('${url}','_blank')">
+                <video src="${url}" style="width:100%;height:100%;object-fit:cover;"></video>
+                <div class="play-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+               </div>`
+            : `<div class="news-post-media-thumb" onclick="window.open('${url}','_blank')"><img src="${url}" alt=""></div>`;
+        }).join('')}
+      </div>` : '';
+
+      const adminPostControls = currentUserIsAdmin ? `
+        <div class="news-post-actions">
+          <button class="news-post-action-btn" onclick='openComposeModal(${JSON.stringify({id:post.id,title:post.title,body:post.body,category:post.category})})'>Edit</button>
+          <button class="news-post-action-btn delete" onclick="deletePost('${post.id}')">Delete</button>
+          <span class="news-post-badge">${catLabel}</span>
+        </div>` : `<span class="news-post-badge">${catLabel}</span>`;
+
+      const commentsHtml = comments.map(c => buildCommentHtml(c)).join('');
+
       return `<div class="news-post" id="newspost-${post.id}">
         <div class="news-post-header">
           <div>
             <div class="news-post-title">${escHtml(post.title)}</div>
-            <div class="news-post-meta">Posted by County Sports &nbsp;·&nbsp; ${timeAgo(post.created_at)}</div>
+            <div class="news-post-meta">County Sports &nbsp;·&nbsp; ${timeAgo(post.created_at)}</div>
           </div>
-          <span class="news-post-badge">${catLabel}</span>
+          ${adminPostControls}
         </div>
         <div class="news-post-body">${escHtml(post.body)}</div>
+        ${mediaHtml}
         <div class="news-comments">
           <div class="news-comments-title">Comments (${comments.length})</div>
           <div id="comments-${post.id}">${commentsHtml}</div>
           <div class="news-comment-input-row">
-            <textarea class="news-comment-input" id="comment-input-${post.id}" placeholder="Add a comment..." rows="1"></textarea>
+            <textarea class="news-comment-input" id="comment-input-${post.id}" placeholder="Add a comment..."></textarea>
             <button class="news-comment-btn" onclick="postComment('${post.id}')">Post</button>
           </div>
           <div style="font-size:11px;color:var(--muted);min-height:14px;margin-top:4px;" id="comment-msg-${post.id}"></div>
         </div>
       </div>`;
     }).join('');
-  }catch(e){list.innerHTML='<div class="empty-history">Could not load updates.</div>';}
+  }catch(e){ list.innerHTML='<div class="empty-history">Could not load updates.</div>'; }
 }
 
-function escHtml(str){ return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-async function postNews(){
-  const title = document.getElementById('news-title').value.trim();
-  const body = document.getElementById('news-body').value.trim();
-  const category = document.getElementById('news-category').value;
-  const msg = document.getElementById('newsPostMsg');
-  if(!title||!body){ msg.textContent='Title and message are required.'; msg.style.color='#f87a8a'; return; }
-  msg.textContent='Posting...'; msg.style.color='var(--muted)';
-  try{
-    const res = await sbFetch('/rest/v1/news_posts',{
-      method:'POST',
-      headers:{'Prefer':'return=representation'},
-      body:JSON.stringify({title, body, category, author_id: userId})
-    });
-    if(res.ok||res.status===201){
-      document.getElementById('news-title').value='';
-      document.getElementById('news-body').value='';
-      msg.textContent='Posted!'; msg.style.color='#4ade80';
-      setTimeout(()=>{ msg.textContent=''; loadNews(); },800);
-    } else { msg.textContent='Could not post.'; msg.style.color='#f87a8a'; }
-  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+function buildCommentHtml(c){
+  const initials = (c.author_name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+  const avatarHtml = c.author_avatar ? `<img src="${c.author_avatar}" alt="">` : initials;
+  const canModify = currentUserIsAdmin || c.user_id === userId;
+  const menuHtml = canModify ? `<div class="news-comment-menu">
+    <button class="news-comment-menu-btn" onclick="startEditComment('${c.id}','${c.post_id}')">Edit</button>
+    <span style="color:var(--border)">·</span>
+    <button class="news-comment-menu-btn del" onclick="deleteComment('${c.id}','${c.post_id}')">Delete</button>
+  </div>` : '';
+  return `<div class="news-comment" id="comment-el-${c.id}">
+    <div class="news-comment-avatar">${avatarHtml}</div>
+    <div class="news-comment-bubble">
+      <div class="news-comment-name">${escHtml(c.author_name||'Collaborator')}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
+      <div id="comment-body-${c.id}">${escHtml(c.body)}</div>
+      ${menuHtml}
+    </div>
+  </div>`;
 }
 
+// ── POST COMMENT ──
 async function postComment(postId){
   const input = document.getElementById('comment-input-'+postId);
   const msgEl = document.getElementById('comment-msg-'+postId);
@@ -1347,24 +1576,59 @@ async function postComment(postId){
       body:JSON.stringify({post_id:postId, user_id:userId, body, author_name:authorName, author_avatar:authorAvatar})
     });
     if(res.ok||res.status===201){
-      input.value='';
-      msgEl.textContent='';
-      // Re-render just this post's comments
-      const commentsRes = await sbFetch('/rest/v1/news_comments?post_id=eq.'+postId+'&select=*&order=created_at.asc');
-      const comments = await commentsRes.json() || [];
-      document.getElementById('comments-'+postId).innerHTML = comments.map(c=>{
-        const initials = (c.author_name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
-        const avatarHtml = c.author_avatar ? `<img src="${c.author_avatar}" alt="">` : initials;
-        return `<div class="news-comment">
-          <div class="news-comment-avatar">${avatarHtml}</div>
-          <div class="news-comment-bubble">
-            <div class="news-comment-name">${c.author_name||'Collaborator'}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
-            ${escHtml(c.body)}
-          </div>
-        </div>`;
-      }).join('');
+      input.value=''; msgEl.textContent='';
+      await refreshComments(postId);
     } else { msgEl.textContent='Could not post comment.'; msgEl.style.color='#f87a8a'; }
   }catch(e){ msgEl.textContent='Connection error.'; msgEl.style.color='#f87a8a'; }
+}
+
+// ── EDIT COMMENT ──
+function startEditComment(commentId, postId){
+  const bodyEl = document.getElementById('comment-body-'+commentId);
+  const current = bodyEl.textContent;
+  bodyEl.innerHTML = `<textarea id="edit-comment-ta-${commentId}" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;resize:none;min-height:48px;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveEditComment('${commentId}','${postId}');}">${escHtml(current)}</textarea>
+    <div style="display:flex;gap:8px;margin-top:5px;">
+      <button class="news-comment-menu-btn" onclick="saveEditComment('${commentId}','${postId}')" style="color:#4ade80;">Save</button>
+      <button class="news-comment-menu-btn" onclick="cancelEditComment('${commentId}','${escHtml(current)}')">Cancel</button>
+    </div>`;
+  document.getElementById('edit-comment-ta-'+commentId)?.focus();
+}
+
+function cancelEditComment(commentId, originalHtml){
+  document.getElementById('comment-body-'+commentId).innerHTML = originalHtml;
+}
+
+async function saveEditComment(commentId, postId){
+  const ta = document.getElementById('edit-comment-ta-'+commentId);
+  const newBody = ta?.value.trim();
+  if(!newBody) return;
+  try{
+    await sbFetch('/rest/v1/news_comments?id=eq.'+commentId,{
+      method:'PATCH',
+      headers:{'Prefer':'return=representation'},
+      body:JSON.stringify({body:newBody})
+    });
+    await refreshComments(postId);
+  }catch(e){ alert('Could not save edit.'); }
+}
+
+// ── DELETE COMMENT ──
+async function deleteComment(commentId, postId){
+  if(!confirm('Delete this comment?')) return;
+  try{
+    await sbFetch('/rest/v1/news_comments?id=eq.'+commentId,{ method:'DELETE' });
+    await refreshComments(postId);
+  }catch(e){ alert('Could not delete comment.'); }
+}
+
+async function refreshComments(postId){
+  const res = await sbFetch('/rest/v1/news_comments?post_id=eq.'+postId+'&select=*&order=created_at.asc');
+  const comments = await res.json() || [];
+  const wrap = document.getElementById('comments-'+postId);
+  if(wrap) wrap.innerHTML = comments.map(c=>buildCommentHtml(c)).join('');
+  // Update count label
+  const titleEl = wrap?.previousElementSibling;
+  if(titleEl&&titleEl.classList.contains('news-comments-title')) titleEl.textContent=`Comments (${comments.length})`;
 }
 
 // ── ACCOUNT SETTINGS ──
