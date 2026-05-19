@@ -118,6 +118,41 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .badge-approved{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2);}
 .badge-denied{background:rgba(200,16,46,0.1);color:#f87a8a;border:1px solid rgba(200,16,46,0.2);}
 .empty-history{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:14px;}
+
+/* NEWS TAB */
+.news-list{display:flex;flex-direction:column;gap:14px;}
+.news-post{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;}
+.news-post:hover{border-color:rgba(200,16,46,0.25);}
+.news-post-header{padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.news-post-badge{font-size:9px;font-weight:700;background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;margin-top:2px;}
+.news-post-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px;}
+.news-post-meta{font-size:11px;color:var(--muted);}
+.news-post-body{padding:12px 18px;font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;}
+.news-comments{padding:10px 18px 14px;border-top:1px solid var(--border);background:rgba(0,0,0,0.15);}
+.news-comments-title{font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.news-comment{display:flex;gap:8px;margin-bottom:8px;}
+.news-comment-avatar{width:24px;height:24px;border-radius:50%;background:var(--navy);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;font-family:'Barlow Condensed',sans-serif;}
+.news-comment-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.news-comment-bubble{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:7px 10px;flex:1;font-size:12px;color:var(--text);line-height:1.5;}
+.news-comment-name{font-size:10px;font-weight:600;color:var(--red);margin-bottom:2px;}
+.news-comment-time{font-size:10px;color:var(--muted);margin-left:6px;font-weight:400;}
+.news-comment-input-row{display:flex;gap:8px;margin-top:10px;}
+.news-comment-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;resize:none;height:36px;line-height:1.4;}
+.news-comment-input:focus{border-color:var(--red);}
+.news-comment-btn{padding:0 14px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+
+/* ACCOUNT SETTINGS MODAL */
+.settings-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:2rem;}
+.settings-modal.open{display:flex;}
+.settings-inner{background:#111d30;border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:100%;max-width:440px;padding:2rem;position:relative;}
+.settings-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:1.5rem;}
+.settings-field{margin-bottom:1rem;}
+.settings-field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.settings-field input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.settings-field input:focus{border-color:var(--red);}
+.settings-btn{width:100%;padding:10px;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;background:var(--red);color:#fff;margin-top:.25rem;}
+.settings-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
+.settings-msg{font-size:12px;text-align:center;min-height:16px;margin-top:6px;}
 </style>
 </head>
 <body>
@@ -139,6 +174,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <div style="display:flex;align-items:center;gap:.75rem;">
       <a href="admin.html" id="adminLink" style="display:none;font-size:12px;color:var(--muted);text-decoration:none;border:0.5px solid rgba(255,255,255,0.1);padding:5px 12px;border-radius:6px;">Admin Dashboard →</a>
       <span class="user-pill" id="userEmail"></span>
+      <button class="signout-btn" onclick="openSettingsModal()" style="margin-right:4px;">Account</button>
       <button class="signout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </div>
@@ -148,6 +184,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
       <button class="tab-btn active" id="tab-profile" onclick="switchTab('profile')">Profile Card</button>
       <button class="tab-btn" id="tab-submit" onclick="switchTab('submit')">Submit Media</button>
       <button class="tab-btn" id="tab-history" onclick="switchTab('history')">My Submissions</button>
+      <button class="tab-btn" id="tab-news" onclick="switchTab('news')">News <span id="newsTabBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;">0</span></button>
     </div>
 
     <!-- PROFILE TAB -->
@@ -344,6 +381,52 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
       <div class="history-list" id="historyList"><div class="empty-history">Loading submissions...</div></div>
     </div>
 
+    <!-- NEWS TAB -->
+    <div class="tab-page" id="tabPage-news">
+      <div class="page-title">News &amp; Updates</div>
+      <div class="page-sub" id="newsPageSub">Updates from the County Sports team — available gigs, big games, schedules, and more.</div>
+      <!-- Admin compose box (shown only to admins) -->
+      <div id="newsComposeBox" style="display:none;background:var(--card-bg);border:1px solid var(--border);border-top:2px solid var(--red);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+        <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Post an update</div>
+        <div class="field"><label>Title</label><input type="text" id="news-title" placeholder="e.g. New gig available — Wake County playoffs"></div>
+        <div class="field"><label>Category</label>
+          <select id="news-category" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+            <option value="gig">Available Gig</option>
+            <option value="game">Big Game</option>
+            <option value="schedule">Schedule Update</option>
+            <option value="rankings">Rankings</option>
+            <option value="competition">Competition Update</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="field"><label>Message</label><textarea id="news-body" style="height:100px;" placeholder="Write your update here..."></textarea></div>
+        <button onclick="postNews()" style="padding:10px 24px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;">Post update</button>
+        <span id="newsPostMsg" style="font-size:12px;color:var(--muted);margin-left:12px;"></span>
+      </div>
+      <div class="news-list" id="newsList"><div class="empty-history">Loading updates...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ACCOUNT SETTINGS MODAL -->
+<div class="settings-modal" id="settingsModal" onclick="closeSettingsOnBg(event)">
+  <div class="settings-inner">
+    <button onclick="closeSettings()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    <div class="settings-title">Account settings</div>
+
+    <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Change email</div>
+    <div class="settings-field"><label>New email address</label><input type="email" id="set-new-email" placeholder="newemail@example.com"></div>
+    <button class="settings-btn" onclick="changeEmail()">Update email</button>
+    <div class="settings-msg" id="emailMsg"></div>
+
+    <hr class="settings-divider">
+
+    <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Change password</div>
+    <div class="settings-field"><label>New password</label><input type="password" id="set-new-pass" placeholder="Min 6 characters"></div>
+    <div class="settings-field"><label>Confirm new password</label><input type="password" id="set-confirm-pass" placeholder="Re-enter password"></div>
+    <button class="settings-btn" onclick="changePassword()">Update password</button>
+    <div class="settings-msg" id="passMsg"></div>
   </div>
 </div>
 
@@ -373,6 +456,7 @@ function switchTab(tab){
   document.getElementById('tab-'+tab).classList.add('active');
   if(tab==='history') loadHistory();
   if(tab==='profile') renderCard();
+  if(tab==='news') loadNews();
 }
 
 // ── AUTH ──
@@ -411,6 +495,7 @@ async function doLogin(){
       document.getElementById('loginPage').style.display='none';
       document.getElementById('appPage').style.display='block';
       document.getElementById('userEmail').textContent=data.user.email;
+      setAdminFlag(data.user.email);
       if(ADMIN_EMAILS.includes(data.user.email.toLowerCase())){
         document.getElementById('adminLink').style.display='inline-block';
       }
@@ -1139,6 +1224,7 @@ function timeAgo(dateStr){
         document.getElementById('loginPage').style.display='none';
         document.getElementById('appPage').style.display='block';
         document.getElementById('userEmail').textContent=savedEmail;
+        setAdminFlag(savedEmail);
         if(ADMIN_EMAILS.includes(em)){
           document.getElementById('adminLink').style.display='inline-block';
         }
@@ -1153,6 +1239,181 @@ function timeAgo(dateStr){
     localStorage.removeItem('cs_user_email');
   }
 })();
+
+// ── NEWS ──
+let currentUserIsAdmin = false;
+let currentUserProfile = null;
+
+function setAdminFlag(email){
+  currentUserIsAdmin = ADMIN_EMAILS.includes((email||'').toLowerCase());
+}
+
+async function loadNews(){
+  const list = document.getElementById('newsList');
+  list.innerHTML = '<div class="empty-history">Loading...</div>';
+  if(currentUserIsAdmin){
+    document.getElementById('newsComposeBox').style.display = 'block';
+  }
+  try{
+    const [postsRes, profileRes] = await Promise.all([
+      sbFetch('/rest/v1/news_posts?select=*&order=created_at.desc'),
+      sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=name,avatar_url')
+    ]);
+    const posts = await postsRes.json();
+    const profileData = await profileRes.json();
+    currentUserProfile = profileData&&profileData[0] ? profileData[0] : null;
+
+    if(!posts||!posts.length){list.innerHTML='<div class="empty-history">No updates yet. Check back soon.</div>';return;}
+
+    // Load comments for all posts
+    const postIds = posts.map(p=>p.id);
+    const commentsRes = await sbFetch('/rest/v1/news_comments?post_id=in.('+postIds.join(',')+')'+'&select=*&order=created_at.asc');
+    const allComments = await commentsRes.json() || [];
+
+    list.innerHTML = posts.map(post => {
+      const comments = allComments.filter(c=>c.post_id===post.id);
+      const categoryLabels = {gig:'Available Gig',game:'Big Game',schedule:'Schedule Update',rankings:'Rankings',competition:'Competition Update',general:'Update'};
+      const catLabel = categoryLabels[post.category] || 'Update';
+      const commentsHtml = comments.map(c=>{
+        const initials = (c.author_name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+        const avatarHtml = c.author_avatar ? `<img src="${c.author_avatar}" alt="">` : initials;
+        return `<div class="news-comment">
+          <div class="news-comment-avatar">${avatarHtml}</div>
+          <div class="news-comment-bubble">
+            <div class="news-comment-name">${c.author_name||'Collaborator'}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
+            ${escHtml(c.body)}
+          </div>
+        </div>`;
+      }).join('');
+      return `<div class="news-post" id="newspost-${post.id}">
+        <div class="news-post-header">
+          <div>
+            <div class="news-post-title">${escHtml(post.title)}</div>
+            <div class="news-post-meta">Posted by County Sports &nbsp;·&nbsp; ${timeAgo(post.created_at)}</div>
+          </div>
+          <span class="news-post-badge">${catLabel}</span>
+        </div>
+        <div class="news-post-body">${escHtml(post.body)}</div>
+        <div class="news-comments">
+          <div class="news-comments-title">Comments (${comments.length})</div>
+          <div id="comments-${post.id}">${commentsHtml}</div>
+          <div class="news-comment-input-row">
+            <textarea class="news-comment-input" id="comment-input-${post.id}" placeholder="Add a comment..." rows="1"></textarea>
+            <button class="news-comment-btn" onclick="postComment('${post.id}')">Post</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);min-height:14px;margin-top:4px;" id="comment-msg-${post.id}"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){list.innerHTML='<div class="empty-history">Could not load updates.</div>';}
+}
+
+function escHtml(str){ return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function postNews(){
+  const title = document.getElementById('news-title').value.trim();
+  const body = document.getElementById('news-body').value.trim();
+  const category = document.getElementById('news-category').value;
+  const msg = document.getElementById('newsPostMsg');
+  if(!title||!body){ msg.textContent='Title and message are required.'; msg.style.color='#f87a8a'; return; }
+  msg.textContent='Posting...'; msg.style.color='var(--muted)';
+  try{
+    const res = await sbFetch('/rest/v1/news_posts',{
+      method:'POST',
+      headers:{'Prefer':'return=representation'},
+      body:JSON.stringify({title, body, category, author_id: userId})
+    });
+    if(res.ok||res.status===201){
+      document.getElementById('news-title').value='';
+      document.getElementById('news-body').value='';
+      msg.textContent='Posted!'; msg.style.color='#4ade80';
+      setTimeout(()=>{ msg.textContent=''; loadNews(); },800);
+    } else { msg.textContent='Could not post.'; msg.style.color='#f87a8a'; }
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+}
+
+async function postComment(postId){
+  const input = document.getElementById('comment-input-'+postId);
+  const msgEl = document.getElementById('comment-msg-'+postId);
+  const body = input.value.trim();
+  if(!body) return;
+  const authorName = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Collaborator';
+  const authorAvatar = currentUserProfile?.avatar_url || null;
+  msgEl.textContent='Posting...'; msgEl.style.color='var(--muted)';
+  try{
+    const res = await sbFetch('/rest/v1/news_comments',{
+      method:'POST',
+      headers:{'Prefer':'return=representation'},
+      body:JSON.stringify({post_id:postId, user_id:userId, body, author_name:authorName, author_avatar:authorAvatar})
+    });
+    if(res.ok||res.status===201){
+      input.value='';
+      msgEl.textContent='';
+      // Re-render just this post's comments
+      const commentsRes = await sbFetch('/rest/v1/news_comments?post_id=eq.'+postId+'&select=*&order=created_at.asc');
+      const comments = await commentsRes.json() || [];
+      document.getElementById('comments-'+postId).innerHTML = comments.map(c=>{
+        const initials = (c.author_name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+        const avatarHtml = c.author_avatar ? `<img src="${c.author_avatar}" alt="">` : initials;
+        return `<div class="news-comment">
+          <div class="news-comment-avatar">${avatarHtml}</div>
+          <div class="news-comment-bubble">
+            <div class="news-comment-name">${c.author_name||'Collaborator'}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
+            ${escHtml(c.body)}
+          </div>
+        </div>`;
+      }).join('');
+    } else { msgEl.textContent='Could not post comment.'; msgEl.style.color='#f87a8a'; }
+  }catch(e){ msgEl.textContent='Connection error.'; msgEl.style.color='#f87a8a'; }
+}
+
+// ── ACCOUNT SETTINGS ──
+function openSettingsModal(){
+  document.getElementById('settingsModal').classList.add('open');
+  document.getElementById('set-new-email').value='';
+  document.getElementById('set-new-pass').value='';
+  document.getElementById('set-confirm-pass').value='';
+  document.getElementById('emailMsg').textContent='';
+  document.getElementById('passMsg').textContent='';
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
+function closeSettingsOnBg(e){ if(e.target===document.getElementById('settingsModal')) closeSettings(); }
+
+async function changeEmail(){
+  const newEmail = document.getElementById('set-new-email').value.trim();
+  const msg = document.getElementById('emailMsg');
+  if(!newEmail){ msg.textContent='Please enter a new email.'; msg.style.color='#f87a8a'; return; }
+  msg.textContent='Updating...'; msg.style.color='var(--muted)';
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify({email: newEmail})
+    });
+    const data = await res.json();
+    if(data.id){ msg.textContent='Check your new email to confirm the change.'; msg.style.color='#4ade80'; }
+    else{ msg.textContent = data.msg || data.error_description || 'Could not update email.'; msg.style.color='#f87a8a'; }
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+}
+
+async function changePassword(){
+  const newPass = document.getElementById('set-new-pass').value;
+  const confirmPass = document.getElementById('set-confirm-pass').value;
+  const msg = document.getElementById('passMsg');
+  if(!newPass||newPass.length<6){ msg.textContent='Password must be at least 6 characters.'; msg.style.color='#f87a8a'; return; }
+  if(newPass!==confirmPass){ msg.textContent='Passwords do not match.'; msg.style.color='#f87a8a'; return; }
+  msg.textContent='Updating...'; msg.style.color='var(--muted)';
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify({password: newPass})
+    });
+    const data = await res.json();
+    if(data.id){ msg.textContent='Password updated successfully.'; msg.style.color='#4ade80'; document.getElementById('set-new-pass').value=''; document.getElementById('set-confirm-pass').value=''; }
+    else{ msg.textContent = data.msg || data.error_description || 'Could not update password.'; msg.style.color='#f87a8a'; }
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+}
 
 // Auth redirect handler
 const hash=window.location.hash;

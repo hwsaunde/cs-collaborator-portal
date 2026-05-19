@@ -104,6 +104,34 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .badge-approved{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2);}
 .badge-denied{background:rgba(200,16,46,0.1);color:#f87a8a;border:1px solid rgba(200,16,46,0.2);}
 
+/* SUBMITTER CHIP */
+.submitter-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;padding:3px 10px 3px 4px;margin-top:5px;}
+.submitter-avatar{width:20px;height:20px;border-radius:50%;background:var(--navy);border:1px solid var(--red);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;}
+.submitter-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.submitter-name{font-size:11px;color:var(--text);font-weight:500;}
+.submitter-email{font-size:10px;color:var(--muted);}
+
+/* INLINE FILE PREVIEWS IN INBOX */
+.inbox-previews{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;}
+.inbox-thumb{width:64px;height:64px;border-radius:6px;border:1px solid var(--border);overflow:hidden;background:#0d1520;position:relative;flex-shrink:0;cursor:pointer;}
+.inbox-thumb img,.inbox-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+.inbox-thumb-icon{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.inbox-more{width:64px;height:64px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);font-weight:600;flex-shrink:0;}
+
+/* ACCOUNT SETTINGS MODAL */
+.settings-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:2rem;}
+.settings-modal.open{display:flex;}
+.settings-inner{background:#111d30;border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:100%;max-width:440px;padding:2rem;position:relative;}
+.settings-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:1.5rem;}
+.settings-field{margin-bottom:1rem;}
+.settings-field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.settings-field input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.settings-field input:focus{border-color:var(--red);}
+.settings-btn{width:100%;padding:10px;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;background:var(--red);color:#fff;margin-top:.25rem;}
+.settings-btn.secondary{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--muted);margin-top:.5rem;}
+.settings-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
+.settings-msg{font-size:12px;text-align:center;min-height:16px;margin-top:6px;}
+
 /* SUB TABS */
 .sub-tab-btn{padding:8px 18px;font-size:13px;font-weight:500;font-family:'Poppins',sans-serif;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:all .2s;}
 .sub-tab-btn.active{color:#fff;font-weight:600;border-bottom-color:var(--red);}
@@ -165,6 +193,7 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <div style="display:flex;align-items:center;gap:.5rem;">
       <a href="index.html?portal=1" class="portal-link">Collaborator Portal →</a>
       <span class="user-pill" id="userEmail"></span>
+      <button class="signout-btn" onclick="openSettingsModal()" style="margin-right:4px;">Account</button>
       <button class="signout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </div>
@@ -303,6 +332,27 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <button class="modal-close" onclick="closeModalBtn()">✕</button>
     <div id="modalCardWrap"></div>
     <button class="modal-dl-btn" id="modalDlBtn">Download as PNG</button>
+  </div>
+</div>
+
+<!-- ACCOUNT SETTINGS MODAL -->
+<div class="settings-modal" id="settingsModal" onclick="closeSettingsOnBg(event)">
+  <div class="settings-inner">
+    <button onclick="closeSettings()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    <div class="settings-title">Account settings</div>
+
+    <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Change email</div>
+    <div class="settings-field"><label>New email address</label><input type="email" id="set-new-email" placeholder="newemail@example.com"></div>
+    <button class="settings-btn" onclick="changeEmail()">Update email</button>
+    <div class="settings-msg" id="emailMsg"></div>
+
+    <hr class="settings-divider">
+
+    <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Change password</div>
+    <div class="settings-field"><label>New password</label><input type="password" id="set-new-pass" placeholder="Min 6 characters"></div>
+    <div class="settings-field"><label>Confirm new password</label><input type="password" id="set-confirm-pass" placeholder="Re-enter password"></div>
+    <button class="settings-btn" onclick="changePassword()">Update password</button>
+    <div class="settings-msg" id="passMsg"></div>
   </div>
 </div>
 
@@ -664,6 +714,7 @@ function renderCards(profiles){
 
 // ── SUBMISSIONS ──
 let currentSubTab = 'pending';
+let profilesByUserId = {}; // cache: userId -> profile
 
 function switchSubTab(tab){
   currentSubTab = tab;
@@ -674,8 +725,14 @@ function switchSubTab(tab){
 
 async function loadSubmissions(){
   try{
-    const res=await sbFetch('/rest/v1/media_submissions?select=*&order=submitted_at.desc');
-    allSubmissions=await res.json();
+    const [subRes, profRes] = await Promise.all([
+      sbFetch('/rest/v1/media_submissions?select=*&order=submitted_at.desc'),
+      sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,email,avatar_url')
+    ]);
+    allSubmissions = await subRes.json();
+    const profiles = await profRes.json();
+    profilesByUserId = {};
+    (profiles||[]).forEach(p => { profilesByUserId[p.user_id] = p; });
     updateCounts();
     filterSubmissions();
   }catch(e){
@@ -715,6 +772,40 @@ function filterSubmissions(){
   renderSubmissions(filtered);
 }
 
+function buildSubmitterChip(s){
+  const prof = profilesByUserId[s.user_id];
+  if(!prof&&!s.user_id) return '';
+  const name = prof?.name || 'Unknown';
+  const email = prof?.email || '';
+  const initials = name.trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+  const avatarHtml = prof?.avatar_url
+    ? `<img src="${prof.avatar_url}" alt="">`
+    : `<span style="font-size:9px;">${initials}</span>`;
+  return `<div class="submitter-chip">
+    <div class="submitter-avatar">${avatarHtml}</div>
+    <div>
+      <div class="submitter-name">${name}</div>
+      ${email?`<div class="submitter-email">${email}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function buildInlinePreviews(s){
+  const urls = s.file_urls ? s.file_urls.split(',').filter(Boolean) : [];
+  if(!urls.length) return '';
+  const preview = urls.slice(0,3);
+  const remaining = urls.length - 3;
+  const thumbs = preview.map(url=>{
+    const isImage = /\.(jpg|jpeg|png|gif|webp|heic)$/i.test(url);
+    const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(url);
+    if(isImage) return `<div class="inbox-thumb" onclick="window.open('${url}','_blank')"><img src="${url}" alt=""></div>`;
+    if(isVideo) return `<div class="inbox-thumb"><video src="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+    return `<div class="inbox-thumb"><div class="inbox-thumb-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div></div>`;
+  }).join('');
+  const moreEl = remaining>0 ? `<div class="inbox-more">+${remaining}</div>` : '';
+  return `<div class="inbox-previews">${thumbs}${moreEl}</div>`;
+}
+
 function renderSubmissions(subs){
   const list=document.getElementById('submissionsList');
   if(!subs.length){list.innerHTML='<div class="empty-state">No submissions found.</div>';return;}
@@ -728,6 +819,7 @@ function renderSubmissions(subs){
             ${s.event_date||'No date'} &nbsp;·&nbsp;
             Submitted ${timeAgo(s.submitted_at)}
           </div>
+          ${buildSubmitterChip(s)}
         </div>
         <span class="badge badge-${s.status||'pending'}">${s.status||'Pending'}</span>
       </div>
@@ -737,6 +829,7 @@ function renderSubmissions(subs){
         <div class="sub-detail"><strong>Media type</strong>${s.media_type||'—'}</div>
         <div class="sub-detail"><strong>Files</strong>${s.file_count||0} file${s.file_count!==1?'s':''}</div>
       </div>
+      ${buildInlinePreviews(s)}
       ${s.players?`<div class="sub-players"><div class="sub-players-label">Players to tag</div><div class="sub-players-text">${s.players}</div></div>`:''}
       ${s.notes?`<div class="sub-notes">"${s.notes}"</div>`:''}
       <div class="sub-actions">
@@ -823,6 +916,54 @@ function openPreview(idx){
 
 function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalBtn();}
 function closeModalBtn(){document.getElementById('modalOverlay').classList.remove('open');}
+
+// ── ACCOUNT SETTINGS ──
+function openSettingsModal(){
+  document.getElementById('settingsModal').classList.add('open');
+  document.getElementById('set-new-email').value='';
+  document.getElementById('set-new-pass').value='';
+  document.getElementById('set-confirm-pass').value='';
+  document.getElementById('emailMsg').textContent='';
+  document.getElementById('passMsg').textContent='';
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
+function closeSettingsOnBg(e){ if(e.target===document.getElementById('settingsModal')) closeSettings(); }
+
+async function changeEmail(){
+  const newEmail = document.getElementById('set-new-email').value.trim();
+  const msg = document.getElementById('emailMsg');
+  if(!newEmail){ msg.textContent='Please enter a new email.'; msg.style.color='#f87a8a'; return; }
+  msg.textContent='Updating...'; msg.style.color='var(--muted)';
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify({email: newEmail})
+    });
+    const data = await res.json();
+    if(data.id){ msg.textContent='Check your new email to confirm the change.'; msg.style.color='#4ade80'; }
+    else{ msg.textContent = data.msg || data.error_description || 'Could not update email.'; msg.style.color='#f87a8a'; }
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+}
+
+async function changePassword(){
+  const newPass = document.getElementById('set-new-pass').value;
+  const confirmPass = document.getElementById('set-confirm-pass').value;
+  const msg = document.getElementById('passMsg');
+  if(!newPass||newPass.length<6){ msg.textContent='Password must be at least 6 characters.'; msg.style.color='#f87a8a'; return; }
+  if(newPass!==confirmPass){ msg.textContent='Passwords do not match.'; msg.style.color='#f87a8a'; return; }
+  msg.textContent='Updating...'; msg.style.color='var(--muted)';
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify({password: newPass})
+    });
+    const data = await res.json();
+    if(data.id){ msg.textContent='Password updated successfully.'; msg.style.color='#4ade80'; document.getElementById('set-new-pass').value=''; document.getElementById('set-confirm-pass').value=''; }
+    else{ msg.textContent = data.msg || data.error_description || 'Could not update password.'; msg.style.color='#f87a8a'; }
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+}
 
 async function downloadCard(idx){
   const p=allProfiles[idx]; if(!p)return;
