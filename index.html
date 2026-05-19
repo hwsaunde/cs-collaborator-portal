@@ -1326,6 +1326,7 @@ let currentUserIsAdmin = false;
 let currentUserProfile = null;
 let composeMediaFiles = []; // files staged in compose modal
 let editingPostId = null;   // null = new post, uuid = editing existing
+let newsPostCache = {};     // id -> post object, avoids passing data through onclick attrs
 
 function setAdminFlag(email){
   currentUserIsAdmin = ADMIN_EMAILS.includes((email||'').toLowerCase());
@@ -1517,6 +1518,10 @@ async function loadNews(){
 
     const categoryLabels = {gig:'Available Gig',game:'Big Game',schedule:'Schedule Update',rankings:'Rankings',competition:'Competition Update',general:'General'};
 
+    // Cache posts so Edit button can look up by ID safely (avoids broken onclick with special chars)
+    newsPostCache = {};
+    posts.forEach(p => { newsPostCache[p.id] = p; });
+
     list.innerHTML = posts.map(post => {
       const comments = allComments.filter(c=>c.post_id===post.id);
       const catLabel = categoryLabels[post.category] || 'Update';
@@ -1541,7 +1546,7 @@ async function loadNews(){
           <button class="news-post-action-btn" onclick="togglePin('${post.id}',${!!post.pinned})" style="${post.pinned?'color:#facc15;border-color:rgba(250,180,0,0.4);':''}">
             ${post.pinned ? '📌 Unpin' : '📌 Pin'}
           </button>
-          <button class="news-post-action-btn" onclick='openComposeModal(${JSON.stringify({id:post.id,title:post.title,body:post.body,category:post.category})})'>Edit</button>
+          <button class="news-post-action-btn" onclick="openComposeModal(newsPostCache['${post.id}'])">Edit</button>
           <button class="news-post-action-btn delete" onclick="deletePost('${post.id}')">Delete</button>
           <span class="news-post-badge">${catLabel}</span>
         </div>` : `<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${pinnedBadge}<span class="news-post-badge">${catLabel}</span></div>`;
