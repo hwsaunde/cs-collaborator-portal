@@ -337,9 +337,38 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 
 <!-- ACCOUNT SETTINGS MODAL -->
 <div class="settings-modal" id="settingsModal" onclick="closeSettingsOnBg(event)">
-  <div class="settings-inner">
+  <div class="settings-inner" style="max-width:500px;">
     <button onclick="closeSettings()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
     <div class="settings-title">Account settings</div>
+
+    <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.9rem;">Profile</div>
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:1rem;">
+      <div style="position:relative;flex-shrink:0;">
+        <div id="setAvatarRing" onclick="document.getElementById('setAvatarInput').click()" style="width:72px;height:72px;border-radius:50%;border:2px solid var(--red);background:var(--navy);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:#fff;">
+          <span id="setAvatarInitials">?</span>
+        </div>
+        <div onclick="document.getElementById('setAvatarInput').click()" style="position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #080d18;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <input type="file" id="setAvatarInput" accept="image/*" style="display:none" onchange="handleSettingsAvatar(this)">
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Signed in as</div>
+        <div id="setCurrentEmail" style="font-size:13px;color:#fff;font-weight:500;margin-bottom:6px;word-break:break-all;"></div>
+        <div id="setProfileName" style="font-size:12px;color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.75rem;">
+      <div class="settings-field" style="margin-bottom:0;"><label>First name</label><input type="text" id="set-firstname" placeholder="First"></div>
+      <div class="settings-field" style="margin-bottom:0;"><label>Last name</label><input type="text" id="set-lastname" placeholder="Last"></div>
+    </div>
+    <div class="settings-field"><label>Instagram handle</label><input type="text" id="set-instagram" placeholder="@yourhandle"></div>
+    <button class="settings-btn" onclick="saveAccountProfile()">Save profile info</button>
+    <div class="settings-msg" id="profileMsg"></div>
+
+    <hr class="settings-divider">
 
     <div style="font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Change email</div>
     <div class="settings-field"><label>New email address</label><input type="email" id="set-new-email" placeholder="newemail@example.com"></div>
@@ -918,14 +947,91 @@ function closeModal(e){if(e.target===document.getElementById('modalOverlay'))clo
 function closeModalBtn(){document.getElementById('modalOverlay').classList.remove('open');}
 
 // ── ACCOUNT SETTINGS ──
-function openSettingsModal(){
+let settingsAvatarDataUrl = null;
+
+async function openSettingsModal(){
   document.getElementById('settingsModal').classList.add('open');
   document.getElementById('set-new-email').value='';
   document.getElementById('set-new-pass').value='';
   document.getElementById('set-confirm-pass').value='';
   document.getElementById('emailMsg').textContent='';
   document.getElementById('passMsg').textContent='';
+  document.getElementById('profileMsg').textContent='';
+  settingsAvatarDataUrl = null;
+
+  const email = sessionStorage.getItem('cs_admin_email') || '';
+  document.getElementById('setCurrentEmail').textContent = email;
+
+  try{
+    const res = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+token_userId()+'&select=name,instagram,avatar_url');
+    const data = await res.json();
+    const p = data&&data[0] ? data[0] : null;
+    if(p){
+      const parts = (p.name||'').trim().split(' ');
+      document.getElementById('set-firstname').value = parts[0]||'';
+      document.getElementById('set-lastname').value = parts.slice(1).join(' ')||'';
+      document.getElementById('set-instagram').value = p.instagram||'';
+      document.getElementById('setProfileName').textContent = p.name||'';
+      if(p.avatar_url) renderSettingsAvatar(p.avatar_url);
+      else renderSettingsAvatarInitials(p.name||email);
+    } else {
+      renderSettingsAvatarInitials(email);
+    }
+  }catch(e){}
 }
+
+function token_userId(){
+  // Admin page doesn't store userId separately — retrieve from token claims
+  if(!token) return null;
+  try{ return JSON.parse(atob(token.split('.')[1])).sub; }catch(e){ return null; }
+}
+
+function renderSettingsAvatar(src){
+  const ring = document.getElementById('setAvatarRing');
+  ring.innerHTML = `<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><input type="file" id="setAvatarInput" accept="image/*" style="display:none" onchange="handleSettingsAvatar(this)">`;
+}
+
+function renderSettingsAvatarInitials(nameOrEmail){
+  const initials = (nameOrEmail||'').trim().split(/[\s@]/).filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+  const ring = document.getElementById('setAvatarRing');
+  ring.innerHTML = `<span style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:#fff;">${initials}</span><input type="file" id="setAvatarInput" accept="image/*" style="display:none" onchange="handleSettingsAvatar(this)">`;
+}
+
+function handleSettingsAvatar(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { settingsAvatarDataUrl = ev.target.result; renderSettingsAvatar(ev.target.result); };
+  reader.readAsDataURL(file);
+}
+
+async function saveAccountProfile(){
+  const firstName = document.getElementById('set-firstname').value.trim();
+  const lastName = document.getElementById('set-lastname').value.trim();
+  const instagram = document.getElementById('set-instagram').value.trim();
+  const msg = document.getElementById('profileMsg');
+  const name = [firstName, lastName].filter(Boolean).join(' ');
+  const uid = token_userId();
+  if(!uid){ msg.textContent='Could not identify user.'; msg.style.color='#f87a8a'; return; }
+  msg.textContent='Saving...'; msg.style.color='var(--muted)';
+  try{
+    const payload = { name, instagram };
+    if(settingsAvatarDataUrl) payload.avatar_url = settingsAvatarDataUrl;
+    const check = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+uid+'&select=id');
+    const existing = await check.json();
+    const isNew = !existing||!existing.length;
+    if(isNew){
+      payload.user_id = uid;
+      await sbFetch('/rest/v1/collaborator_profiles',{ method:'POST', headers:{'Prefer':'return=representation'}, body:JSON.stringify(payload) });
+    } else {
+      payload.updated_at = new Date().toISOString();
+      await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+uid,{ method:'PATCH', headers:{'Prefer':'return=representation'}, body:JSON.stringify(payload) });
+    }
+    msg.textContent='✓ Saved!'; msg.style.color='#4ade80';
+    document.getElementById('setProfileName').textContent = name;
+    settingsAvatarDataUrl = null;
+  }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
+}
+
 function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
 function closeSettingsOnBg(e){ if(e.target===document.getElementById('settingsModal')) closeSettings(); }
 
