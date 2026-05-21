@@ -1297,6 +1297,7 @@ async function loadHistory(){
           <div class="history-detail"><strong>File names</strong><span style="font-size:11px;">${s.file_names||'—'}</span></div>
         </div>
         ${s.notes?`<div class="history-notes">"${s.notes}"</div>`:''}
+        ${s.status==='denied'&&s.denial_reason?`<div style="margin:0 18px 12px;padding:10px 14px;background:rgba(200,16,46,0.07);border:1px solid rgba(200,16,46,0.2);border-radius:7px;display:flex;align-items:flex-start;gap:10px;"><span style="color:#f87a8a;font-size:16px;line-height:1;flex-shrink:0;">✕</span><div><div style="font-size:10px;color:#f87a8a;text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:3px;">Denial Reason</div><div style="font-size:12px;color:var(--text);">${s.denial_reason}</div></div></div>`:''}
       </div>`).join('');
   }catch(e){list.innerHTML='<div class="empty-history">Could not load submissions.</div>';}
 }

@@ -118,6 +118,21 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
 .inbox-thumb-icon{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 .inbox-more{width:64px;height:64px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);font-weight:600;flex-shrink:0;}
 
+/* DENIAL REASON MODAL */
+.deny-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;padding:2rem;}
+.deny-modal.open{display:flex;}
+.deny-inner{background:#111d30;border:1px solid rgba(200,16,46,0.3);border-radius:14px;width:100%;max-width:480px;padding:2rem;position:relative;}
+.deny-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#f87a8a;text-transform:uppercase;margin-bottom:.4rem;}
+.deny-subtitle{font-size:12px;color:var(--muted);margin-bottom:1.25rem;}
+.deny-select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;margin-bottom:1rem;}
+.deny-select:focus{border-color:var(--red);}
+.deny-select option{background:#111d30;color:var(--text);}
+.deny-actions{display:flex;gap:10px;justify-content:flex-end;}
+.deny-cancel{padding:9px 20px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;font-family:'Poppins',sans-serif;cursor:pointer;}
+.deny-cancel:hover{color:#fff;}
+.deny-confirm{padding:9px 20px;background:rgba(200,16,46,0.15);border:1px solid rgba(200,16,46,0.4);color:#f87a8a;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+.deny-confirm:hover{background:rgba(200,16,46,0.25);}
+
 /* ACCOUNT SETTINGS MODAL */
 .settings-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:2rem;}
 .settings-modal.open{display:flex;}
@@ -332,6 +347,30 @@ body{background:#080d18;color:var(--text);font-family:'Poppins',sans-serif;min-h
     <button class="modal-close" onclick="closeModalBtn()">✕</button>
     <div id="modalCardWrap"></div>
     <button class="modal-dl-btn" id="modalDlBtn">Download as PNG</button>
+  </div>
+</div>
+
+<!-- DENIAL REASON MODAL -->
+<div class="deny-modal" id="denyModal">
+  <div class="deny-inner">
+    <div class="deny-title">Deny Submission</div>
+    <div class="deny-subtitle">Select the reason this content is being denied. The collaborator will see this reason in their My Submissions tab.</div>
+    <select class="deny-select" id="denyReasonSelect">
+      <option value="" disabled selected>— Select a denial reason —</option>
+      <option value="01 — Profanity &amp; Offensive Language">01 — Profanity &amp; Offensive Language</option>
+      <option value="02 — Harmful or Offensive Gestures &amp; Behavior">02 — Harmful or Offensive Gestures &amp; Behavior</option>
+      <option value="03 — Outdated or Time-Sensitive Content">03 — Outdated or Time-Sensitive Content</option>
+      <option value="04 — Poor Photo &amp; Video Quality">04 — Poor Photo &amp; Video Quality</option>
+      <option value="05 — Incorrect or Missing Event Information">05 — Incorrect or Missing Event Information</option>
+      <option value="06 — Copyright &amp; Intellectual Property Violation">06 — Copyright &amp; Intellectual Property Violation</option>
+      <option value="07 — Intentional Misrepresentation of Individuals">07 — Intentional Misrepresentation of Individuals</option>
+      <option value="08 — Inappropriate Subject Matter">08 — Inappropriate Subject Matter</option>
+      <option value="09 — Breach of Collaborator Agreement">09 — Breach of Collaborator Agreement</option>
+    </select>
+    <div class="deny-actions">
+      <button class="deny-cancel" onclick="closeDenyModal()">Cancel</button>
+      <button class="deny-confirm" onclick="confirmDeny()">Confirm Deny</button>
+    </div>
   </div>
 </div>
 
@@ -865,9 +904,9 @@ function renderSubmissions(subs){
         <div class="sub-files"><strong>Files:</strong> ${s.file_names||'None listed'}</div>
         ${s.status==='pending'?`
           <button class="btn-approve" onclick="updateStatus('${s.id}','approved')">✓ Approve</button>
-          <button class="btn-deny" onclick="updateStatus('${s.id}','denied')">✕ Deny</button>
+          <button class="btn-deny" onclick="openDenyModal('${s.id}')">✕ Deny</button>
         `:s.status==='approved'?`
-          <button class="btn-deny" onclick="updateStatus('${s.id}','denied')">✕ Deny</button>
+          <button class="btn-deny" onclick="openDenyModal('${s.id}')">✕ Deny</button>
           <button class="btn-pending" onclick="updateStatus('${s.id}','pending')">↩ Reset</button>
         `:`
           <button class="btn-approve" onclick="updateStatus('${s.id}','approved')">✓ Approve</button>
@@ -878,16 +917,36 @@ function renderSubmissions(subs){
   `).join('');
 }
 
-async function updateStatus(id, status){
+let _denyTargetId = null;
+function openDenyModal(id){
+  _denyTargetId = id;
+  document.getElementById('denyReasonSelect').value = '';
+  document.getElementById('denyModal').classList.add('open');
+}
+function closeDenyModal(){
+  _denyTargetId = null;
+  document.getElementById('denyModal').classList.remove('open');
+}
+async function confirmDeny(){
+  const reason = document.getElementById('denyReasonSelect').value;
+  if(!reason){alert('Please select a denial reason before confirming.');return;}
+  closeDenyModal();
+  await updateStatus(_denyTargetId, 'denied', reason);
+}
+
+async function updateStatus(id, status, denial_reason){
   try{
+    const payload = {status, reviewed_at: new Date().toISOString()};
+    if(denial_reason !== undefined) payload.denial_reason = denial_reason;
+    if(status !== 'denied') payload.denial_reason = null;
     const res=await sbFetch(`/rest/v1/media_submissions?id=eq.${id}`,{
       method:'PATCH',
       headers:{'Prefer':'return=representation','Content-Type':'application/json'},
-      body:JSON.stringify({status, reviewed_at: new Date().toISOString()})
+      body:JSON.stringify(payload)
     });
     if(res.ok||res.status===204){
       const idx=allSubmissions.findIndex(s=>s.id===id);
-      if(idx>-1) allSubmissions[idx].status=status;
+      if(idx>-1){allSubmissions[idx].status=status;if(denial_reason!==undefined)allSubmissions[idx].denial_reason=denial_reason;}
       updateCounts();
       filterSubmissions();
     } else {
