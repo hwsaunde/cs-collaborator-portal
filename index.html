@@ -15,7 +15,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .signout-btn{background:none;border:0.5px solid rgba(255,255,255,0.15);color:var(--muted);padding:5px 12px;border-radius:6px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;}
 .user-pill{font-size:12px;color:var(--muted);margin-right:.5rem;}
 #loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.login-card{width:380px;background:var(--card-bg);border:1px solid rgba(200,16,46,0.2);border-top:3px solid var(--red);border-radius:12px;padding:2.5rem;box-shadow:0 0 60px rgba(200,16,46,0.12),0 30px 80px rgba(0,0,0,0.6);}
+.login-card{width:460px;background:var(--card-bg);border:1px solid rgba(200,16,46,0.2);border-top:3px solid var(--red);border-radius:12px;padding:3rem;box-shadow:0 0 60px rgba(200,16,46,0.12),0 30px 80px rgba(0,0,0,0.6);}
 .login-logo{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:4px;}
 .login-logo span{color:var(--red);}
 .login-sub{font-size:13px;color:var(--muted);margin-bottom:2rem;}
@@ -163,6 +163,14 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .news-comment-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;resize:none;height:36px;line-height:1.4;}
 .news-comment-input:focus{border-color:var(--red);}
 .news-comment-btn{padding:0 14px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+.news-comment-reply-wrap{margin-left:32px;margin-top:4px;}
+.news-comment-reply-input-wrap{display:none;margin-left:32px;margin-top:6px;margin-bottom:6px;}
+.news-comment-reply-input-row{display:flex;gap:8px;}
+.news-comment-reply-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(200,16,46,0.25);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;resize:none;height:34px;line-height:1.4;}
+.news-comment-reply-input:focus{border-color:var(--red);}
+.news-comment-reply-btn{padding:0 12px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+.news-comment-reply-cancel{padding:0 10px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;}
+.news-comment-reply-cancel:hover{color:#fff;}
 
 /* NEW POST MODAL */
 .compose-modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:300;display:none;align-items:center;justify-content:center;padding:1.5rem;}
@@ -1623,7 +1631,7 @@ async function loadNews(){
           <span class="news-post-badge">${catLabel}</span>
         </div>` : `<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${pinnedBadge}<span class="news-post-badge">${catLabel}</span></div>`;
 
-      const commentsHtml = comments.map(c => buildCommentHtml(c)).join('');
+      const commentsHtml = renderCommentThread(comments);
 
       return `<div class="news-post" id="newspost-${post.id}" style="${post.pinned?'border-color:rgba(250,180,0,0.35);border-top:2px solid #facc15;':''}">
         <div class="news-post-header">
@@ -1654,15 +1662,26 @@ async function loadNews(){
   }catch(e){ list.innerHTML='<div class="empty-history">Could not load updates.</div>'; }
 }
 
-function buildCommentHtml(c){
+function buildCommentHtml(c, isReply){
   const initials = (c.author_name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
   const avatarHtml = c.author_avatar ? `<img src="${c.author_avatar}" alt="">` : initials;
   const canModify = currentUserIsAdmin || c.user_id === userId;
-  const menuHtml = canModify ? `<div class="news-comment-menu">
+  const modifyBtns = canModify ? `<span style="color:var(--border)">·</span>
     <button class="news-comment-menu-btn" onclick="startEditComment('${c.id}','${c.post_id}')">Edit</button>
     <span style="color:var(--border)">·</span>
-    <button class="news-comment-menu-btn del" onclick="deleteComment('${c.id}','${c.post_id}')">Delete</button>
-  </div>` : '';
+    <button class="news-comment-menu-btn del" onclick="deleteComment('${c.id}','${c.post_id}')">Delete</button>` : '';
+  const menuHtml = `<div class="news-comment-menu">
+    ${!isReply ? `<button class="news-comment-menu-btn" onclick="openReplyInput('${c.id}','${c.post_id}')">Reply</button>` : ''}
+    ${modifyBtns}
+  </div>`;
+  const replyInputHtml = !isReply ? `
+    <div class="news-comment-reply-input-wrap" id="reply-input-wrap-${c.id}">
+      <div class="news-comment-reply-input-row">
+        <textarea class="news-comment-reply-input" id="reply-input-${c.id}" placeholder="Write a reply..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();postReply('${c.id}','${c.post_id}');}"></textarea>
+        <button class="news-comment-reply-btn" onclick="postReply('${c.id}','${c.post_id}')">Reply</button>
+        <button class="news-comment-reply-cancel" onclick="closeReplyInput('${c.id}')">✕</button>
+      </div>
+    </div>` : '';
   return `<div class="news-comment" id="comment-el-${c.id}">
     <div class="news-comment-avatar">${avatarHtml}</div>
     <div class="news-comment-bubble">
@@ -1670,7 +1689,17 @@ function buildCommentHtml(c){
       <div id="comment-body-${c.id}">${escHtml(c.body)}</div>
       ${menuHtml}
     </div>
-  </div>`;
+  </div>${replyInputHtml}`;
+}
+
+function renderCommentThread(allComments){
+  const topLevel = allComments.filter(c=>!c.parent_id);
+  const replies = allComments.filter(c=>!!c.parent_id);
+  return topLevel.map(c=>{
+    const childReplies = replies.filter(r=>r.parent_id===c.id);
+    const repliesHtml = childReplies.length ? `<div class="news-comment-reply-wrap">${childReplies.map(r=>buildCommentHtml(r,true)).join('')}</div>` : '';
+    return buildCommentHtml(c,false)+repliesHtml;
+  }).join('');
 }
 
 // ── POST COMMENT ──
@@ -1693,6 +1722,40 @@ async function postComment(postId){
       await refreshComments(postId);
     } else { msgEl.textContent='Could not post comment.'; msgEl.style.color='#f87a8a'; }
   }catch(e){ msgEl.textContent='Connection error.'; msgEl.style.color='#f87a8a'; }
+}
+
+// ── REPLY TO COMMENT ──
+function openReplyInput(commentId, postId){
+  // close any other open reply inputs first
+  document.querySelectorAll('.news-comment-reply-input-wrap').forEach(el=>{
+    if(el.id !== 'reply-input-wrap-'+commentId) el.style.display='none';
+  });
+  const wrap = document.getElementById('reply-input-wrap-'+commentId);
+  if(!wrap) return;
+  wrap.style.display = wrap.style.display==='block' ? 'none' : 'block';
+  if(wrap.style.display==='block') document.getElementById('reply-input-'+commentId)?.focus();
+}
+function closeReplyInput(commentId){
+  const wrap = document.getElementById('reply-input-wrap-'+commentId);
+  if(wrap){ wrap.style.display='none'; const inp=document.getElementById('reply-input-'+commentId); if(inp) inp.value=''; }
+}
+async function postReply(parentCommentId, postId){
+  const input = document.getElementById('reply-input-'+parentCommentId);
+  const body = input?.value.trim();
+  if(!body) return;
+  const authorName = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Collaborator';
+  const authorAvatar = currentUserProfile?.avatar_url || null;
+  try{
+    const res = await sbFetch('/rest/v1/news_comments',{
+      method:'POST',
+      headers:{'Prefer':'return=representation','Content-Type':'application/json'},
+      body:JSON.stringify({post_id:postId, user_id:userId, body, author_name:authorName, author_avatar:authorAvatar, parent_id:parentCommentId})
+    });
+    if(res.ok){
+      closeReplyInput(parentCommentId);
+      await refreshComments(postId);
+    } else { alert('Could not post reply.'); }
+  }catch(e){ alert('Connection error.'); }
 }
 
 // ── EDIT COMMENT ──
@@ -1738,7 +1801,7 @@ async function refreshComments(postId){
   const res = await sbFetch('/rest/v1/news_comments?post_id=eq.'+postId+'&select=*&order=created_at.asc');
   const comments = await res.json() || [];
   const wrap = document.getElementById('comments-'+postId);
-  if(wrap) wrap.innerHTML = comments.map(c=>buildCommentHtml(c)).join('');
+  if(wrap) wrap.innerHTML = renderCommentThread(comments);
   // Update count label
   const titleEl = wrap?.previousElementSibling;
   if(titleEl&&titleEl.classList.contains('news-comments-title')) titleEl.textContent=`Comments (${comments.length})`;
