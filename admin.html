@@ -930,8 +930,9 @@ function closeDenyModal(){
 async function confirmDeny(){
   const reason = document.getElementById('denyReasonSelect').value;
   if(!reason){alert('Please select a denial reason before confirming.');return;}
+  const id = _denyTargetId;
   closeDenyModal();
-  await updateStatus(_denyTargetId, 'denied', reason);
+  await updateStatus(id, 'denied', reason);
 }
 
 async function updateStatus(id, status, denial_reason){
