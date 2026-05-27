@@ -399,6 +399,10 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
             <div class="section-title">Notes for content team</div>
             <div class="field"><textarea id="ev-notes" style="height:80px;" placeholder="Key moments, storylines, context, highlights..."></textarea></div>
           </div>
+          <div class="panel-section">
+            <div class="section-title">Music recommendation</div>
+            <div class="field"><label>Recommended song choice <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(clean)</span></label><input type="text" id="ev-song" placeholder="e.g. Artist — Song Title"></div>
+          </div>
         </div>
         <div class="submit-panel">
           <div class="panel-section">
@@ -1239,6 +1243,7 @@ async function submitMedia(){
       players:document.getElementById('ev-players').value,
       media_type:document.getElementById('ev-media-type').value,
       notes:document.getElementById('ev-notes').value,
+      song_recommendation:document.getElementById('ev-song').value,
       file_names:selectedFiles.map(f=>f.name).join(', '),
       file_count:selectedFiles.length,
       status:'pending',submitted_at:new Date().toISOString()
@@ -1281,7 +1286,7 @@ async function submitMedia(){
     progressBar.style.width='100%';
     status.textContent='Submitted! Our team will review your coverage shortly.';
     status.className='submit-status ok';
-    ['ev-name','ev-date','ev-sport','ev-teams','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['ev-name','ev-date','ev-sport','ev-teams','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes','ev-song'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     selectedFiles=[];renderFileList();
     setTimeout(()=>{progressWrap.style.display='none';progressBar.style.width='0%';},1000);
   }catch(e){
