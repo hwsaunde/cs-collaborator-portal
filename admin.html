@@ -134,6 +134,16 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .deny-confirm{padding:9px 20px;background:rgba(200,16,46,0.15);border:1px solid rgba(200,16,46,0.4);color:#f87a8a;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
 .deny-confirm:hover{background:rgba(200,16,46,0.25);}
 
+/* HAMBURGER / MOBILE NAV */
+.hamburger{display:none;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 6px;line-height:1;flex-shrink:0;}
+.topbar-right{display:flex;align-items:center;gap:.5rem;}
+.mobile-nav{display:none;position:fixed;top:54px;left:0;right:0;background:#0a1422;border-bottom:2px solid var(--red);z-index:99;padding:.75rem 1rem;flex-direction:column;gap:6px;box-shadow:0 6px 24px rgba(0,0,0,0.6);}
+.mobile-nav.open{display:flex;}
+.mobile-nav-email{font-size:12px;color:var(--muted);padding:6px 14px 2px;}
+.mobile-nav-item{padding:11px 14px;font-size:14px;color:var(--text);background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:left;font-family:'Poppins',sans-serif;text-decoration:none;display:block;width:100%;}
+.mobile-nav-item:hover,.mobile-nav-item:active{background:rgba(255,255,255,0.08);}
+.mobile-nav-item.danger{color:#f87a8a;border-color:rgba(200,16,46,0.2);}
+
 /* ACCOUNT SETTINGS MODAL */
 .settings-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:2rem;}
 .settings-modal.open{display:flex;}
@@ -234,6 +244,8 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   .topbar{padding:0 1rem;}
   .portal-link{display:none;}
   .user-pill{display:none;}
+  .topbar-right{display:none;}
+  .hamburger{display:block;}
   .page-inner{padding:1rem;}
   .page-header{flex-direction:column;align-items:flex-start;gap:.75rem;}
   .stat-pills{flex-wrap:wrap;gap:8px;}
@@ -278,13 +290,21 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 <div id="appPage" style="display:none;">
   <div class="topbar">
     <div class="logo"><img src="CS.png" alt="County Sports" style="height:38px;width:38px;object-fit:contain;border-radius:50%;margin-right:10px;vertical-align:middle;">County <span>Sports</span></div>
-    <div style="display:flex;align-items:center;gap:.5rem;">
+    <div class="topbar-right">
       <a href="https://cs-athlete-portal.vercel.app/admin.html" class="portal-link">Athlete Portal →</a>
       <a href="index.html?portal=1" class="portal-link">Collaborator Portal →</a>
       <span class="user-pill" id="userEmail"></span>
       <button class="signout-btn" onclick="openSettingsModal()" style="margin-right:4px;">Account</button>
       <button class="signout-btn" onclick="doLogout()">Sign out</button>
     </div>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="Menu">&#9776;</button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-email" id="mobileNavEmail"></div>
+    <a href="https://cs-athlete-portal.vercel.app/admin.html" class="mobile-nav-item">Athlete Portal →</a>
+    <a href="index.html?portal=1" class="mobile-nav-item">Collaborator Portal →</a>
+    <button class="mobile-nav-item" onclick="openSettingsModal();document.getElementById('mobileNav').classList.remove('open')">Account Settings</button>
+    <button class="mobile-nav-item danger" onclick="doLogout()">Sign out</button>
   </div>
 
   <div class="page-inner">
@@ -542,6 +562,7 @@ window.addEventListener('load',async ()=>{
         sessionStorage.setItem('cs_admin_email',e);
         document.getElementById('appPage').style.display='block';
         document.getElementById('userEmail').textContent=e;
+        const _mne=document.getElementById('mobileNavEmail');if(_mne)_mne.textContent=e;
         loadAll();
         return;
       }
@@ -553,8 +574,17 @@ window.addEventListener('load',async ()=>{
 function doLogout(){
   sessionStorage.removeItem('cs_admin_token');
   sessionStorage.removeItem('cs_admin_email');
+  localStorage.removeItem('cs_token');
+  localStorage.removeItem('cs_user_id');
+  localStorage.removeItem('cs_user_email');
   window.location.href='index.html';
 }
+
+function toggleMobileNav(){document.getElementById('mobileNav').classList.toggle('open');}
+document.addEventListener('click',function(e){
+  const nav=document.getElementById('mobileNav');const btn=document.getElementById('hamburgerBtn');
+  if(nav&&nav.classList.contains('open')&&!nav.contains(e.target)&&btn&&!btn.contains(e.target))nav.classList.remove('open');
+});
 
 function switchTab(tab){
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
