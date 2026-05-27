@@ -16,7 +16,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .signout-btn{background:none;border:0.5px solid rgba(255,255,255,0.15);color:var(--muted);padding:5px 12px;border-radius:6px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;}
 .user-pill{font-size:12px;color:var(--muted);margin-right:.5rem;}
 #loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.login-card{width:460px;background:var(--card-bg);border:1px solid rgba(200,16,46,0.2);border-top:3px solid var(--red);border-radius:12px;padding:3rem;box-shadow:0 0 60px rgba(200,16,46,0.12),0 30px 80px rgba(0,0,0,0.6);}
+.login-card{width:100%;max-width:460px;background:var(--card-bg);border:1px solid rgba(200,16,46,0.2);border-top:3px solid var(--red);border-radius:12px;padding:3rem;box-shadow:0 0 60px rgba(200,16,46,0.12),0 30px 80px rgba(0,0,0,0.6);}
 .login-logo{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:4px;}
 .login-logo span{color:var(--red);}
 .login-sub{font-size:13px;color:var(--muted);margin-bottom:2rem;}
@@ -212,8 +212,10 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 
 @media(max-width:768px){
   .topbar{padding:0 1rem;}
+  .user-pill{display:none;}
   .page-inner{padding:1rem;}
-  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
   .tab-btn{white-space:nowrap;padding:10px 14px;font-size:12px;}
   .main-grid{grid-template-columns:1fr;}
   .preview-panel{position:static;top:auto;}
@@ -221,12 +223,25 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   .two-col{grid-template-columns:1fr 1fr;}
   .history-card-body{grid-template-columns:1fr 1fr;}
   .stats-grid-2{grid-template-columns:1fr 1fr;}
+  .news-post-header{flex-wrap:wrap;gap:8px;}
+  .news-post-actions{width:100%;justify-content:flex-end;}
+  .compose-inner{padding:1.25rem;}
+  .compose-footer{flex-direction:column-reverse;gap:8px;}
+  .compose-submit-btn,.compose-cancel-btn{width:100%;text-align:center;}
 }
 @media(max-width:480px){
+  #loginPage{padding:1rem;align-items:flex-start;padding-top:3rem;}
+  .login-card{width:100%;padding:1.75rem 1.25rem;}
   .two-col{grid-template-columns:1fr;}
   .history-card-body{grid-template-columns:1fr;}
   .color-row{gap:8px;}
-  .card-scaler{max-width:320px;margin:0 auto;}
+  .card-scaler{max-width:100%;margin:0 auto;}
+  .photo-upload-row{grid-template-columns:1fr 1fr;}
+  .news-post-media-thumb{width:80px;height:80px;}
+  .news-post-footer{flex-wrap:wrap;gap:8px;}
+  .news-comment-input-row{flex-direction:column;}
+  .news-comment-btn{width:100%;padding:8px;}
+  .topbar .signout-btn:first-of-type{display:none;}
 }
 </style>
 </head>
