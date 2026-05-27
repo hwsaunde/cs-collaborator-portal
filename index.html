@@ -209,6 +209,25 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .settings-btn{width:100%;padding:10px;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;background:var(--red);color:#fff;margin-top:.25rem;}
 .settings-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
 .settings-msg{font-size:12px;text-align:center;min-height:16px;margin-top:6px;}
+
+@media(max-width:768px){
+  .topbar{padding:0 1rem;}
+  .page-inner{padding:1rem;}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tab-btn{white-space:nowrap;padding:10px 14px;font-size:12px;}
+  .main-grid{grid-template-columns:1fr;}
+  .preview-panel{position:static;top:auto;}
+  .submit-grid{grid-template-columns:1fr;}
+  .two-col{grid-template-columns:1fr 1fr;}
+  .history-card-body{grid-template-columns:1fr 1fr;}
+  .stats-grid-2{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){
+  .two-col{grid-template-columns:1fr;}
+  .history-card-body{grid-template-columns:1fr;}
+  .color-row{gap:8px;}
+  .card-scaler{max-width:320px;margin:0 auto;}
+}
 </style>
 </head>
 <body>

@@ -229,6 +229,31 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .c-cta-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;font-style:italic;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:2px;}
 .c-cta-sub{font-size:10px;color:#c8d4e8;font-family:'Poppins',sans-serif;}
 .c-cta-sub strong{color:#fff;font-weight:600;}
+
+@media(max-width:768px){
+  .topbar{padding:0 1rem;}
+  .portal-link{display:none;}
+  .page-inner{padding:1rem;}
+  .page-header{flex-direction:column;align-items:flex-start;gap:.75rem;}
+  .stat-pills{flex-wrap:wrap;gap:8px;}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tab-btn{white-space:nowrap;padding:10px 14px;}
+  .toolbar{flex-wrap:wrap;}
+  .search-input{width:100%;}
+  .sub-card-body{grid-template-columns:1fr 1fr;gap:8px;}
+  .sub-card-header{flex-wrap:wrap;}
+  .sub-actions{flex-wrap:wrap;gap:8px;}
+  .collaborator-grid{grid-template-columns:1fr 1fr;}
+  .cm-inner{margin:0;}
+  .cm-body{max-height:50vh;}
+  .cm-tabs .cm-tab{padding:8px 12px;font-size:12px;}
+}
+@media(max-width:480px){
+  .collaborator-grid{grid-template-columns:1fr;}
+  .sub-card-body{grid-template-columns:1fr;}
+  .collab-actions{flex-direction:column;}
+  .btn-preview,.btn-download{width:100%;}
+}
 </style>
 </head>
 <body>
