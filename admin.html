@@ -134,6 +134,52 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .deny-confirm{padding:9px 20px;background:rgba(200,16,46,0.15);border:1px solid rgba(200,16,46,0.4);color:#f87a8a;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
 .deny-confirm:hover{background:rgba(200,16,46,0.25);}
 
+/* ADMIN GIG BOARD */
+.gig-admin-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;}
+.gig-post-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;background:var(--red);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(200,16,46,0.3);transition:box-shadow .2s;}
+.gig-post-btn:hover{box-shadow:0 0 32px rgba(200,16,46,0.55);}
+.admin-gig-list{display:flex;flex-direction:column;gap:12px;}
+.admin-gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:border-color .2s;}
+.admin-gig-card:hover{border-color:rgba(200,16,46,0.2);}
+.admin-gig-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.admin-gig-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
+.admin-gig-meta{font-size:11px;color:var(--muted);}
+.gig-type-badge{font-size:9px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0;}
+.gig-type-standard{background:rgba(100,150,255,0.12);color:#6496ff;border:1px solid rgba(100,150,255,0.3);}
+.gig-type-paid{background:rgba(250,204,21,0.12);color:#facc15;border:1px solid rgba(250,204,21,0.3);}
+.admin-gig-body{padding:10px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;border-bottom:1px solid var(--border);}
+.admin-gig-detail{font-size:12px;color:var(--muted);}
+.admin-gig-detail strong{display:block;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;font-weight:600;}
+.admin-gig-claimed{padding:8px 18px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);}
+.admin-gig-actions{padding:10px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.gig-action-btn{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all .15s;}
+.gig-action-btn:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
+.gig-action-btn.complete{border-color:rgba(100,150,255,0.3);color:#6496ff;}
+.gig-action-btn.complete:hover{background:rgba(100,150,255,0.1);}
+.gig-action-btn.unclaim{border-color:rgba(250,180,0,0.3);color:#facc15;}
+.gig-action-btn.unclaim:hover{background:rgba(250,180,0,0.08);}
+.gig-action-btn.danger{border-color:rgba(200,16,46,0.3);color:#f87a8a;}
+.gig-action-btn.danger:hover{background:rgba(200,16,46,0.1);}
+.gig-status-open{color:#4ade80;font-size:11px;font-weight:600;}
+.gig-status-claimed-label{color:#facc15;font-size:11px;font-weight:600;}
+.gig-status-completed-label{color:#6496ff;font-size:11px;font-weight:600;}
+/* POST GIG MODAL */
+.gig-modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:400;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.gig-modal.open{display:flex;}
+.gig-modal-inner{background:#111d30;border:1px solid rgba(255,255,255,0.09);border-top:2px solid var(--red);border-radius:14px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:1.75rem;position:relative;box-shadow:0 0 60px rgba(200,16,46,0.15),0 30px 80px rgba(0,0,0,0.7);}
+.gig-modal-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:1.25rem;}
+.gig-field{margin-bottom:1rem;}
+.gig-field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.gig-field input,.gig-field textarea,.gig-field select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.gig-field input:focus,.gig-field textarea:focus,.gig-field select:focus{border-color:var(--red);}
+.gig-field textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.gig-field select{appearance:none;cursor:pointer;}
+.gig-two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.gig-modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);}
+.gig-modal-submit{padding:10px 24px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 18px rgba(200,16,46,0.3);}
+.gig-modal-cancel{padding:10px 18px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;font-family:'Poppins',sans-serif;cursor:pointer;}
+.gig-modal-cancel:hover{color:#fff;}
+
 /* HAMBURGER / MOBILE NAV */
 .hamburger{display:none;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 6px;line-height:1;flex-shrink:0;}
 .topbar-right{display:flex;align-items:center;gap:.5rem;}
@@ -322,6 +368,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
       <button class="tab-btn active" id="tab-profiles" onclick="switchTab('profiles')">Creator Profiles</button>
       <button class="tab-btn" id="tab-submissions" onclick="switchTab('submissions')">Submissions inbox <span class="tab-badge" id="pendingBadge" style="display:none;">0</span></button>
       <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">Ready to post <span class="tab-badge" id="pipelineBadge" style="display:none;background:#4ade80;">0</span></button>
+      <button class="tab-btn" id="tab-gigs" onclick="switchTab('gigs')">Gig Board</button>
     </div>
 
     <!-- ── PROFILES TAB ── -->
@@ -454,6 +501,62 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
       <button class="cm-tab" id="cmTab-denied" onclick="switchCollabTab('denied')">Denied <span class="sub-count" id="cmCount-denied"></span></button>
     </div>
     <div class="cm-body" id="cmBody"><div class="empty-state">Loading...</div></div>
+  </div>
+</div>
+
+    <!-- GIG BOARD TAB -->
+    <div class="tab-page" id="tabPage-gigs">
+      <div class="gig-admin-topbar">
+        <div>
+          <div class="page-title" style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:#fff;text-transform:uppercase;">Gig Board</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">Post and manage coverage gigs for your creator network.</div>
+        </div>
+        <button class="gig-post-btn" onclick="openGigModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Post a Gig
+        </button>
+      </div>
+      <div class="admin-gig-list" id="adminGigList"><div style="text-align:center;padding:3rem;color:var(--muted);">Loading gigs...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- POST GIG MODAL -->
+<div class="gig-modal" id="gigModal">
+  <div class="gig-modal-inner">
+    <button onclick="closeGigModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    <div class="gig-modal-title" id="gigModalTitle">Post a Gig</div>
+    <input type="hidden" id="gigEditId">
+    <div class="gig-field"><label>Gig Title *</label><input type="text" id="gig-title" placeholder="e.g. Varsity Football — Wake vs. Cary"></div>
+    <div class="gig-two-col">
+      <div class="gig-field"><label>Event Type</label>
+        <select id="gig-event-type">
+          <option value="Game">Game</option>
+          <option value="Tournament">Tournament</option>
+          <option value="Playoffs">Playoffs</option>
+          <option value="Championship">Championship</option>
+          <option value="Practice / Feature">Practice / Feature</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="gig-field"><label>Gig Type</label>
+        <select id="gig-type" onchange="togglePayRate()">
+          <option value="standard">Standard (unpaid)</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+    </div>
+    <div class="gig-field" id="payRateField" style="display:none;"><label>Pay Rate</label><input type="text" id="gig-pay-rate" placeholder="e.g. $75/event"></div>
+    <div class="gig-two-col">
+      <div class="gig-field"><label>Event Date</label><input type="date" id="gig-event-date"></div>
+      <div class="gig-field"><label>County</label><input type="text" id="gig-county" placeholder="e.g. Wake, Mecklenburg"></div>
+    </div>
+    <div class="gig-field"><label>Location / Venue</label><input type="text" id="gig-location" placeholder="e.g. Wakefield High School — Raleigh, NC"></div>
+    <div class="gig-field"><label>Description / Notes</label><textarea id="gig-description" placeholder="What should the creator know? Arrival time, what to shoot, deliverables expected, etc."></textarea></div>
+    <div class="gig-modal-footer">
+      <button class="gig-modal-cancel" onclick="closeGigModal()">Cancel</button>
+      <button class="gig-modal-submit" onclick="submitGig()">Post Gig</button>
+    </div>
   </div>
 </div>
 
@@ -592,6 +695,7 @@ function switchTab(tab){
   document.getElementById('tabPage-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
   if(tab==='pipeline') loadPipeline();
+  if(tab==='gigs') loadAdminGigs();
 }
 
 async function loadAll(){
@@ -1260,6 +1364,127 @@ function closeModalBtn(){document.getElementById('modalOverlay').classList.remov
 
 // ── ACCOUNT SETTINGS ──
 let settingsAvatarDataUrl = null;
+
+// ── GIG BOARD ──
+let adminGigs = [];
+let editingGigId = null;
+
+function togglePayRate(){
+  const type = document.getElementById('gig-type').value;
+  document.getElementById('payRateField').style.display = type==='paid' ? 'block' : 'none';
+}
+
+function openGigModal(gigData){
+  editingGigId = gigData ? gigData.id : null;
+  document.getElementById('gigModalTitle').textContent = gigData ? 'Edit Gig' : 'Post a Gig';
+  document.getElementById('gigEditId').value = gigData?.id || '';
+  document.getElementById('gig-title').value = gigData?.title || '';
+  document.getElementById('gig-event-type').value = gigData?.event_type || 'Game';
+  document.getElementById('gig-type').value = gigData?.gig_type || 'standard';
+  document.getElementById('gig-event-date').value = gigData?.event_date || '';
+  document.getElementById('gig-county').value = gigData?.county || '';
+  document.getElementById('gig-location').value = gigData?.location || '';
+  document.getElementById('gig-description').value = gigData?.description || '';
+  document.getElementById('gig-pay-rate').value = gigData?.pay_rate || '';
+  togglePayRate();
+  document.getElementById('gigModal').classList.add('open');
+}
+
+function closeGigModal(){
+  editingGigId = null;
+  document.getElementById('gigModal').classList.remove('open');
+}
+
+async function submitGig(){
+  const title = document.getElementById('gig-title').value.trim();
+  if(!title){ alert('Please enter a gig title.'); return; }
+  const payload = {
+    title,
+    event_type: document.getElementById('gig-event-type').value,
+    gig_type: document.getElementById('gig-type').value,
+    event_date: document.getElementById('gig-event-date').value || null,
+    county: document.getElementById('gig-county').value.trim() || null,
+    location: document.getElementById('gig-location').value.trim() || null,
+    description: document.getElementById('gig-description').value.trim() || null,
+    pay_rate: document.getElementById('gig-type').value==='paid' ? document.getElementById('gig-pay-rate').value.trim() : null,
+  };
+  try{
+    let res;
+    if(editingGigId){
+      res = await sbFetch('/rest/v1/gigs?id=eq.'+editingGigId,{method:'PATCH',headers:{'Prefer':'return=representation','Content-Type':'application/json'},body:JSON.stringify(payload)});
+    } else {
+      payload.status = 'open';
+      res = await sbFetch('/rest/v1/gigs',{method:'POST',headers:{'Prefer':'return=representation','Content-Type':'application/json'},body:JSON.stringify(payload)});
+    }
+    if(res.ok||res.status===201||res.status===204){ closeGigModal(); loadAdminGigs(); }
+    else { const e=await res.json().catch(()=>{}); alert('Error: '+(e?.message||res.status)); }
+  }catch(e){ alert('Connection error.'); }
+}
+
+async function loadAdminGigs(){
+  const list = document.getElementById('adminGigList');
+  list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);">Loading gigs...</div>';
+  try{
+    const res = await sbFetch('/rest/v1/gigs?select=*&order=created_at.desc');
+    adminGigs = await res.json() || [];
+    renderAdminGigs();
+  }catch(e){ list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">Could not load gigs.</div>'; }
+}
+
+function renderAdminGigs(){
+  const list = document.getElementById('adminGigList');
+  if(!adminGigs.length){ list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">No gigs posted yet. Click "Post a Gig" to get started.</div>'; return; }
+  list.innerHTML = adminGigs.map(g=>{
+    const badgeClass = g.gig_type==='paid' ? 'gig-type-paid' : 'gig-type-standard';
+    const badgeLabel = g.gig_type==='paid' ? '💰 Paid' : 'Standard';
+    let statusHtml = '';
+    if(g.status==='open') statusHtml = '<span class="gig-status-open">● Open</span>';
+    else if(g.status==='claimed') statusHtml = `<span class="gig-status-claimed-label">● Claimed by ${escHtml(g.claimed_by_name||'a creator')}</span>`;
+    else if(g.status==='completed') statusHtml = '<span class="gig-status-completed-label">✓ Completed</span>';
+    else statusHtml = `<span style="color:var(--muted);font-size:11px;">${g.status}</span>`;
+    let actions = `<button class="gig-action-btn" onclick="openGigModal(adminGigs.find(x=>x.id==='${g.id}'))">Edit</button>`;
+    if(g.status==='claimed') actions += `<button class="gig-action-btn unclaim" onclick="updateGigStatus('${g.id}','open',true)">↩ Unclaim</button>`;
+    if(g.status!=='completed'&&g.status!=='cancelled') actions += `<button class="gig-action-btn complete" onclick="updateGigStatus('${g.id}','completed')">✓ Mark Complete</button>`;
+    actions += `<button class="gig-action-btn danger" onclick="deleteGig('${g.id}')">Delete</button>`;
+    return `<div class="admin-gig-card">
+      <div class="admin-gig-header">
+        <div>
+          <div class="admin-gig-title">${escHtml(g.title)}</div>
+          <div class="admin-gig-meta">${escHtml(g.event_type||'Event')} &nbsp;·&nbsp; Posted ${timeAgo(g.created_at)}</div>
+        </div>
+        <span class="gig-type-badge ${badgeClass}">${badgeLabel}</span>
+      </div>
+      <div class="admin-gig-body">
+        <div class="admin-gig-detail"><strong>Date</strong>${g.event_date||'TBD'}</div>
+        <div class="admin-gig-detail"><strong>Location</strong>${escHtml(g.location||'—')}</div>
+        <div class="admin-gig-detail"><strong>County</strong>${escHtml(g.county||'—')}</div>
+        ${g.gig_type==='paid'?`<div class="admin-gig-detail"><strong>Pay</strong>${escHtml(g.pay_rate||'—')}</div>`:'<div></div>'}
+      </div>
+      ${g.description?`<div style="padding:8px 18px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);">${escHtml(g.description)}</div>`:''}
+      <div class="admin-gig-actions">
+        <div style="flex:1;font-size:11px;">${statusHtml}</div>
+        ${actions}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function updateGigStatus(id, status, unclaim){
+  const payload = {status};
+  if(unclaim){ payload.claimed_by=null; payload.claimed_at=null; payload.claimed_by_name=null; }
+  try{
+    await sbFetch('/rest/v1/gigs?id=eq.'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    loadAdminGigs();
+  }catch(e){ alert('Could not update gig.'); }
+}
+
+async function deleteGig(id){
+  if(!confirm('Delete this gig? This cannot be undone.')) return;
+  try{
+    await sbFetch('/rest/v1/gigs?id=eq.'+id,{method:'DELETE'});
+    loadAdminGigs();
+  }catch(e){ alert('Could not delete gig.'); }
+}
 
 async function openSettingsModal(){
   document.getElementById('settingsModal').classList.add('open');
