@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>County Sports — Collaborator Portal</title>
+<title>County Sports — Creator Portal</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&family=Poppins:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -262,7 +262,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 <div id="loginPage">
   <div class="login-card">
     <div class="login-logo">County <span>Sports</span></div>
-    <div class="login-sub">Collaborator Portal — sign in to access your dashboard</div>
+    <div class="login-sub">Creator Portal — sign in to access your dashboard</div>
     <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="login-btn" onclick="doLogin()">Sign in</button>
@@ -1233,7 +1233,7 @@ function downloadCard(){
   const canvas=document.getElementById('theCardCanvas');
   renderCard();// ensure fresh render
   const a=document.createElement('a');
-  const name=(cardState.name||'collaborator').toLowerCase().replace(/\s+/g,'-');
+  const name=(cardState.name||'creator').toLowerCase().replace(/\s+/g,'-');
   a.download=name+'-profile-card.png';
   a.href=canvas.toDataURL('image/png');
   a.click();
@@ -1754,7 +1754,7 @@ function buildCommentHtml(c, isReply){
   return `<div class="news-comment" id="comment-el-${c.id}">
     <div class="news-comment-avatar">${avatarHtml}</div>
     <div class="news-comment-bubble">
-      <div class="news-comment-name">${escHtml(c.author_name||'Collaborator')}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
+      <div class="news-comment-name">${escHtml(c.author_name||'Creator')}<span class="news-comment-time">${timeAgo(c.created_at)}</span></div>
       <div id="comment-body-${c.id}">${escHtml(c.body)}</div>
       ${menuHtml}
     </div>
@@ -1777,7 +1777,7 @@ async function postComment(postId){
   const msgEl = document.getElementById('comment-msg-'+postId);
   const body = input.value.trim();
   if(!body) return;
-  const authorName = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Collaborator';
+  const authorName = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Creator';
   const authorAvatar = currentUserProfile?.avatar_url || null;
   msgEl.textContent='Posting...'; msgEl.style.color='var(--muted)';
   try{
@@ -1812,7 +1812,7 @@ async function postReply(parentCommentId, postId){
   const input = document.getElementById('reply-input-'+parentCommentId);
   const body = input?.value.trim();
   if(!body) return;
-  const authorName = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Collaborator';
+  const authorName = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Creator';
   const authorAvatar = currentUserProfile?.avatar_url || null;
   try{
     const res = await sbFetch('/rest/v1/news_comments',{
