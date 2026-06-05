@@ -735,6 +735,7 @@ function filterCards(){
 
 function getInitials(name){return(name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');}
 
+function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function timeAgo(dateStr){
   if(!dateStr)return'Never';
   const diff=Date.now()-new Date(dateStr).getTime();
