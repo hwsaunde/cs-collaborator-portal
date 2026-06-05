@@ -129,22 +129,24 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .gig-filter-btn{padding:5px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Poppins',sans-serif;transition:all .15s;}
 .gig-filter-btn.active{background:rgba(200,16,46,0.12);border-color:rgba(200,16,46,0.4);color:#fff;}
 .gig-list{display:flex;flex-direction:column;gap:12px;}
-.gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:border-color .2s,box-shadow .2s;}
-.gig-card:hover{border-color:rgba(200,16,46,0.25);box-shadow:0 4px 28px rgba(200,16,46,0.08),0 8px 40px rgba(0,0,0,0.4);}
-.gig-card-header{padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-.gig-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:4px;}
-.gig-meta{font-size:11px;color:var(--muted);}
-.gig-type-badge{font-size:9px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0;}
+.gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.35);transition:border-color .2s,box-shadow .2s;}
+.gig-card:hover{border-color:rgba(200,16,46,0.3);box-shadow:0 4px 32px rgba(200,16,46,0.1),0 8px 40px rgba(0,0,0,0.45);}
+.gig-card.paid-gig{border-color:rgba(250,204,21,0.35);box-shadow:0 0 35px rgba(250,204,21,0.15),0 8px 40px rgba(0,0,0,0.45);}
+.gig-card.paid-gig:hover{border-color:rgba(250,204,21,0.55);box-shadow:0 0 50px rgba(250,204,21,0.25),0 8px 40px rgba(0,0,0,0.5);}
+.gig-card-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.gig-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;line-height:1.1;}
+.gig-meta{font-size:12px;color:var(--muted);}
+.gig-type-badge{font-size:10px;font-weight:700;padding:4px 12px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0;}
 .gig-type-standard{background:rgba(100,150,255,0.12);color:#6496ff;border:1px solid rgba(100,150,255,0.3);}
-.gig-type-paid{background:rgba(250,204,21,0.12);color:#facc15;border:1px solid rgba(250,204,21,0.3);}
-.gig-card-body{padding:12px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-bottom:1px solid var(--border);}
-.gig-detail{font-size:12px;color:var(--muted);}
-.gig-detail strong{display:block;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;font-weight:600;}
-.gig-description{padding:10px 18px;font-size:12px;color:var(--muted);line-height:1.6;border-bottom:1px solid var(--border);}
-.gig-card-footer{padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.gig-claim-btn{padding:7px 20px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 16px rgba(200,16,46,0.3);transition:box-shadow .2s;}
-.gig-claim-btn:hover{box-shadow:0 0 28px rgba(200,16,46,0.55);}
-.gig-status-pill{font-size:11px;font-weight:600;padding:5px 14px;border-radius:7px;}
+.gig-type-paid{background:rgba(250,204,21,0.15);color:#facc15;border:1px solid rgba(250,204,21,0.4);box-shadow:0 0 10px rgba(250,204,21,0.2);}
+.gig-card-body{padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:14px;border-bottom:1px solid var(--border);}
+.gig-detail{font-size:13px;color:var(--text);}
+.gig-detail strong{display:block;font-size:9px;color:var(--red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;font-weight:700;}
+.gig-description{padding:12px 20px;font-size:13px;color:var(--muted);line-height:1.65;border-bottom:1px solid var(--border);}
+.gig-card-footer{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.gig-claim-btn{padding:9px 24px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 18px rgba(200,16,46,0.35);transition:box-shadow .2s;}
+.gig-claim-btn:hover{box-shadow:0 0 32px rgba(200,16,46,0.6);}
+.gig-status-pill{font-size:12px;font-weight:600;padding:6px 16px;border-radius:7px;}
 .gig-status-claimed-me{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.25);}
 .gig-status-claimed{background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border);}
 .gig-status-completed{background:rgba(100,150,255,0.1);color:#6496ff;border:1px solid rgba(100,150,255,0.25);}
@@ -1444,7 +1446,7 @@ function renderGigs(){
     else if(g.status==='cancelled') footerRight = `<span class="gig-status-pill gig-status-cancelled">Cancelled</span>`;
     else footerRight = `<span class="gig-status-pill gig-status-claimed">Claimed</span>`;
     const statusDot = isOpen ? '<span style="color:#4ade80;font-weight:600;">● Open</span>' : isClaimedByMe ? '<span style="color:#4ade80;">Yours</span>' : `<span style="color:var(--muted);">${g.status.charAt(0).toUpperCase()+g.status.slice(1)}</span>`;
-    return `<div class="gig-card" id="gig-${g.id}">
+    return `<div class="gig-card${g.gig_type==='paid'?' paid-gig':''}" id="gig-${g.id}">
       <div class="gig-card-header">
         <div>
           <div class="gig-title">${escHtml(g.title)}</div>

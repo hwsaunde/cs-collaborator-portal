@@ -135,24 +135,25 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .deny-confirm:hover{background:rgba(200,16,46,0.25);}
 
 /* ADMIN GIG BOARD */
-.gig-admin-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;}
-.gig-post-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;background:var(--red);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(200,16,46,0.3);transition:box-shadow .2s;}
-.gig-post-btn:hover{box-shadow:0 0 32px rgba(200,16,46,0.55);}
-.admin-gig-list{display:flex;flex-direction:column;gap:12px;}
-.admin-gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:border-color .2s;}
-.admin-gig-card:hover{border-color:rgba(200,16,46,0.2);}
-.admin-gig-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-.admin-gig-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
-.admin-gig-meta{font-size:11px;color:var(--muted);}
-.gig-type-badge{font-size:9px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0;}
+.gig-admin-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px;}
+.gig-post-btn{display:flex;align-items:center;gap:6px;padding:10px 22px;background:var(--red);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(200,16,46,0.35);transition:box-shadow .2s;}
+.gig-post-btn:hover{box-shadow:0 0 36px rgba(200,16,46,0.6);}
+.admin-gig-list{display:flex;flex-direction:column;gap:16px;max-width:900px;margin:0 auto;}
+.admin-gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.35);transition:border-color .2s,box-shadow .2s;}
+.admin-gig-card:hover{border-color:rgba(200,16,46,0.25);box-shadow:0 4px 32px rgba(200,16,46,0.1),0 8px 40px rgba(0,0,0,0.45);}
+.admin-gig-card.paid-gig{border-color:rgba(250,204,21,0.3);box-shadow:0 0 30px rgba(250,204,21,0.12),0 8px 40px rgba(0,0,0,0.45);}
+.admin-gig-card.paid-gig:hover{border-color:rgba(250,204,21,0.5);box-shadow:0 0 45px rgba(250,204,21,0.2),0 8px 40px rgba(0,0,0,0.5);}
+.admin-gig-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.admin-gig-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;line-height:1.1;}
+.admin-gig-meta{font-size:12px;color:var(--muted);}
+.gig-type-badge{font-size:10px;font-weight:700;padding:4px 12px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0;}
 .gig-type-standard{background:rgba(100,150,255,0.12);color:#6496ff;border:1px solid rgba(100,150,255,0.3);}
-.gig-type-paid{background:rgba(250,204,21,0.12);color:#facc15;border:1px solid rgba(250,204,21,0.3);}
-.admin-gig-body{padding:10px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;border-bottom:1px solid var(--border);}
-.admin-gig-detail{font-size:12px;color:var(--muted);}
-.admin-gig-detail strong{display:block;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;font-weight:600;}
-.admin-gig-claimed{padding:8px 18px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);}
-.admin-gig-actions{padding:10px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.gig-action-btn{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all .15s;}
+.gig-type-paid{background:rgba(250,204,21,0.15);color:#facc15;border:1px solid rgba(250,204,21,0.4);box-shadow:0 0 10px rgba(250,204,21,0.2);}
+.admin-gig-body{padding:12px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;border-bottom:1px solid var(--border);}
+.admin-gig-detail{font-size:13px;color:var(--text);}
+.admin-gig-detail strong{display:block;font-size:9px;color:var(--red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;font-weight:700;}
+.admin-gig-actions{padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.gig-action-btn{padding:7px 16px;border-radius:6px;font-size:11px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all .15s;}
 .gig-action-btn:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
 .gig-action-btn.complete{border-color:rgba(100,150,255,0.3);color:#6496ff;}
 .gig-action-btn.complete:hover{background:rgba(100,150,255,0.1);}
@@ -160,9 +161,9 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .gig-action-btn.unclaim:hover{background:rgba(250,180,0,0.08);}
 .gig-action-btn.danger{border-color:rgba(200,16,46,0.3);color:#f87a8a;}
 .gig-action-btn.danger:hover{background:rgba(200,16,46,0.1);}
-.gig-status-open{color:#4ade80;font-size:11px;font-weight:600;}
-.gig-status-claimed-label{color:#facc15;font-size:11px;font-weight:600;}
-.gig-status-completed-label{color:#6496ff;font-size:11px;font-weight:600;}
+.gig-status-open{color:#4ade80;font-size:12px;font-weight:700;}
+.gig-status-claimed-label{color:#facc15;font-size:12px;font-weight:700;}
+.gig-status-completed-label{color:#6496ff;font-size:12px;font-weight:700;}
 /* POST GIG MODAL */
 .gig-modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:400;display:none;align-items:center;justify-content:center;padding:1.5rem;}
 .gig-modal.open{display:flex;}
@@ -173,12 +174,15 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .gig-field input,.gig-field textarea,.gig-field select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
 .gig-field input:focus,.gig-field textarea:focus,.gig-field select:focus{border-color:var(--red);}
 .gig-field textarea{resize:vertical;min-height:80px;line-height:1.6;}
-.gig-field select{appearance:none;cursor:pointer;}
+.gig-field select{appearance:none;cursor:pointer;background:#0f1c30;}
+.gig-field select option{background:#0f1c30;color:var(--text);}
 .gig-two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:500px){.gig-two-col{grid-template-columns:1fr;}}
 .gig-modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);}
 .gig-modal-submit{padding:10px 24px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 18px rgba(200,16,46,0.3);}
 .gig-modal-cancel{padding:10px 18px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;font-family:'Poppins',sans-serif;cursor:pointer;}
 .gig-modal-cancel:hover{color:#fff;}
+@media(max-width:768px){.admin-gig-body{grid-template-columns:1fr 1fr;}.admin-gig-actions{justify-content:flex-start;}}
 
 /* HAMBURGER / MOBILE NAV */
 .hamburger{display:none;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 6px;line-height:1;flex-shrink:0;}
@@ -549,7 +553,11 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
     <div class="gig-field" id="payRateField" style="display:none;"><label>Pay Rate</label><input type="text" id="gig-pay-rate" placeholder="e.g. $75/event"></div>
     <div class="gig-two-col">
       <div class="gig-field"><label>Event Date</label><input type="date" id="gig-event-date"></div>
-      <div class="gig-field"><label>County</label><input type="text" id="gig-county" placeholder="e.g. Wake, Mecklenburg"></div>
+      <div class="gig-field"><label>County</label><input type="text" id="gig-county" list="nc-counties-list" placeholder="Search county..." autocomplete="off">
+        <datalist id="nc-counties-list">
+          <option value="Alamance"><option value="Alexander"><option value="Alleghany"><option value="Anson"><option value="Ashe"><option value="Avery"><option value="Beaufort"><option value="Bertie"><option value="Bladen"><option value="Brunswick"><option value="Buncombe"><option value="Burke"><option value="Cabarrus"><option value="Caldwell"><option value="Camden"><option value="Carteret"><option value="Caswell"><option value="Catawba"><option value="Chatham"><option value="Cherokee"><option value="Chowan"><option value="Clay"><option value="Cleveland"><option value="Columbus"><option value="Craven"><option value="Cumberland"><option value="Currituck"><option value="Dare"><option value="Davidson"><option value="Davie"><option value="Duplin"><option value="Durham"><option value="Edgecombe"><option value="Forsyth"><option value="Franklin"><option value="Gaston"><option value="Gates"><option value="Graham"><option value="Granville"><option value="Greene"><option value="Guilford"><option value="Halifax"><option value="Harnett"><option value="Haywood"><option value="Henderson"><option value="Hertford"><option value="Hoke"><option value="Hyde"><option value="Iredell"><option value="Jackson"><option value="Johnston"><option value="Jones"><option value="Lee"><option value="Lenoir"><option value="Lincoln"><option value="Macon"><option value="Madison"><option value="Martin"><option value="McDowell"><option value="Mecklenburg"><option value="Mitchell"><option value="Montgomery"><option value="Moore"><option value="Nash"><option value="New Hanover"><option value="Northampton"><option value="Onslow"><option value="Orange"><option value="Pamlico"><option value="Pasquotank"><option value="Pender"><option value="Perquimans"><option value="Person"><option value="Pitt"><option value="Polk"><option value="Randolph"><option value="Richmond"><option value="Robeson"><option value="Rockingham"><option value="Rowan"><option value="Rutherford"><option value="Sampson"><option value="Scotland"><option value="Stanly"><option value="Stokes"><option value="Surry"><option value="Swain"><option value="Transylvania"><option value="Tyrrell"><option value="Union"><option value="Vance"><option value="Wake"><option value="Warren"><option value="Washington"><option value="Watauga"><option value="Wayne"><option value="Wilkes"><option value="Wilson"><option value="Yadkin"><option value="Yancey">
+        </datalist>
+      </div>
     </div>
     <div class="gig-field"><label>Location / Venue</label><input type="text" id="gig-location" placeholder="e.g. Wakefield High School — Raleigh, NC"></div>
     <div class="gig-field"><label>Description / Notes</label><textarea id="gig-description" placeholder="What should the creator know? Arrival time, what to shoot, deliverables expected, etc."></textarea></div>
@@ -1417,8 +1425,8 @@ async function submitGig(){
       res = await sbFetch('/rest/v1/gigs',{method:'POST',headers:{'Prefer':'return=representation','Content-Type':'application/json'},body:JSON.stringify(payload)});
     }
     if(res.ok||res.status===201||res.status===204){ closeGigModal(); loadAdminGigs(); }
-    else { const e=await res.json().catch(()=>{}); alert('Error: '+(e?.message||res.status)); }
-  }catch(e){ alert('Connection error.'); }
+    else { const e=await res.json().catch(()=>{}); console.error('Gig save error',res.status,e); alert('Error saving gig ('+res.status+'): '+(e?.message||e?.hint||JSON.stringify(e))); }
+  }catch(e){ console.error('Gig save exception',e); alert('Connection error: '+e.message); }
 }
 
 async function loadAdminGigs(){
@@ -1426,29 +1434,32 @@ async function loadAdminGigs(){
   list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);">Loading gigs...</div>';
   try{
     const res = await sbFetch('/rest/v1/gigs?select=*&order=created_at.desc');
-    adminGigs = await res.json() || [];
+    const data = await res.json();
+    if(!res.ok){ console.error('Load gigs error',res.status,data); list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">Error loading gigs ('+res.status+'): '+(data?.message||JSON.stringify(data))+'</div>'; return; }
+    adminGigs = data || [];
     renderAdminGigs();
-  }catch(e){ list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">Could not load gigs.</div>'; }
+  }catch(e){ console.error('Load gigs exception',e); list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">Could not load gigs.</div>'; }
 }
 
 function renderAdminGigs(){
   const list = document.getElementById('adminGigList');
   if(!adminGigs.length){ list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">No gigs posted yet. Click "Post a Gig" to get started.</div>'; return; }
   list.innerHTML = adminGigs.map(g=>{
-    const badgeClass = g.gig_type==='paid' ? 'gig-type-paid' : 'gig-type-standard';
-    const badgeLabel = g.gig_type==='paid' ? '💰 Paid' : 'Standard';
+    const isPaid = g.gig_type==='paid';
+    const badgeClass = isPaid ? 'gig-type-paid' : 'gig-type-standard';
+    const badgeLabel = isPaid ? '💰 Paid Gig' : 'Standard';
     let statusHtml = '';
     if(g.status==='open') statusHtml = '<span class="gig-status-open">● Open</span>';
     else if(g.status==='claimed') statusHtml = `<span class="gig-status-claimed-label">● Claimed by ${escHtml(g.claimed_by_name||'a creator')}</span>`;
     else if(g.status==='completed') statusHtml = '<span class="gig-status-completed-label">✓ Completed</span>';
-    else statusHtml = `<span style="color:var(--muted);font-size:11px;">${g.status}</span>`;
+    else statusHtml = `<span style="color:var(--muted);font-size:12px;">${g.status}</span>`;
     let actions = `<button class="gig-action-btn" onclick="openGigModal(adminGigs.find(x=>x.id==='${g.id}'))">Edit</button>`;
     if(g.status==='claimed') actions += `<button class="gig-action-btn unclaim" onclick="updateGigStatus('${g.id}','open',true)">↩ Unclaim</button>`;
     if(g.status!=='completed'&&g.status!=='cancelled') actions += `<button class="gig-action-btn complete" onclick="updateGigStatus('${g.id}','completed')">✓ Mark Complete</button>`;
     actions += `<button class="gig-action-btn danger" onclick="deleteGig('${g.id}')">Delete</button>`;
-    return `<div class="admin-gig-card">
+    return `<div class="admin-gig-card${isPaid?' paid-gig':''}">
       <div class="admin-gig-header">
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="admin-gig-title">${escHtml(g.title)}</div>
           <div class="admin-gig-meta">${escHtml(g.event_type||'Event')} &nbsp;·&nbsp; Posted ${timeAgo(g.created_at)}</div>
         </div>
@@ -1458,11 +1469,11 @@ function renderAdminGigs(){
         <div class="admin-gig-detail"><strong>Date</strong>${g.event_date||'TBD'}</div>
         <div class="admin-gig-detail"><strong>Location</strong>${escHtml(g.location||'—')}</div>
         <div class="admin-gig-detail"><strong>County</strong>${escHtml(g.county||'—')}</div>
-        ${g.gig_type==='paid'?`<div class="admin-gig-detail"><strong>Pay</strong>${escHtml(g.pay_rate||'—')}</div>`:'<div></div>'}
+        ${isPaid?`<div class="admin-gig-detail"><strong>Pay Rate</strong>${escHtml(g.pay_rate||'—')}</div>`:''}
       </div>
-      ${g.description?`<div style="padding:8px 18px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);">${escHtml(g.description)}</div>`:''}
+      ${g.description?`<div style="padding:10px 20px;font-size:13px;color:var(--muted);line-height:1.6;border-bottom:1px solid var(--border);">${escHtml(g.description)}</div>`:''}
       <div class="admin-gig-actions">
-        <div style="flex:1;font-size:11px;">${statusHtml}</div>
+        <div style="flex:1;">${statusHtml}</div>
         ${actions}
       </div>
     </div>`;
