@@ -1437,7 +1437,11 @@ async function loadAdminGigs(){
     const res = await sbFetch('/rest/v1/gigs?select=*&order=created_at.desc');
     const data = await res.json();
     if(!res.ok){ console.error('Load gigs error',res.status,data); list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">Error loading gigs ('+res.status+'): '+(data?.message||JSON.stringify(data))+'</div>'; return; }
-    adminGigs = data || [];
+    adminGigs = (data || []).sort((a,b)=>{
+      if(a.gig_type==='paid'&&b.gig_type!=='paid') return -1;
+      if(a.gig_type!=='paid'&&b.gig_type==='paid') return 1;
+      return new Date(b.created_at)-new Date(a.created_at);
+    });
     renderAdminGigs();
   }catch(e){ console.error('Load gigs exception',e); list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">Could not load gigs.</div>'; }
 }

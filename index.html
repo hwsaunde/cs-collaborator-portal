@@ -534,6 +534,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
         <div class="gig-filters">
           <button class="gig-filter-btn active" id="gig-filter-all" onclick="setGigFilter('all')">All</button>
           <button class="gig-filter-btn" id="gig-filter-open" onclick="setGigFilter('open')">Open</button>
+          <button class="gig-filter-btn" id="gig-filter-nearby" onclick="setGigFilter('nearby')">Near Me</button>
           <button class="gig-filter-btn" id="gig-filter-mine" onclick="setGigFilter('mine')">My Gigs</button>
         </div>
       </div>
@@ -1399,6 +1400,7 @@ async function submitMedia(){
 // ── GIG BOARD ──
 let allGigs = [];
 let gigFilter = 'all';
+let creatorCounty = '';
 
 function setGigFilter(f){
   gigFilter = f;
@@ -1411,8 +1413,19 @@ async function loadGigs(){
   const list = document.getElementById('gigList');
   list.innerHTML = '<div class="empty-history">Loading gigs...</div>';
   try{
-    const res = await sbFetch('/rest/v1/gigs?select=*&order=created_at.desc');
-    allGigs = await res.json() || [];
+    const [gigsRes, profileRes] = await Promise.all([
+      sbFetch('/rest/v1/gigs?select=*&order=created_at.desc'),
+      sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=location')
+    ]);
+    const gigsData = await gigsRes.json() || [];
+    const profileData = await profileRes.json();
+    creatorCounty = (profileData&&profileData[0]?.location||'').toLowerCase().trim();
+    // paid gigs always float to top, then newest first
+    allGigs = gigsData.sort((a,b)=>{
+      if(a.gig_type==='paid'&&b.gig_type!=='paid') return -1;
+      if(a.gig_type!=='paid'&&b.gig_type==='paid') return 1;
+      return new Date(b.created_at)-new Date(a.created_at);
+    });
     updateGigsBadge();
     renderGigs();
   }catch(e){ list.innerHTML='<div class="empty-history">Could not load gigs.</div>'; }
@@ -1430,8 +1443,18 @@ function renderGigs(){
   let gigs = allGigs;
   if(gigFilter==='open') gigs = gigs.filter(g=>g.status==='open');
   if(gigFilter==='mine') gigs = gigs.filter(g=>g.claimed_by===userId);
+  if(gigFilter==='nearby'){
+    if(creatorCounty){
+      gigs = gigs.filter(g=>g.county&&g.county.toLowerCase().includes(creatorCounty)||creatorCounty.includes((g.county||'').toLowerCase()));
+    }
+    // if no county on profile, fall through and show all
+  }
   if(!gigs.length){
-    list.innerHTML='<div class="empty-history">'+(gigFilter==='mine'?'You haven\'t claimed any gigs yet.':'No gigs available right now — check back soon.')+'</div>';
+    const emptyMsg = gigFilter==='mine' ? 'You haven\'t claimed any gigs yet.'
+      : gigFilter==='nearby' && creatorCounty ? 'No gigs in your area right now — check back soon.'
+      : gigFilter==='nearby' ? 'Set your location in Profile Card to see nearby gigs.'
+      : 'No gigs available right now — check back soon.';
+    list.innerHTML='<div class="empty-history">'+emptyMsg+'</div>';
     return;
   }
   list.innerHTML = gigs.map(g=>{
