@@ -174,6 +174,27 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .dir-you-badge{font-size:9px;font-weight:700;background:rgba(200,16,46,0.15);color:var(--red);border:1px solid rgba(200,16,46,0.3);padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;margin-left:auto;}
 @media(max-width:600px){.directory-grid{grid-template-columns:1fr 1fr;}.dir-card-top{flex-direction:column;align-items:flex-start;gap:10px;}}
 @media(max-width:380px){.directory-grid{grid-template-columns:1fr;}}
+.creator-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.creator-modal-overlay.open{display:flex;}
+.creator-modal{background:#0f1c30;border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 80px rgba(0,0,0,0.7);}
+.creator-modal-header{position:relative;padding:28px 24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:18px;}
+.creator-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px;transition:color .15s;}
+.creator-modal-close:hover{color:#fff;}
+.creator-modal-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid rgba(200,16,46,0.45);flex-shrink:0;}
+.creator-modal-avatar-initials{width:72px;height:72px;border-radius:50%;border:3px solid rgba(200,16,46,0.45);flex-shrink:0;background:rgba(200,16,46,0.12);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--red);}
+.creator-modal-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.3px;line-height:1.1;}
+.creator-modal-role{font-size:12px;color:var(--muted);margin-top:3px;}
+.creator-modal-loc{font-size:11px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.creator-modal-body{padding:20px 24px;}
+.creator-modal-bio{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:20px;}
+.creator-modal-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.creator-modal-stat{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center;}
+.creator-modal-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.creator-modal-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.creator-modal-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+.creator-modal-photo{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
+.creator-modal-footer{padding:14px 24px;border-top:1px solid var(--border);}
+@media(max-width:480px){.creator-modal-stats{grid-template-columns:repeat(2,1fr);}.creator-modal-photos{grid-template-columns:repeat(3,1fr);}}
 
 /* NEWS TAB */
 .news-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
@@ -1439,7 +1460,7 @@ async function loadDirectory(){
   const grid = document.getElementById('directoryGrid');
   grid.innerHTML = '<div class="empty-history">Loading creators...</div>';
   try{
-    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url&order=name.asc');
+    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,stat1_val,stat1_label,stat2_val,stat2_label,stat3_val,stat3_label,stat4_val,stat4_label,photo1_url,photo2_url,photo3_url&order=name.asc');
     allCreators = await res.json() || [];
     renderDirectory();
   }catch(e){ grid.innerHTML = '<div class="empty-history">Could not load directory.</div>'; }
@@ -1470,11 +1491,11 @@ function renderDirectory(){
       : `<div class="dir-avatar-initials">${initials}</div>`;
     const igHandle = c.instagram ? c.instagram.replace(/^@/,'') : null;
     const igHtml = igHandle
-      ? `<a class="dir-ig-link" href="https://instagram.com/${encodeURIComponent(igHandle)}" target="_blank" rel="noopener">
+      ? `<a class="dir-ig-link" href="https://instagram.com/${encodeURIComponent(igHandle)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
           @${escHtml(igHandle)}</a>`
       : '';
-    return `<div class="dir-card">
+    return `<div class="dir-card" onclick="openCreatorModal('${c.user_id}')" style="cursor:pointer;">
       <div class="dir-card-top">
         ${avatarHtml}
         <div style="min-width:0;">
@@ -1492,6 +1513,49 @@ function renderDirectory(){
       </div>
     </div>`;
   }).join('');
+}
+
+function openCreatorModal(userId){
+  const c = allCreators.find(x=>x.user_id===userId);
+  if(!c) return;
+  const initials = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('creatorModalAvatar').innerHTML = c.avatar_url
+    ? `<img class="creator-modal-avatar" src="${escHtml(c.avatar_url)}" alt="${escHtml(c.name)}" onerror="this.outerHTML='<div class=creator-modal-avatar-initials>${initials}</div>'">`
+    : `<div class="creator-modal-avatar-initials">${initials}</div>`;
+  document.getElementById('creatorModalName').textContent = c.name||'Unnamed Creator';
+  document.getElementById('creatorModalRole').textContent = c.role||'Creator';
+  const locEl = document.getElementById('creatorModalLoc');
+  locEl.innerHTML = c.location
+    ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${escHtml(c.location)}`
+    : '';
+  document.getElementById('creatorModalBio').textContent = c.bio||'';
+  // Stats
+  const stats = [
+    {val:c.stat1_val,label:c.stat1_label},{val:c.stat2_val,label:c.stat2_label},
+    {val:c.stat3_val,label:c.stat3_label},{val:c.stat4_val,label:c.stat4_label}
+  ].filter(s=>s.val);
+  document.getElementById('creatorModalStats').innerHTML = stats.length
+    ? stats.map(s=>`<div class="creator-modal-stat"><div class="creator-modal-stat-val">${escHtml(s.val)}</div><div class="creator-modal-stat-label">${escHtml(s.label||'')}</div></div>`).join('')
+    : '';
+  // Photos
+  const photos = [c.photo1_url,c.photo2_url,c.photo3_url].filter(Boolean);
+  document.getElementById('creatorModalPhotos').innerHTML = photos.length
+    ? photos.map(u=>`<img class="creator-modal-photo" src="${escHtml(u)}" alt="Work sample" loading="lazy">`).join('')
+    : '';
+  // Footer
+  const igHandle = c.instagram ? c.instagram.replace(/^@/,'') : null;
+  document.getElementById('creatorModalFooter').innerHTML = igHandle
+    ? `<a class="dir-ig-link" href="https://instagram.com/${encodeURIComponent(igHandle)}" target="_blank" rel="noopener" style="font-size:13px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @${escHtml(igHandle)}</a>`
+    : '';
+  document.getElementById('creatorModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCreatorModal(){
+  document.getElementById('creatorModal').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 // ── GIG BOARD ──
@@ -2286,5 +2350,26 @@ if(hash&&hash.includes('access_token')){
   }
 }
 </script>
+
+<!-- CREATOR PROFILE MODAL -->
+<div class="creator-modal-overlay" id="creatorModal" onclick="if(event.target===this)closeCreatorModal()">
+  <div class="creator-modal">
+    <div class="creator-modal-header">
+      <button class="creator-modal-close" onclick="closeCreatorModal()">✕</button>
+      <div id="creatorModalAvatar"></div>
+      <div>
+        <div class="creator-modal-name" id="creatorModalName"></div>
+        <div class="creator-modal-role" id="creatorModalRole"></div>
+        <div class="creator-modal-loc" id="creatorModalLoc"></div>
+      </div>
+    </div>
+    <div class="creator-modal-body">
+      <div class="creator-modal-bio" id="creatorModalBio"></div>
+      <div class="creator-modal-stats" id="creatorModalStats"></div>
+      <div class="creator-modal-photos" id="creatorModalPhotos"></div>
+    </div>
+    <div class="creator-modal-footer" id="creatorModalFooter"></div>
+  </div>
+</div>
 </body>
 </html>
