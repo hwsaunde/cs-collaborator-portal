@@ -736,6 +736,18 @@ function filterCards(){
 function getInitials(name){return(name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');}
 
 function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+const NOTIFY_URL = 'https://alvcxrsxkicjdktzcbee.supabase.co/functions/v1/send-notification';
+async function sendNotification(type, payload){
+  try{
+    await fetch(NOTIFY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({type,payload})
+    });
+  }catch(e){ console.warn('Notification failed',e); }
+}
+
 function timeAgo(dateStr){
   if(!dateStr)return'Never';
   const diff=Date.now()-new Date(dateStr).getTime();
@@ -1186,6 +1198,18 @@ async function updateStatus(id, status, denial_reason){
       if(idx>-1){allSubmissions[idx].status=status;if(denial_reason!==undefined)allSubmissions[idx].denial_reason=denial_reason;}
       updateCounts();
       filterSubmissions();
+      if(status==='approved'||status==='denied'){
+        const sub = allSubmissions.find(s=>s.id===id);
+        const prof = sub ? profilesByUserId[sub.user_id] : null;
+        if(prof?.email){
+          sendNotification('submission_update',{
+            creator_email: prof.email,
+            creator_name: prof.name || 'Creator',
+            status,
+            denial_reason: denial_reason || null
+          });
+        }
+      }
     } else {
       const err=await res.json().catch(()=>({}));
       alert('Could not update: '+(err.message||res.status+' — make sure the admin RLS policy is in place.'));
@@ -1425,7 +1449,27 @@ async function submitGig(){
       payload.status = 'open';
       res = await sbFetch('/rest/v1/gigs',{method:'POST',headers:{'Prefer':'return=representation','Content-Type':'application/json'},body:JSON.stringify(payload)});
     }
-    if(res.ok||res.status===201||res.status===204){ closeGigModal(); loadAdminGigs(); }
+    if(res.ok||res.status===201||res.status===204){
+      closeGigModal(); loadAdminGigs();
+      if(!editingGigId){
+        // Notify all creators about the new gig
+        const creatorsRes = await sbFetch('/rest/v1/collaborator_profiles?select=email,location');
+        const creators = await creatorsRes.json() || [];
+        const gigCounty = (payload.county||'').toLowerCase();
+        const targetEmails = creators
+          .map(c=>c.email).filter(Boolean)
+          .filter((_,i)=>{
+            if(!gigCounty) return true;
+            const loc = (creators[i]?.location||'').toLowerCase();
+            return !loc || loc.includes(gigCounty) || gigCounty.includes(loc.split(',')[0]?.trim()||'__');
+          });
+        if(targetEmails.length) sendNotification('gig_posted',{
+          gig_title:payload.title, gig_type:payload.gig_type, event_type:payload.event_type,
+          event_date:payload.event_date, county:payload.county, location:payload.location,
+          description:payload.description, pay_rate:payload.pay_rate, creator_emails:targetEmails
+        });
+      }
+    }
     else { const e=await res.json().catch(()=>{}); console.error('Gig save error',res.status,e); alert('Error saving gig ('+res.status+'): '+(e?.message||e?.hint||JSON.stringify(e))); }
   }catch(e){ console.error('Gig save exception',e); alert('Connection error: '+e.message); }
 }
@@ -1455,10 +1499,15 @@ function renderAdminGigs(){
     const badgeLabel = isPaid ? '💰 Paid Gig' : 'Standard';
     let statusHtml = '';
     if(g.status==='open') statusHtml = '<span class="gig-status-open">● Open</span>';
+    else if(g.status==='pending_review') statusHtml = `<span style="color:#facc15;font-size:12px;font-weight:600;">⏳ Pending Review — ${escHtml(g.claimed_by_name||'a creator')}</span>`;
     else if(g.status==='claimed') statusHtml = `<span class="gig-status-claimed-label">● Claimed by ${escHtml(g.claimed_by_name||'a creator')}</span>`;
     else if(g.status==='completed') statusHtml = '<span class="gig-status-completed-label">✓ Completed</span>';
     else statusHtml = `<span style="color:var(--muted);font-size:12px;">${g.status}</span>`;
     let actions = `<button class="gig-action-btn" onclick="openGigModal(adminGigs.find(x=>x.id==='${g.id}'))">Edit</button>`;
+    if(g.status==='pending_review'){
+      actions += `<button class="gig-action-btn complete" onclick="approveGigClaim('${g.id}')">✓ Approve Claim</button>`;
+      actions += `<button class="gig-action-btn unclaim" onclick="rejectGigClaim('${g.id}')">✕ Reject Claim</button>`;
+    }
     if(g.status==='claimed') actions += `<button class="gig-action-btn unclaim" onclick="updateGigStatus('${g.id}','open',true)">↩ Unclaim</button>`;
     if(g.status!=='completed'&&g.status!=='cancelled') actions += `<button class="gig-action-btn complete" onclick="updateGigStatus('${g.id}','completed')">✓ Mark Complete</button>`;
     actions += `<button class="gig-action-btn danger" onclick="deleteGig('${g.id}')">Delete</button>`;
@@ -1483,6 +1532,34 @@ function renderAdminGigs(){
       </div>
     </div>`;
   }).join('');
+}
+
+async function approveGigClaim(id){
+  const g = adminGigs.find(x=>x.id===id);
+  try{
+    await sbFetch('/rest/v1/gigs?id=eq.'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'claimed'})});
+    loadAdminGigs();
+    // Notify creator — need their email from collaborator_profiles
+    if(g?.claimed_by){
+      const profRes = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+g.claimed_by+'&select=email,name');
+      const prof = (await profRes.json())?.[0];
+      if(prof?.email) sendNotification('gig_claim_decision',{creator_email:prof.email,creator_name:prof.name||'Creator',gig_title:g.title,approved:true});
+    }
+  }catch(e){ alert('Could not approve claim.'); }
+}
+
+async function rejectGigClaim(id){
+  const g = adminGigs.find(x=>x.id===id);
+  const note = prompt('Optional note for the creator (leave blank to skip):') || '';
+  try{
+    await sbFetch('/rest/v1/gigs?id=eq.'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'open',claimed_by:null,claimed_at:null,claimed_by_name:null})});
+    loadAdminGigs();
+    if(g?.claimed_by){
+      const profRes = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+g.claimed_by+'&select=email,name');
+      const prof = (await profRes.json())?.[0];
+      if(prof?.email) sendNotification('gig_claim_decision',{creator_email:prof.email,creator_name:prof.name||'Creator',gig_title:g.title,approved:false,rejection_note:note});
+    }
+  }catch(e){ alert('Could not reject claim.'); }
 }
 
 async function updateGigStatus(id, status, unclaim){

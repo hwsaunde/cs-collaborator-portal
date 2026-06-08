@@ -1443,6 +1443,11 @@ async function submitMedia(){
     progressBar.style.width='100%';
     status.textContent='Submitted! Our team will review your coverage shortly.';
     status.className='submit-status ok';
+    sendNotification('new_submission',{
+      creator_name: currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'A creator',
+      sport: evSport,
+      description: document.getElementById('ev-notes').value.trim()
+    });
     ['ev-name','ev-date','ev-sport','ev-teams','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes','ev-song'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     selectedFiles=[];renderFileList();
     setTimeout(()=>{progressWrap.style.display='none';progressBar.style.width='0%';},1000);
@@ -1451,6 +1456,18 @@ async function submitMedia(){
     progressWrap.style.display='none';
   }
   btn.disabled=false;
+}
+
+// ── NOTIFICATIONS ──
+const NOTIFY_URL = 'https://alvcxrsxkicjdktzcbee.supabase.co/functions/v1/send-notification';
+async function sendNotification(type, payload){
+  try{
+    await fetch(NOTIFY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({type,payload})
+    });
+  }catch(e){ console.warn('Notification failed',e); }
 }
 
 // ── CREATOR DIRECTORY ──
@@ -1623,13 +1640,16 @@ function renderGigs(){
     const isClaimedByMe = g.claimed_by===userId;
     const badgeClass = g.gig_type==='paid' ? 'gig-type-paid' : 'gig-type-standard';
     const badgeLabel = g.gig_type==='paid' ? '💰 Paid' : 'Standard';
+    const isPendingMe = g.status==='pending_review' && g.claimed_by===userId;
     let footerRight = '';
-    if(isOpen) footerRight = `<button class="gig-claim-btn" onclick="claimGig('${g.id}')">Claim This Gig</button>`;
+    if(isOpen) footerRight = `<button class="gig-claim-btn" onclick="claimGig('${g.id}')">${g.gig_type==='paid'?'Apply for Gig':'Claim This Gig'}</button>`;
+    else if(isPendingMe) footerRight = `<span class="gig-status-pill" style="background:rgba(250,180,0,0.1);color:#facc15;border:1px solid rgba(250,180,0,0.3);">⏳ Pending Review</span>`;
     else if(isClaimedByMe) footerRight = `<span class="gig-status-pill gig-status-claimed-me">✓ Claimed by you</span>`;
     else if(g.status==='completed') footerRight = `<span class="gig-status-pill gig-status-completed">Completed</span>`;
     else if(g.status==='cancelled') footerRight = `<span class="gig-status-pill gig-status-cancelled">Cancelled</span>`;
+    else if(g.status==='pending_review') footerRight = `<span class="gig-status-pill gig-status-claimed">Under Review</span>`;
     else footerRight = `<span class="gig-status-pill gig-status-claimed">Claimed</span>`;
-    const statusDot = isOpen ? '<span style="color:#4ade80;font-weight:600;">● Open</span>' : isClaimedByMe ? '<span style="color:#4ade80;">Yours</span>' : `<span style="color:var(--muted);">${g.status.charAt(0).toUpperCase()+g.status.slice(1)}</span>`;
+    const statusDot = isOpen ? '<span style="color:#4ade80;font-weight:600;">● Open</span>' : isPendingMe ? '<span style="color:#facc15;">⏳ Pending</span>' : isClaimedByMe ? '<span style="color:#4ade80;">Yours</span>' : `<span style="color:var(--muted);">${g.status==='pending_review'?'Under Review':g.status.charAt(0).toUpperCase()+g.status.slice(1)}</span>`;
     return `<div class="gig-card${g.gig_type==='paid'?' paid-gig':''}" id="gig-${g.id}">
       <div class="gig-card-header">
         <div>
@@ -1655,17 +1675,26 @@ function renderGigs(){
 
 async function claimGig(gigId){
   const name = currentUserProfile?.name || localStorage.getItem('cs_user_email') || 'Creator';
+  const creatorEmail = localStorage.getItem('cs_user_email') || '';
+  const gig = allGigs.find(g=>g.id===gigId);
+  const isPaid = gig?.gig_type === 'paid';
+  const newStatus = isPaid ? 'pending_review' : 'claimed';
   try{
     const res = await sbFetch('/rest/v1/gigs?id=eq.'+gigId+'&status=eq.open',{
       method:'PATCH',
       headers:{'Prefer':'return=representation','Content-Type':'application/json'},
-      body:JSON.stringify({status:'claimed',claimed_by:userId,claimed_at:new Date().toISOString(),claimed_by_name:name})
+      body:JSON.stringify({status:newStatus,claimed_by:userId,claimed_at:new Date().toISOString(),claimed_by_name:name})
     });
     if(res.ok||res.status===204){
       const idx = allGigs.findIndex(g=>g.id===gigId);
-      if(idx>-1){allGigs[idx].status='claimed';allGigs[idx].claimed_by=userId;allGigs[idx].claimed_by_name=name;}
+      if(idx>-1){allGigs[idx].status=newStatus;allGigs[idx].claimed_by=userId;allGigs[idx].claimed_by_name=name;}
       updateGigsBadge();
       renderGigs();
+      if(isPaid){
+        sendNotification('gig_claim_pending',{gig_title:gig.title,creator_name:name,creator_email:creatorEmail,county:gig.county,pay_rate:gig.pay_rate});
+      } else {
+        sendNotification('gig_claimed',{gig_title:gig.title,creator_name:name,creator_email:creatorEmail,county:gig.county});
+      }
     } else { alert('Could not claim — this gig may have just been taken. Refreshing...'); loadGigs(); }
   }catch(e){ alert('Connection error.'); }
 }
