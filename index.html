@@ -45,6 +45,13 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .panel-section:last-child{border-bottom:none;}
 .section-title{font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;}
 .stats-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.service-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;}
+.service-row select{appearance:none;cursor:pointer;background:#fff;color:#111;width:100%;padding:10px 12px;font-size:13px;border:1px solid var(--border);border-radius:7px;font-family:'Poppins',sans-serif;outline:none;}
+.service-row select:focus{border-color:var(--red);}
+.service-row input{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;}
+.service-row input:focus{border-color:var(--red);}
+.service-row button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 6px;line-height:1;}
+.service-row button:hover{color:#f87a8a;}
 .photo-upload-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .photo-upload-slot{aspect-ratio:3/4;background:rgba(255,255,255,0.03);border:1px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;position:relative;}
 .photo-upload-slot svg{width:22px;height:22px;stroke:var(--muted);}
@@ -172,6 +179,8 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .dir-ig-link{font-size:11px;color:#6496ff;text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .15s;}
 .dir-ig-link:hover{color:#a0b8ff;}
 .dir-you-badge{font-size:9px;font-weight:700;background:rgba(200,16,46,0.15);color:var(--red);border:1px solid rgba(200,16,46,0.3);padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;margin-left:auto;}
+.dir-service-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.dir-service-tag{font-size:10px;padding:3px 8px;background:rgba(200,16,46,0.12);border:1px solid rgba(200,16,46,0.25);color:var(--red);border-radius:20px;font-family:'Poppins',sans-serif;font-weight:500;}
 @media(max-width:600px){.directory-grid{grid-template-columns:1fr 1fr;}.dir-card-top{flex-direction:column;align-items:flex-start;gap:10px;}}
 @media(max-width:380px){.directory-grid{grid-template-columns:1fr;}}
 .creator-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
@@ -473,22 +482,15 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
             </div>
             <div class="field"><label>Email</label><input type="email" id="f-email" oninput="update()" placeholder="you@email.com"></div>
             <div class="field"><label>Instagram handle</label><input type="text" id="f-ig" oninput="update()" placeholder="@yourhandle"></div>
+            <div class="field"><label>Website / portfolio <span style="color:var(--muted);font-size:10px;">(optional)</span></label><input type="text" id="f-website" oninput="update()" placeholder="https://yourportfolio.com"></div>
             <div class="field"><label>Bio</label><textarea id="f-bio" oninput="update()" placeholder="What you do and specialize in..."></textarea></div>
           </div>
 
-          <!-- STATS -->
+          <!-- SERVICES -->
           <div class="panel-section">
-            <div class="section-title">Stats</div>
-            <div class="stats-grid-2">
-              <div class="field"><label>Stat 1 value</label><input type="text" id="s1v" oninput="update()" placeholder="2+"></div>
-              <div class="field"><label>Stat 1 label</label><input type="text" id="s1l" oninput="update()" placeholder="Years with CS"></div>
-              <div class="field"><label>Stat 2 value</label><input type="text" id="s2v" oninput="update()" placeholder="150+"></div>
-              <div class="field"><label>Stat 2 label</label><input type="text" id="s2l" oninput="update()" placeholder="Games Covered"></div>
-              <div class="field"><label>Stat 3 value</label><input type="text" id="s3v" oninput="update()" placeholder="10K+"></div>
-              <div class="field"><label>Stat 3 label</label><input type="text" id="s3l" oninput="update()" placeholder="Photos Published"></div>
-              <div class="field"><label>Stat 4 value</label><input type="text" id="s4v" oninput="update()" placeholder="25+"></div>
-              <div class="field"><label>Stat 4 label</label><input type="text" id="s4l" oninput="update()" placeholder="Features Published"></div>
-            </div>
+            <div class="section-title">Services offered</div>
+            <div id="servicesFormList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
+            <button type="button" onclick="addServiceRow()" id="addServiceBtn" style="width:100%;padding:8px;background:rgba(200,16,46,0.1);border:1px dashed rgba(200,16,46,0.35);color:var(--red);border-radius:7px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;">+ Add Service</button>
           </div>
 
           <!-- WORK SAMPLES -->
@@ -781,7 +783,7 @@ let selectedFiles=[];
 // ── CARD STATE ──
 let cardState={
   name:'',role:'',loc:'',email:'',ig:'',bio:'',
-  s1v:'',s1l:'',s2v:'',s2l:'',s3v:'',s3l:'',s4v:'',s4l:'',
+  services:[],website:'',
   avatarImg:null, headerBgImg:null,
   photo1:null,photo2:null,photo3:null,
   primary:'#C8102E',secondary:'#1A2744',bg:'#060c14',textColor:'#ffffff',accent:'#6496ff',
@@ -821,7 +823,37 @@ function initAfterLogin(){
 }
 
 // ── COVERAGE COUNTIES ──
+const SERVICE_TYPES = ['Photography','Videography','Livestream','Video Editing','Photo Editing','Graphic Design','Social Media Content','Event Coverage','Highlights','Other'];
+let profileServices = []; // [{type:'Photography', rate:'$150/hr'}, ...]
 let selectedCoverageCounties = [];
+
+function renderServiceRows(){
+  const list = document.getElementById('servicesFormList');
+  if(!list) return;
+  const btn = document.getElementById('addServiceBtn');
+  list.innerHTML = profileServices.map((svc,i)=>`
+    <div class="service-row">
+      <select onchange="profileServices[${i}].type=this.value;update()">
+        ${SERVICE_TYPES.map(t=>`<option value="${t}"${svc.type===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <input type="text" value="${escHtml(svc.rate||'')}" placeholder="Rate (e.g. $150/hr)" oninput="profileServices[${i}].rate=this.value;update()">
+      <button type="button" onclick="removeServiceRow(${i})" title="Remove">×</button>
+    </div>`).join('');
+  if(btn) btn.style.display = profileServices.length >= 5 ? 'none' : '';
+}
+
+function addServiceRow(){
+  if(profileServices.length >= 5) return;
+  profileServices.push({type: SERVICE_TYPES[0], rate:''});
+  renderServiceRows();
+  update();
+}
+
+function removeServiceRow(i){
+  profileServices.splice(i,1);
+  renderServiceRows();
+  update();
+}
 
 function renderCoverageTags(){
   const el = document.getElementById('coverageTagsDisplay');
@@ -919,9 +951,7 @@ async function loadProfile(){
     const data=await res.json();
     if(data&&data[0]){
       const p=data[0];
-      const map=[['f-name','name'],['f-role','role'],['f-loc','location'],['f-email','email'],['f-ig','instagram'],['f-bio','bio'],
-        ['s1v','stat1_val'],['s1l','stat1_label'],['s2v','stat2_val'],['s2l','stat2_label'],
-        ['s3v','stat3_val'],['s3l','stat3_label'],['s4v','stat4_val'],['s4l','stat4_label']];
+      const map=[['f-name','name'],['f-role','role'],['f-loc','location'],['f-email','email'],['f-ig','instagram'],['f-bio','bio']];
       map.forEach(([id,key])=>{if(p[key]) document.getElementById(id).value=p[key];});
       // Load colors
       if(p.color_primary){document.getElementById('c-primary').value=p.color_primary;cardState.primary=p.color_primary;}
@@ -944,6 +974,15 @@ async function loadProfile(){
       if(p.photo2_url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo2=img;setPhotoSlot(1,p.photo2_url);renderCard();};img.src=p.photo2_url;}
       if(p.photo3_url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo3=img;setPhotoSlot(2,p.photo3_url);renderCard();};img.src=p.photo3_url;}
       // Crop state
+      // Services
+      if(p.services && Array.isArray(p.services)){
+        profileServices = p.services.filter(s=>s&&s.type);
+      } else {
+        profileServices = [];
+      }
+      renderServiceRows();
+      // Website
+      if(p.website_url) document.getElementById('f-website').value = p.website_url;
       if(p.avatar_zoom) document.getElementById('avatarZoom').value=p.avatar_zoom;
       if(p.avatar_x) document.getElementById('avatarX').value=p.avatar_x;
       if(p.avatar_y) document.getElementById('avatarY').value=p.avatar_y;
@@ -973,10 +1012,8 @@ async function saveProfile(){
     name:document.getElementById('f-name').value,role:document.getElementById('f-role').value,
     location:document.getElementById('f-loc').value,
     instagram:document.getElementById('f-ig').value,bio:document.getElementById('f-bio').value,
-    stat1_val:document.getElementById('s1v').value,stat1_label:document.getElementById('s1l').value,
-    stat2_val:document.getElementById('s2v').value,stat2_label:document.getElementById('s2l').value,
-    stat3_val:document.getElementById('s3v').value,stat3_label:document.getElementById('s3l').value,
-    stat4_val:document.getElementById('s4v').value,stat4_label:document.getElementById('s4l').value,
+    services: profileServices,
+    website_url: (document.getElementById('f-website')||{}).value||'',
     color_primary:cardState.primary,color_secondary:cardState.secondary,
     color_bg:cardState.bg,color_text:cardState.textColor,color_accent:cardState.accent,
     avatar_url:avatarDataUrl,header_bg_url:headerBgDataUrl,
@@ -1161,10 +1198,8 @@ function update(doRender=true){
   cardState.email=document.getElementById('f-email').value;
   cardState.ig=document.getElementById('f-ig').value;
   cardState.bio=document.getElementById('f-bio').value;
-  cardState.s1v=document.getElementById('s1v').value;cardState.s1l=document.getElementById('s1l').value;
-  cardState.s2v=document.getElementById('s2v').value;cardState.s2l=document.getElementById('s2l').value;
-  cardState.s3v=document.getElementById('s3v').value;cardState.s3l=document.getElementById('s3l').value;
-  cardState.s4v=document.getElementById('s4v').value;cardState.s4l=document.getElementById('s4l').value;
+  cardState.services = [...profileServices];
+  cardState.website = (document.getElementById('f-website')||{}).value||'';
   // Update initials
   const initials=(cardState.name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
   if(!cardState.avatarImg){
@@ -1341,23 +1376,38 @@ function renderCard(){
   const bioLines=wrapText(ctx,p.bio||'Your bio will appear here...',W-100,21);
   bioLines.forEach((line,i)=>ctx.fillText(line,50,aboutY+52+i*30));
 
-  // ── STATS ──
+  // ── SERVICES ──
   const statsY=hH+aboutH;
   ctx.fillStyle=withAlpha(primary,0.18);ctx.fillRect(0,statsY,W,1);
-  const statW=W/4;
-  ['s1','s2','s3','s4'].forEach((s,i)=>{
-    const sx=i*statW,sy=statsY;
-    ctx.strokeStyle=withAlpha(primary,0.45);ctx.lineWidth=1;
-    ctx.strokeRect(sx+6,sy+6,12,12);
-    ctx.strokeRect(sx+statW-18,sy+statsH-22,12,12);
-    ctx.font=`800 60px 'Barlow Condensed', sans-serif`;
-    ctx.fillStyle=textCol;ctx.textAlign='center';ctx.textBaseline='top';
-    ctx.fillText(p[s+'v']||'—',sx+statW/2,sy+12);
-    ctx.font=`600 14px 'Rajdhani', sans-serif`;
-    ctx.fillStyle=withAlpha('#6a80a0',1);
-    ctx.fillText((p[s+'l']||'STAT').toUpperCase(),sx+statW/2,sy+74);
-    if(i<3){ctx.fillStyle=withAlpha(primary,0.12);ctx.fillRect(sx+statW-0.5,sy+10,1,statsH-20);}
-  });
+  const svcs = (p.services||[]).filter(s=>s&&s.type).slice(0,5);
+  if(svcs.length){
+    // Draw service pills
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    let px=50, py=statsY+statsH/2;
+    const pillH=42, pillR=8, gap=14;
+    svcs.forEach((svc,i)=>{
+      const label = svc.rate ? `${svc.type}  ·  ${svc.rate}` : svc.type;
+      ctx.font=`600 18px 'Poppins', sans-serif`;
+      const tw=ctx.measureText(label).width;
+      const pw=tw+40;
+      // Pill background
+      const isCovered = i===0;
+      ctx.fillStyle=isCovered?withAlpha(primary,0.9):withAlpha(primary,0.14);
+      roundRect(ctx,px,py-pillH/2,pw,pillH,pillR);ctx.fill();
+      // Pill border
+      ctx.strokeStyle=withAlpha(primary,isCovered?0:0.5);ctx.lineWidth=1;
+      roundRect(ctx,px,py-pillH/2,pw,pillH,pillR);ctx.stroke();
+      // Text
+      ctx.fillStyle=isCovered?'#fff':withAlpha(textCol,0.85);
+      ctx.fillText(label,px+20,py);
+      px+=pw+gap;
+      if(px>W-200&&i<svcs.length-1){py+=pillH+10;px=50;}
+    });
+  } else {
+    ctx.font=`italic 400 20px 'Poppins', sans-serif`;
+    ctx.fillStyle=withAlpha('#6a80a0',0.7);ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Add your services to display them here',W/2,statsY+statsH/2);
+  }
 
   // ── FEATURED BANNER ──
   const featY=hH+aboutH+statsH;
@@ -1583,7 +1633,7 @@ async function loadDirectory(){
   const grid = document.getElementById('directoryGrid');
   grid.innerHTML = '<div class="empty-history">Loading creators...</div>';
   try{
-    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,stat1_val,stat1_label,stat2_val,stat2_label,stat3_val,stat3_label,stat4_val,stat4_label,photo1_url,photo2_url,photo3_url,coverage_counties&order=name.asc');
+    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,services,website_url,photo1_url,photo2_url,photo3_url,coverage_counties&order=name.asc');
     allCreators = await res.json() || [];
     renderDirectory();
   }catch(e){ grid.innerHTML = '<div class="empty-history">Could not load directory.</div>'; }
@@ -1629,6 +1679,7 @@ function renderDirectory(){
       <div class="dir-card-body">
         ${c.location?`<div class="dir-location"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${escHtml(c.location)}</div>`:''}
         ${c.bio?`<div class="dir-bio">${escHtml(c.bio)}</div>`:'<div class="dir-bio" style="color:var(--muted);font-style:italic;">No bio yet.</div>'}
+        ${(c.services||[]).filter(s=>s&&s.type).length ? `<div class="dir-service-tags">${(c.services||[]).filter(s=>s&&s.type).slice(0,3).map(s=>`<span class="dir-service-tag">${escHtml(s.type)}</span>`).join('')}</div>` : ''}
       </div>
       <div class="dir-card-footer">
         ${igHtml}
@@ -1652,14 +1703,18 @@ function openCreatorModal(userId){
     ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${escHtml(c.location)}`
     : '';
   document.getElementById('creatorModalBio').textContent = c.bio||'';
-  // Stats
-  const stats = [
-    {val:c.stat1_val,label:c.stat1_label},{val:c.stat2_val,label:c.stat2_label},
-    {val:c.stat3_val,label:c.stat3_label},{val:c.stat4_val,label:c.stat4_label}
-  ].filter(s=>s.val);
-  document.getElementById('creatorModalStats').innerHTML = stats.length
-    ? stats.map(s=>`<div class="creator-modal-stat"><div class="creator-modal-stat-val">${escHtml(s.val)}</div><div class="creator-modal-stat-label">${escHtml(s.label||'')}</div></div>`).join('')
+  // Services
+  const svcs = (c.services||[]).filter(s=>s&&s.type);
+  document.getElementById('creatorModalStats').innerHTML = svcs.length
+    ? svcs.map(s=>`<div class="creator-modal-stat"><div class="creator-modal-stat-val" style="font-size:13px;">${escHtml(s.type)}</div><div class="creator-modal-stat-label">${escHtml(s.rate||'Contact for rates')}</div></div>`).join('')
     : '';
+  // Website
+  const websiteEl = document.getElementById('creatorModalWebsite');
+  if(websiteEl){
+    websiteEl.innerHTML = c.website_url
+      ? `<a href="${escHtml(c.website_url)}" target="_blank" rel="noopener" style="color:#6496ff;font-size:12px;text-decoration:none;display:flex;align-items:center;gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${escHtml(c.website_url.replace(/^https?:\/\//,''))}</a>`
+      : '';
+  }
   // Photos
   const photos = [c.photo1_url,c.photo2_url,c.photo3_url].filter(Boolean);
   document.getElementById('creatorModalPhotos').innerHTML = photos.length
@@ -2647,6 +2702,7 @@ document.addEventListener('click', function(e){
       <div class="creator-modal-stats" id="creatorModalStats"></div>
       <div class="creator-modal-photos" id="creatorModalPhotos"></div>
     </div>
+    <div id="creatorModalWebsite" style="padding:0 24px 8px;"></div>
     <div class="creator-modal-footer" id="creatorModalFooter"></div>
   </div>
 </div>
