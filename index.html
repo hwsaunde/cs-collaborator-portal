@@ -748,7 +748,15 @@ function switchTab(tab){
 }
 
 function initAfterLogin(){
-  // Always land on News tab after login
+  // Ensure auth email is always stored on the profile for notification lookups
+  const authEmail = localStorage.getItem('cs_user_email');
+  if(authEmail){
+    sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=id').then(r=>r.json()).then(existing=>{
+      if(existing&&existing.length){
+        sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:authEmail})});
+      }
+    }).catch(()=>{});
+  }
   switchTab('news');
 }
 
@@ -865,8 +873,9 @@ async function saveProfile(){
 
   const payload={
     user_id:userId,
+    email:localStorage.getItem('cs_user_email')||'',
     name:document.getElementById('f-name').value,role:document.getElementById('f-role').value,
-    location:document.getElementById('f-loc').value,email:document.getElementById('f-email').value,
+    location:document.getElementById('f-loc').value,
     instagram:document.getElementById('f-ig').value,bio:document.getElementById('f-bio').value,
     stat1_val:document.getElementById('s1v').value,stat1_label:document.getElementById('s1l').value,
     stat2_val:document.getElementById('s2v').value,stat2_label:document.getElementById('s2l').value,
@@ -2295,7 +2304,7 @@ async function saveAccountProfile(){
   const name = [firstName, lastName].filter(Boolean).join(' ');
   msg.textContent='Saving...'; msg.style.color='var(--muted)';
   try{
-    const payload = { name, instagram };
+    const payload = { name, instagram, email: localStorage.getItem('cs_user_email')||'' };
     if(settingsAvatarDataUrl) payload.avatar_url = settingsAvatarDataUrl;
 
     // Check if profile exists
