@@ -328,6 +328,34 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   .news-comment-btn{width:100%;padding:8px;}
   .topbar .signout-btn:first-of-type{display:none;}
 }
+
+/* NC MAP TAB */
+.map-container{position:relative;width:100%;overflow:hidden;}
+.map-svg{width:100%;height:auto;display:block;}
+.county-rect{fill:#0f1c30;stroke:#1e3060;stroke-width:0.8;cursor:pointer;transition:fill .15s;}
+.county-rect.covered{fill:rgba(200,16,46,0.35);stroke:rgba(200,16,46,0.7);}
+.county-rect.covered:hover{fill:rgba(200,16,46,0.6);stroke:#C8102E;}
+.county-rect:not(.covered):hover{fill:rgba(255,255,255,0.07);}
+.county-label{font-family:'Poppins',sans-serif;font-size:5.5px;fill:rgba(255,255,255,0.45);pointer-events:none;text-anchor:middle;}
+.county-label.covered{fill:rgba(255,255,255,0.9);}
+.county-label{fill:rgba(255,255,255,0.45);font-family:'Poppins',sans-serif;pointer-events:none;user-select:none;}
+.map-legend{display:flex;align-items:center;gap:20px;margin-top:12px;font-size:12px;color:var(--muted);}
+.map-legend-item{display:flex;align-items:center;gap:6px;}
+.map-legend-dot{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
+.map-popup{position:absolute;background:#0f1c30;border:1px solid rgba(200,16,46,0.4);border-radius:10px;padding:14px 16px;min-width:220px;max-width:300px;box-shadow:0 8px 40px rgba(0,0,0,0.6);z-index:50;top:10px;right:10px;}
+.map-popup-county{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:8px;}
+.map-popup-creator{display:flex;align-items:center;gap:8px;padding:5px 0;}
+.map-popup-creator+.map-popup-creator{border-top:1px solid rgba(255,255,255,0.05);}
+.map-popup-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid rgba(200,16,46,0.4);flex-shrink:0;background:rgba(200,16,46,0.1);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--red);}
+.map-popup-name{font-size:12px;font-weight:600;color:#fff;}
+.map-popup-role{font-size:10px;color:var(--muted);}
+.map-no-coverage{font-size:12px;color:var(--muted);font-style:italic;}
+
+/* COVERAGE COUNTIES FIELD */
+.coverage-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.coverage-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:rgba(200,16,46,0.12);border:1px solid rgba(200,16,46,0.35);border-radius:20px;font-size:11px;color:#fff;}
+.coverage-tag-remove{background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:13px;padding:0;line-height:1;display:flex;align-items:center;}
+.coverage-tag-remove:hover{color:#fff;}
 </style>
 </head>
 <body>
@@ -365,6 +393,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
     <div class="tabs">
       <button class="tab-btn active" id="tab-news" onclick="switchTab('news')">News <span id="newsTabBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;">0</span></button>
       <button class="tab-btn" id="tab-directory" onclick="switchTab('directory')">Directory</button>
+      <button class="tab-btn" id="tab-map" onclick="switchTab('map')">NC Map</button>
       <button class="tab-btn" id="tab-gigs" onclick="switchTab('gigs')">Gig Board <span id="gigsTabBadge" style="display:none;background:rgba(250,204,21,0.9);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;">0</span></button>
       <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">Profile Card</button>
       <button class="tab-btn" id="tab-submit" onclick="switchTab('submit')">Submit Media</button>
@@ -434,6 +463,15 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
             <div class="field"><label>Full name</label><input type="text" id="f-name" oninput="update()" placeholder="First Last"></div>
             <div class="field"><label>Role / title</label><input type="text" id="f-role" oninput="update()" placeholder="Sports Photographer · Content Creator"></div>
             <div class="field"><label>Location</label><input type="text" id="f-loc" oninput="update()" placeholder="City, North Carolina"></div>
+            <div class="field">
+              <label>Coverage counties <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(shown on NC map)</span></label>
+              <div style="display:flex;gap:6px;">
+                <input type="text" id="f-county-search" list="profile-counties-list" placeholder="Search and add county..." autocomplete="off" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCoverageCounty();}">
+                <button type="button" onclick="addCoverageCounty()" style="padding:8px 14px;background:rgba(200,16,46,0.15);border:1px solid rgba(200,16,46,0.35);color:var(--red);border-radius:7px;font-size:12px;cursor:pointer;white-space:nowrap;">+ Add</button>
+              </div>
+              <datalist id="profile-counties-list"></datalist>
+              <div class="coverage-tags" id="coverageTagsDisplay"></div>
+            </div>
             <div class="field"><label>Email</label><input type="email" id="f-email" oninput="update()" placeholder="you@email.com"></div>
             <div class="field"><label>Instagram handle</label><input type="text" id="f-ig" oninput="update()" placeholder="@yourhandle"></div>
             <div class="field"><label>Bio</label><textarea id="f-bio" oninput="update()" placeholder="What you do and specialize in..."></textarea></div>
@@ -567,6 +605,20 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
       <div class="page-title">My submissions</div>
       <div class="page-sub">All your past media submissions and their current status.</div>
       <div class="history-list" id="historyList"><div class="empty-history">Loading submissions...</div></div>
+    </div>
+
+    <!-- NC MAP TAB -->
+    <div class="tab-page" id="tabPage-map">
+      <div class="page-title">NC Creator Map</div>
+      <div class="page-sub" style="margin-bottom:1.25rem;">Counties highlighted in red have at least one creator in the network. Click any county to see who's covering it.</div>
+      <div class="map-container" id="mapContainer">
+        <svg class="map-svg" id="ncMapSvg" viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="map-popup" id="mapPopup" style="display:none;"></div>
+      </div>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:rgba(200,16,46,0.5);border:1px solid rgba(200,16,46,0.7);"></div>Has coverage</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#0f1c30;border:1px solid #1e3060;"></div>No coverage yet</div>
+      </div>
     </div>
 
     <!-- DIRECTORY TAB -->
@@ -717,6 +769,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="/nc-county-bounds.js"></script>
 <script>
 const SB_URL='https://alvcxrsxkicjdktzcbee.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmN4cnN4a2ljamRrdHpjYmVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgyODgsImV4cCI6MjA5MTA4NDI4OH0.qeTWp1uHu7Bdib9dFyzH7uKhQUJTwNnMmYeOCeTt-VI';
@@ -745,6 +798,7 @@ function switchTab(tab){
   if(tab==='news') loadNews();
   if(tab==='gigs') loadGigs();
   if(tab==='directory') loadDirectory();
+  if(tab==='map') loadMap();
 }
 
 function initAfterLogin(){
@@ -757,7 +811,43 @@ function initAfterLogin(){
       }
     }).catch(()=>{});
   }
+  // Populate county datalist for coverage selector
+  if(window.NC_COUNTIES_LIST){
+    const dl = document.getElementById('profile-counties-list');
+    if(dl) dl.innerHTML = window.NC_COUNTIES_LIST.map(c=>`<option value="${c}">`).join('');
+  }
   switchTab('news');
+}
+
+// ── COVERAGE COUNTIES ──
+let selectedCoverageCounties = [];
+
+function renderCoverageTags(){
+  const el = document.getElementById('coverageTagsDisplay');
+  if(!el) return;
+  el.innerHTML = selectedCoverageCounties.map(c=>
+    `<span class="coverage-tag">${escHtml(c)}<button type="button" onclick="removeCoverageCounty('${escHtml(c)}')" aria-label="Remove">×</button></span>`
+  ).join('');
+}
+
+function addCoverageCounty(){
+  const input = document.getElementById('f-county-search');
+  if(!input) return;
+  const val = input.value.trim();
+  if(!val) return;
+  const normalized = window.NC_COUNTIES_LIST
+    ? (window.NC_COUNTIES_LIST.find(c=>c.toLowerCase()===val.toLowerCase()) || val)
+    : val;
+  if(!selectedCoverageCounties.includes(normalized)){
+    selectedCoverageCounties.push(normalized);
+    renderCoverageTags();
+  }
+  input.value = '';
+}
+
+function removeCoverageCounty(county){
+  selectedCoverageCounties = selectedCoverageCounties.filter(c=>c!==county);
+  renderCoverageTags();
 }
 
 // ── AUTH ──
@@ -856,6 +946,11 @@ async function loadProfile(){
       if(p.avatar_zoom) document.getElementById('avatarZoom').value=p.avatar_zoom;
       if(p.avatar_x) document.getElementById('avatarX').value=p.avatar_x;
       if(p.avatar_y) document.getElementById('avatarY').value=p.avatar_y;
+      // Coverage counties
+      if(p.coverage_counties && Array.isArray(p.coverage_counties)){
+        selectedCoverageCounties = [...p.coverage_counties];
+        renderCoverageTags();
+      }
       update(false);
     }
   }catch(e){}
@@ -888,6 +983,7 @@ async function saveProfile(){
     avatar_zoom:document.getElementById('avatarZoom').value,
     avatar_x:document.getElementById('avatarX').value,
     avatar_y:document.getElementById('avatarY').value,
+    coverage_counties:selectedCoverageCounties,
     updated_at:new Date().toISOString()
   };
   try{
@@ -1486,7 +1582,7 @@ async function loadDirectory(){
   const grid = document.getElementById('directoryGrid');
   grid.innerHTML = '<div class="empty-history">Loading creators...</div>';
   try{
-    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,stat1_val,stat1_label,stat2_val,stat2_label,stat3_val,stat3_label,stat4_val,stat4_label,photo1_url,photo2_url,photo3_url&order=name.asc');
+    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,stat1_val,stat1_label,stat2_val,stat2_label,stat3_val,stat3_label,stat4_val,stat4_label,photo1_url,photo2_url,photo3_url,coverage_counties&order=name.asc');
     allCreators = await res.json() || [];
     renderDirectory();
   }catch(e){ grid.innerHTML = '<div class="empty-history">Could not load directory.</div>'; }
@@ -2387,6 +2483,121 @@ if(hash&&hash.includes('access_token')){
       });
   }
 }
+
+// ── NC MAP ──
+let mapLoaded = false;
+
+async function loadMap(){
+  if(!window.NC_COUNTY_BOUNDS) return;
+  // Use allCreators if already fetched, otherwise fetch now
+  if(!allCreators || allCreators.length === 0){
+    try{
+      const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,avatar_url,coverage_counties&order=name.asc');
+      allCreators = await res.json() || [];
+    }catch(e){ allCreators = []; }
+  }
+  renderMap();
+  mapLoaded = true;
+}
+
+function renderMap(){
+  const svg = document.getElementById('ncMapSvg');
+  if(!svg || !window.NC_COUNTY_BOUNDS) return;
+
+  // NC bounding box used for projection
+  const WEST=-84.32, EAST=-75.47, SOUTH=33.84, NORTH=36.60;
+  const W=960, H=540;
+
+  function lonToX(lon){ return (lon - WEST)/(EAST - WEST)*W; }
+  function latToY(lat){ return (NORTH - lat)/(NORTH - SOUTH)*H; }
+
+  // Build county -> creators lookup
+  const countyCreators = {};
+  allCreators.forEach(c=>{
+    if(!c.coverage_counties || !Array.isArray(c.coverage_counties)) return;
+    c.coverage_counties.forEach(county=>{
+      if(!countyCreators[county]) countyCreators[county]=[];
+      countyCreators[county].push(c);
+    });
+  });
+
+  const rects = [];
+  Object.entries(window.NC_COUNTY_BOUNDS).forEach(([name,[w,e,s,n]])=>{
+    const x = lonToX(w), x2 = lonToX(e);
+    const y = latToY(n), y2 = latToY(s);
+    const width = x2-x, height = y2-y;
+    const creators = countyCreators[name]||[];
+    const covered = creators.length > 0;
+    rects.push(`<rect
+      class="county-rect${covered?' covered':''}"
+      x="${x.toFixed(1)}" y="${y.toFixed(1)}"
+      width="${width.toFixed(1)}" height="${height.toFixed(1)}"
+      data-county="${escHtml(name)}"
+      onclick="showMapPopup('${escHtml(name)}',event)"
+      title="${escHtml(name)}"
+    />`);
+    // County label
+    const cx = ((x+x2)/2).toFixed(1), cy = ((y+y2)/2).toFixed(1);
+    const fontSize = Math.max(5, Math.min(10, (width*0.22)));
+    rects.push(`<text class="county-label" x="${cx}" y="${cy}" font-size="${fontSize.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" pointer-events="none">${escHtml(name)}</text>`);
+  });
+
+  svg.innerHTML = rects.join('');
+}
+
+function showMapPopup(county, event){
+  event.stopPropagation();
+  const popup = document.getElementById('mapPopup');
+  if(!popup) return;
+
+  const countyCreators = {};
+  allCreators.forEach(c=>{
+    if(!c.coverage_counties || !Array.isArray(c.coverage_counties)) return;
+    c.coverage_counties.forEach(cn=>{
+      if(!countyCreators[cn]) countyCreators[cn]=[];
+      countyCreators[cn].push(c);
+    });
+  });
+
+  const creators = countyCreators[county]||[];
+  const creatorsHtml = creators.length
+    ? creators.map(c=>{
+        const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        const avatar = c.avatar_url
+          ? `<img src="${escHtml(c.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid var(--red);" onerror="this.outerHTML='<div style=width:32px;height:32px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;color:#fff;border:1.5px solid var(--red);>${initials}</div>'">`
+          : `<div style="width:32px;height:32px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;border:1.5px solid var(--red);">${initials}</div>`;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+          ${avatar}
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff;">${escHtml(c.name||'Unnamed')}</div>
+            <div style="font-size:11px;color:var(--muted);">${escHtml(c.role||'Creator')}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div style="font-size:12px;color:var(--muted);padding:8px 0;">No creators covering this county yet.</div>`;
+
+  popup.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#fff;text-transform:uppercase;">${escHtml(county)} County</div>
+      <button onclick="closeMapPopup()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px;">×</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">${creators.length} creator${creators.length!==1?'s':''} covering this county</div>
+    ${creatorsHtml}`;
+  popup.style.display = 'block';
+}
+
+function closeMapPopup(){
+  const popup = document.getElementById('mapPopup');
+  if(popup) popup.style.display = 'none';
+}
+
+document.addEventListener('click', function(e){
+  const popup = document.getElementById('mapPopup');
+  const svg = document.getElementById('ncMapSvg');
+  if(popup && popup.style.display!=='none' && !popup.contains(e.target) && e.target!==svg && !svg?.contains(e.target)){
+    closeMapPopup();
+  }
+});
 </script>
 
 <!-- CREATOR PROFILE MODAL -->
