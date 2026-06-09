@@ -322,6 +322,16 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   .compose-inner{padding:1.25rem;}
   .compose-footer{flex-direction:column-reverse;gap:8px;}
   .compose-submit-btn,.compose-cancel-btn{width:100%;text-align:center;}
+  /* Gig board */
+  .gig-topbar{flex-direction:column;align-items:flex-start;gap:10px;}
+  .gig-filters{flex-wrap:wrap;}
+  /* Directory */
+  .directory-topbar{flex-direction:column;align-items:stretch;}
+  .directory-search{width:100%;}
+  /* Service rows */
+  .service-row{grid-template-columns:1fr 1fr auto;}
+  /* Map popup */
+  .map-popup{position:fixed;top:auto;bottom:0;left:0;right:0;max-width:100%;border-radius:14px 14px 0 0;max-height:55vh;}
 }
 @media(max-width:480px){
   #loginPage{padding:1rem;align-items:flex-start;padding-top:3rem;}
@@ -336,10 +346,20 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   .news-comment-input-row{flex-direction:column;}
   .news-comment-btn{width:100%;padding:8px;}
   .topbar .signout-btn:first-of-type{display:none;}
+  /* Service rows stack on very small screens */
+  .service-row{grid-template-columns:1fr auto;grid-template-rows:auto auto;}
+  .service-row input{grid-column:1/2;}
+  .service-row button{grid-row:1/2;grid-column:2/3;align-self:center;}
+  /* Directory */
+  .directory-grid{grid-template-columns:1fr 1fr;}
+  /* Gig filters wrap */
+  .gig-filter-btn{font-size:11px;padding:6px 10px;}
+  /* Map */
+  .map-popup{max-height:60vh;}
 }
 
 /* NC MAP TAB */
-.map-container{position:relative;width:100%;background:#060c14;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
+.map-container{position:relative;width:100%;background:#060c14;border:1px solid var(--border);border-radius:12px;overflow:visible;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
 .map-svg{width:100%;height:auto;display:block;}
 .county-path{fill:#0d1a2e;stroke:rgba(255,255,255,0.12);stroke-width:0.5;cursor:pointer;transition:fill .15s,filter .15s;}
 .county-path.covered{fill:#C8102E;stroke:rgba(255,255,255,0.25);stroke-width:0.6;}
@@ -1381,27 +1401,28 @@ function renderCard(){
   ctx.fillStyle=withAlpha(primary,0.18);ctx.fillRect(0,statsY,W,1);
   const svcs = (p.services||[]).filter(s=>s&&s.type).slice(0,5);
   if(svcs.length){
-    // Draw service pills
-    ctx.textAlign='left';ctx.textBaseline='middle';
-    let px=50, py=statsY+statsH/2;
-    const pillH=42, pillR=8, gap=14;
-    svcs.forEach((svc,i)=>{
+    const pillH=42, pillR=8, gap=16;
+    ctx.font=`600 18px 'Poppins', sans-serif`;
+    // Measure all pill widths first so we can center
+    const pillWidths = svcs.map(svc=>{
       const label = svc.rate ? `${svc.type}  ·  ${svc.rate}` : svc.type;
-      ctx.font=`600 18px 'Poppins', sans-serif`;
-      const tw=ctx.measureText(label).width;
-      const pw=tw+40;
+      return {label, pw: ctx.measureText(label).width+44};
+    });
+    const totalW = pillWidths.reduce((s,p)=>s+p.pw,0) + gap*(svcs.length-1);
+    let px = (W-totalW)/2;
+    const py = statsY+statsH/2;
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    pillWidths.forEach(({label,pw})=>{
       // Pill background
-      const isCovered = i===0;
-      ctx.fillStyle=isCovered?withAlpha(primary,0.9):withAlpha(primary,0.14);
+      ctx.fillStyle=withAlpha(primary,0.15);
       roundRect(ctx,px,py-pillH/2,pw,pillH,pillR);ctx.fill();
       // Pill border
-      ctx.strokeStyle=withAlpha(primary,isCovered?0:0.5);ctx.lineWidth=1;
+      ctx.strokeStyle=withAlpha(primary,0.55);ctx.lineWidth=1.5;
       roundRect(ctx,px,py-pillH/2,pw,pillH,pillR);ctx.stroke();
       // Text
-      ctx.fillStyle=isCovered?'#fff':withAlpha(textCol,0.85);
-      ctx.fillText(label,px+20,py);
+      ctx.fillStyle=withAlpha(textCol,0.9);
+      ctx.fillText(label,px+22,py);
       px+=pw+gap;
-      if(px>W-200&&i<svcs.length-1){py+=pillH+10;px=50;}
     });
   } else {
     ctx.font=`italic 400 20px 'Poppins', sans-serif`;
