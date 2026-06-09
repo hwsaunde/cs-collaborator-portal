@@ -330,26 +330,25 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 }
 
 /* NC MAP TAB */
-.map-container{position:relative;width:100%;overflow:hidden;}
+.map-container{position:relative;width:100%;background:#060c14;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
 .map-svg{width:100%;height:auto;display:block;}
-.county-rect{fill:#0f1c30;stroke:#1e3060;stroke-width:0.8;cursor:pointer;transition:fill .15s;}
-.county-rect.covered{fill:rgba(200,16,46,0.35);stroke:rgba(200,16,46,0.7);}
-.county-rect.covered:hover{fill:rgba(200,16,46,0.6);stroke:#C8102E;}
-.county-rect:not(.covered):hover{fill:rgba(255,255,255,0.07);}
-.county-label{font-family:'Poppins',sans-serif;font-size:5.5px;fill:rgba(255,255,255,0.45);pointer-events:none;text-anchor:middle;}
+.county-path{fill:#0d1a2e;stroke:rgba(255,255,255,0.12);stroke-width:0.5;cursor:pointer;transition:fill .15s,filter .15s;}
+.county-path.covered{fill:#C8102E;stroke:rgba(255,255,255,0.25);stroke-width:0.6;}
+.county-path.covered:hover{fill:#e01535;filter:drop-shadow(0 0 6px rgba(200,16,46,0.7));}
+.county-path:not(.covered):hover{fill:#162238;}
+.county-path.active{stroke:#fff;stroke-width:1.2;}
+.county-label{fill:rgba(255,255,255,0.5);font-family:'Poppins',sans-serif;pointer-events:none;user-select:none;}
 .county-label.covered{fill:rgba(255,255,255,0.9);}
-.county-label{fill:rgba(255,255,255,0.45);font-family:'Poppins',sans-serif;pointer-events:none;user-select:none;}
 .map-legend{display:flex;align-items:center;gap:20px;margin-top:12px;font-size:12px;color:var(--muted);}
 .map-legend-item{display:flex;align-items:center;gap:6px;}
 .map-legend-dot{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
-.map-popup{position:absolute;background:#0f1c30;border:1px solid rgba(200,16,46,0.4);border-radius:10px;padding:14px 16px;min-width:220px;max-width:300px;box-shadow:0 8px 40px rgba(0,0,0,0.6);z-index:50;top:10px;right:10px;}
-.map-popup-county{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:8px;}
-.map-popup-creator{display:flex;align-items:center;gap:8px;padding:5px 0;}
-.map-popup-creator+.map-popup-creator{border-top:1px solid rgba(255,255,255,0.05);}
-.map-popup-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid rgba(200,16,46,0.4);flex-shrink:0;background:rgba(200,16,46,0.1);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--red);}
+.map-popup{position:absolute;background:#0f1c30;border:1px solid rgba(200,16,46,0.45);border-radius:10px;padding:14px 16px;min-width:220px;max-width:300px;box-shadow:0 8px 40px rgba(0,0,0,0.7),0 0 0 1px rgba(200,16,46,0.1);z-index:50;top:12px;right:12px;max-height:calc(100% - 24px);overflow-y:auto;}
+.map-popup-county{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:8px;}
+.map-popup-creator{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.map-popup-creator:last-child{border-bottom:none;}
 .map-popup-name{font-size:12px;font-weight:600;color:#fff;}
-.map-popup-role{font-size:10px;color:var(--muted);}
-.map-no-coverage{font-size:12px;color:var(--muted);font-style:italic;}
+.map-popup-role{font-size:11px;color:var(--muted);}
+.map-no-coverage{font-size:12px;color:var(--muted);font-style:italic;padding:4px 0;}
 
 /* COVERAGE COUNTIES FIELD */
 .coverage-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
@@ -769,6 +768,8 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script src="/nc-county-bounds.js"></script>
 <script>
 const SB_URL='https://alvcxrsxkicjdktzcbee.supabase.co';
@@ -2486,63 +2487,96 @@ if(hash&&hash.includes('access_token')){
 
 // ── NC MAP ──
 let mapLoaded = false;
+let _ncTopoCache = null;
 
 async function loadMap(){
-  if(!window.NC_COUNTY_BOUNDS) return;
-  // Use allCreators if already fetched, otherwise fetch now
+  if(mapLoaded) return;
+  // Fetch creators if needed
   if(!allCreators || allCreators.length === 0){
     try{
       const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,avatar_url,coverage_counties&order=name.asc');
       allCreators = await res.json() || [];
     }catch(e){ allCreators = []; }
   }
-  renderMap();
+  // Fetch US topology (cached)
+  if(!_ncTopoCache){
+    try{
+      const topo = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json').then(r=>r.json());
+      const all = topojson.feature(topo, topo.objects.counties);
+      // NC state FIPS = 37; county FIPS are 5 digits starting with "37"
+      _ncTopoCache = {
+        type:'FeatureCollection',
+        features: all.features.filter(f=>String(f.id).padStart(5,'0').startsWith('37'))
+      };
+    }catch(e){
+      document.getElementById('ncMapSvg').innerHTML = '<text x="480" y="270" text-anchor="middle" fill="#6a80a0" font-size="14" font-family="Poppins,sans-serif">Could not load map data.</text>';
+      return;
+    }
+  }
+  renderMap(_ncTopoCache);
   mapLoaded = true;
 }
 
-function renderMap(){
-  const svg = document.getElementById('ncMapSvg');
-  if(!svg || !window.NC_COUNTY_BOUNDS) return;
+function renderMap(ncGeo){
+  const svgEl = document.getElementById('ncMapSvg');
+  if(!svgEl || !ncGeo) return;
 
-  // NC bounding box used for projection
-  const WEST=-84.32, EAST=-75.47, SOUTH=33.84, NORTH=36.60;
-  const W=960, H=540;
+  const W=960, H=500;
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);
 
-  function lonToX(lon){ return (lon - WEST)/(EAST - WEST)*W; }
-  function latToY(lat){ return (NORTH - lat)/(NORTH - SOUTH)*H; }
-
-  // Build county -> creators lookup
+  // Build county -> creators lookup (match by name from TopoJSON properties)
   const countyCreators = {};
   allCreators.forEach(c=>{
     if(!c.coverage_counties || !Array.isArray(c.coverage_counties)) return;
-    c.coverage_counties.forEach(county=>{
-      if(!countyCreators[county]) countyCreators[county]=[];
-      countyCreators[county].push(c);
+    c.coverage_counties.forEach(cn=>{
+      if(!countyCreators[cn]) countyCreators[cn]=[];
+      countyCreators[cn].push(c);
     });
   });
 
-  const rects = [];
-  Object.entries(window.NC_COUNTY_BOUNDS).forEach(([name,[w,e,s,n]])=>{
-    const x = lonToX(w), x2 = lonToX(e);
-    const y = latToY(n), y2 = latToY(s);
-    const width = x2-x, height = y2-y;
-    const creators = countyCreators[name]||[];
-    const covered = creators.length > 0;
-    rects.push(`<rect
-      class="county-rect${covered?' covered':''}"
-      x="${x.toFixed(1)}" y="${y.toFixed(1)}"
-      width="${width.toFixed(1)}" height="${height.toFixed(1)}"
-      data-county="${escHtml(name)}"
-      onclick="showMapPopup('${escHtml(name)}',event)"
-      title="${escHtml(name)}"
-    />`);
-    // County label
-    const cx = ((x+x2)/2).toFixed(1), cy = ((y+y2)/2).toFixed(1);
-    const fontSize = Math.max(5, Math.min(10, (width*0.22)));
-    rects.push(`<text class="county-label" x="${cx}" y="${cy}" font-size="${fontSize.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" pointer-events="none">${escHtml(name)}</text>`);
-  });
+  const svg = d3.select(svgEl);
+  svg.selectAll('*').remove();
 
-  svg.innerHTML = rects.join('');
+  const projection = d3.geoMercator().fitExtent([[10,10],[W-10,H-10]], ncGeo);
+  const pathGen = d3.geoPath().projection(projection);
+
+  // Draw counties
+  svg.selectAll('path.county-path')
+    .data(ncGeo.features)
+    .enter().append('path')
+    .attr('class', d=>{
+      const name = d.properties.name;
+      const covered = countyCreators[name] && countyCreators[name].length > 0;
+      return 'county-path' + (covered ? ' covered' : '');
+    })
+    .attr('d', pathGen)
+    .attr('data-county', d=>d.properties.name)
+    .on('click', function(event, d){
+      svg.selectAll('path.county-path').classed('active', false);
+      d3.select(this).classed('active', true);
+      showMapPopup(d.properties.name, event);
+    });
+
+  // County name labels
+  svg.selectAll('text.county-label')
+    .data(ncGeo.features)
+    .enter().append('text')
+    .attr('class', d=>{
+      const name = d.properties.name;
+      const covered = countyCreators[name] && countyCreators[name].length > 0;
+      return 'county-label' + (covered ? ' covered' : '');
+    })
+    .attr('x', d=>pathGen.centroid(d)[0])
+    .attr('y', d=>pathGen.centroid(d)[1])
+    .attr('text-anchor','middle')
+    .attr('dominant-baseline','middle')
+    .attr('font-size', d=>{
+      const bounds = pathGen.bounds(d);
+      const w = bounds[1][0]-bounds[0][0];
+      return Math.max(4.5, Math.min(9, w * 0.18)) + 'px';
+    })
+    .text(d=>d.properties.name)
+    .style('pointer-events','none');
 }
 
 function showMapPopup(county, event){
@@ -2563,25 +2597,20 @@ function showMapPopup(county, event){
   const creatorsHtml = creators.length
     ? creators.map(c=>{
         const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        const avatarStyle='width:34px;height:34px;border-radius:50%;flex-shrink:0;object-fit:cover;border:1.5px solid var(--red);';
         const avatar = c.avatar_url
-          ? `<img src="${escHtml(c.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid var(--red);" onerror="this.outerHTML='<div style=width:32px;height:32px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;color:#fff;border:1.5px solid var(--red);>${initials}</div>'">`
-          : `<div style="width:32px;height:32px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;border:1.5px solid var(--red);">${initials}</div>`;
-        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-          ${avatar}
-          <div>
-            <div style="font-size:13px;font-weight:600;color:#fff;">${escHtml(c.name||'Unnamed')}</div>
-            <div style="font-size:11px;color:var(--muted);">${escHtml(c.role||'Creator')}</div>
-          </div>
-        </div>`;
+          ? `<img src="${escHtml(c.avatar_url)}" style="${avatarStyle}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="${avatarStyle}display:none;background:var(--navy);align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;">${initials}</div>`
+          : `<div style="${avatarStyle}display:flex;background:var(--navy);align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;">${initials}</div>`;
+        return `<div class="map-popup-creator">${avatar}<div><div class="map-popup-name">${escHtml(c.name||'Unnamed')}</div><div class="map-popup-role">${escHtml(c.role||'Creator')}</div></div></div>`;
       }).join('')
-    : `<div style="font-size:12px;color:var(--muted);padding:8px 0;">No creators covering this county yet.</div>`;
+    : `<div class="map-no-coverage">No creators covering this county yet.</div>`;
 
   popup.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#fff;text-transform:uppercase;">${escHtml(county)} County</div>
-      <button onclick="closeMapPopup()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px;">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="map-popup-county">${escHtml(county)} County</div>
+      <button onclick="closeMapPopup()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0 0 0 8px;margin-bottom:8px;">×</button>
     </div>
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">${creators.length} creator${creators.length!==1?'s':''} covering this county</div>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">${creators.length} creator${creators.length!==1?'s':''} in network</div>
     ${creatorsHtml}`;
   popup.style.display = 'block';
 }
@@ -2589,12 +2618,13 @@ function showMapPopup(county, event){
 function closeMapPopup(){
   const popup = document.getElementById('mapPopup');
   if(popup) popup.style.display = 'none';
+  d3.select('#ncMapSvg').selectAll('path.county-path').classed('active', false);
 }
 
 document.addEventListener('click', function(e){
   const popup = document.getElementById('mapPopup');
-  const svg = document.getElementById('ncMapSvg');
-  if(popup && popup.style.display!=='none' && !popup.contains(e.target) && e.target!==svg && !svg?.contains(e.target)){
+  const container = document.getElementById('mapContainer');
+  if(popup && popup.style.display!=='none' && container && !container.contains(e.target)){
     closeMapPopup();
   }
 });
