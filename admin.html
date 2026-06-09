@@ -737,12 +737,12 @@ function getInitials(name){return(name||'?').trim().split(' ').filter(Boolean).m
 
 function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-const NOTIFY_URL = 'https://alvcxrsxkicjdktzcbee.supabase.co/functions/v1/send-notification';
+const NOTIFY_URL = '/api/notify';
 async function sendNotification(type, payload){
   try{
     await fetch(NOTIFY_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({type,payload})
     });
   }catch(e){ console.warn('Notification failed',e); }
