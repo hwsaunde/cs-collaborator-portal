@@ -2099,7 +2099,12 @@ async function submitPost(){
         headers:{'Prefer':'return=representation'},
         body:JSON.stringify({title, body, category, author_id:userId, media_urls:''})
       });
-      if(!res.ok&&res.status!==201){ msg.textContent='Could not create post.'; msg.style.color='#f87a8a'; btn.disabled=false; return; }
+      if(!res.ok&&res.status!==201){
+        const errBody = await res.json().catch(()=>({}));
+        console.error('news_posts insert error:', res.status, errBody);
+        msg.textContent=`Error ${res.status}: ${errBody.message||errBody.error||'Could not create post.'}`;
+        msg.style.color='#f87a8a'; btn.disabled=false; return;
+      }
       const created = await res.json();
       postId = Array.isArray(created) ? created[0].id : created.id;
     }
