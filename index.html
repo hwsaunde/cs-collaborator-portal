@@ -904,10 +904,37 @@ function removeCoverageCounty(county){
 }
 
 // ── AUTH ──
-async function sbFetch(path,opts={}){
+async function sbFetch(path,opts={},_retry=true){
   const h={'apikey':SB_KEY,'Content-Type':'application/json',...(opts.headers||{})};
   if(token) h['Authorization']='Bearer '+token;
-  return fetch(SB_URL+path,{...opts,headers:h});
+  const res = await fetch(SB_URL+path,{...opts,headers:h});
+  if(res.status===401 && _retry){
+    const refreshed = await refreshSession();
+    if(refreshed) return sbFetch(path,opts,false);
+    // Refresh failed — boot to login
+    doLogout();
+  }
+  return res;
+}
+
+async function refreshSession(){
+  const rt = localStorage.getItem('cs_refresh_token');
+  if(!rt) return false;
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:rt})
+    });
+    const data = await res.json();
+    if(data.access_token){
+      token = data.access_token;
+      localStorage.setItem('cs_token', data.access_token);
+      if(data.refresh_token) localStorage.setItem('cs_refresh_token', data.refresh_token);
+      return true;
+    }
+  }catch(e){}
+  return false;
 }
 
 async function doLogin(){
@@ -928,6 +955,7 @@ async function doLogin(){
       localStorage.setItem('cs_token', data.access_token);
       localStorage.setItem('cs_user_id', data.user.id);
       localStorage.setItem('cs_user_email', data.user.email);
+      if(data.refresh_token) localStorage.setItem('cs_refresh_token', data.refresh_token);
       if(ADMIN_EMAILS.includes(em)){
         sessionStorage.setItem('cs_admin_token',data.access_token);
         sessionStorage.setItem('cs_admin_email',data.user.email);
@@ -957,6 +985,7 @@ function doLogout(){
   localStorage.removeItem('cs_token');
   localStorage.removeItem('cs_user_id');
   localStorage.removeItem('cs_user_email');
+  localStorage.removeItem('cs_refresh_token');
   sessionStorage.removeItem('cs_admin_token');
   sessionStorage.removeItem('cs_admin_email');
   document.getElementById('appPage').style.display='none';
