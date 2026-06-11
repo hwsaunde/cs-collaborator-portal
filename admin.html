@@ -373,6 +373,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
       <button class="tab-btn" id="tab-submissions" onclick="switchTab('submissions')">Submissions inbox <span class="tab-badge" id="pendingBadge" style="display:none;">0</span></button>
       <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">Ready to post <span class="tab-badge" id="pipelineBadge" style="display:none;background:#4ade80;">0</span></button>
       <button class="tab-btn" id="tab-gigs" onclick="switchTab('gigs')">Gig Board</button>
+      <button class="tab-btn" id="tab-invite" onclick="switchTab('invite')">Invite Creator</button>
     </div>
 
     <!-- ── PROFILES TAB ── -->
@@ -522,6 +523,40 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
       </div>
       <div class="admin-gig-list" id="adminGigList"><div style="text-align:center;padding:3rem;color:var(--muted);">Loading gigs...</div></div>
     </div>
+
+    <!-- ── INVITE TAB ── -->
+    <div class="tab-page" id="tabPage-invite">
+      <div class="page-header" style="margin-bottom:1.5rem;">
+        <div>
+          <div class="page-title">Invite Creator</div>
+          <div class="page-sub">Send a portal invitation email. The creator will receive a magic link that takes them directly to the creator portal.</div>
+        </div>
+      </div>
+      <div style="max-width:480px;">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+          <div style="margin-bottom:1rem;">
+            <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Creator name</label>
+            <input type="text" id="inviteName" placeholder="Full name" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+          </div>
+          <div style="margin-bottom:1.25rem;">
+            <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Email address</label>
+            <input type="email" id="inviteEmail" placeholder="creator@email.com" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+          </div>
+          <button onclick="sendInvite()" id="inviteBtn" style="width:100%;padding:11px;background:var(--red);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(200,16,46,0.3);">Send Invite</button>
+          <div id="inviteMsg" style="font-size:12px;text-align:center;margin-top:10px;min-height:18px;color:var(--muted);"></div>
+        </div>
+        <div style="margin-top:1.25rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">What happens when you send an invite</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.8;">
+            1. Creator receives an email with a magic link<br>
+            2. They click the link → land on <strong style="color:#6496ff;">creators.countysports.com</strong><br>
+            3. They set a password and fill out their profile<br>
+            4. They appear in your Creator Profiles tab
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -704,6 +739,37 @@ function switchTab(tab){
   document.getElementById('tab-'+tab).classList.add('active');
   if(tab==='pipeline') loadPipeline();
   if(tab==='gigs') loadAdminGigs();
+}
+
+async function sendInvite(){
+  const name = document.getElementById('inviteName').value.trim();
+  const email = document.getElementById('inviteEmail').value.trim();
+  const msg = document.getElementById('inviteMsg');
+  const btn = document.getElementById('inviteBtn');
+  if(!email){ msg.textContent='Email is required.'; msg.style.color='#f87a8a'; return; }
+  btn.disabled = true; btn.textContent = 'Sending...';
+  msg.textContent = ''; msg.style.color = 'var(--muted)';
+  try{
+    const res = await fetch('/api/invite',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name, email})
+    });
+    const data = await res.json();
+    if(data.ok){
+      msg.textContent = `✓ Invite sent to ${email}`;
+      msg.style.color = '#4ade80';
+      document.getElementById('inviteName').value = '';
+      document.getElementById('inviteEmail').value = '';
+    } else {
+      msg.textContent = data.error || 'Failed to send invite.';
+      msg.style.color = '#f87a8a';
+    }
+  }catch(e){
+    msg.textContent = 'Connection error.';
+    msg.style.color = '#f87a8a';
+  }
+  btn.disabled = false; btn.textContent = 'Send Invite';
 }
 
 async function loadAll(){
