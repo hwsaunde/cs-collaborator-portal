@@ -392,10 +392,28 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   <div class="login-card">
     <div class="login-logo">County <span>Sports</span></div>
     <div class="login-sub">Creator Portal — sign in to access your dashboard</div>
-    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" onclick="doLogin()">Sign in</button>
-    <div class="err-box" id="loginErr"></div>
+
+    <!-- Password login -->
+    <div id="loginFormPass">
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="login-btn" onclick="doLogin()">Sign in</button>
+      <div class="err-box" id="loginErr"></div>
+      <div style="text-align:center;margin-top:1.1rem;">
+        <button onclick="showMagicLinkForm()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;text-decoration:underline;text-underline-offset:3px;">No password yet? Get a login link</button>
+      </div>
+    </div>
+
+    <!-- Magic link form -->
+    <div id="loginFormMagic" style="display:none;">
+      <div class="field"><label>Email</label><input type="email" id="magicEmail" placeholder="you@email.com" onkeydown="if(event.key==='Enter')sendMagicLink()"></div>
+      <button class="login-btn" onclick="sendMagicLink()">Send login link</button>
+      <div class="err-box" id="magicErr"></div>
+      <div id="magicSuccess" style="display:none;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;font-size:12px;padding:9px 12px;border-radius:7px;margin-top:.75rem;text-align:center;"></div>
+      <div style="text-align:center;margin-top:1.1rem;">
+        <button onclick="showPasswordForm()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;text-decoration:underline;text-underline-offset:3px;">← Back to sign in</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -978,6 +996,42 @@ async function doLogin(){
       errEl.style.display='block';
     }
   }catch(e){errEl.textContent='Connection error.';errEl.style.display='block';}
+}
+
+function showMagicLinkForm(){
+  document.getElementById('loginFormPass').style.display='none';
+  document.getElementById('loginFormMagic').style.display='block';
+  document.getElementById('magicErr').style.display='none';
+  document.getElementById('magicSuccess').style.display='none';
+}
+
+function showPasswordForm(){
+  document.getElementById('loginFormMagic').style.display='none';
+  document.getElementById('loginFormPass').style.display='block';
+}
+
+async function sendMagicLink(){
+  const email = document.getElementById('magicEmail').value.trim();
+  const errEl = document.getElementById('magicErr');
+  const successEl = document.getElementById('magicSuccess');
+  errEl.style.display='none';
+  successEl.style.display='none';
+  if(!email){ errEl.textContent='Enter your email.'; errEl.style.display='block'; return; }
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/otp',{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email, options:{emailRedirectTo:'https://creators.countysports.com'}})
+    });
+    if(res.ok||res.status===200){
+      successEl.textContent='Check your email — a login link is on its way.';
+      successEl.style.display='block';
+      document.getElementById('magicEmail').value='';
+    } else {
+      const d=await res.json().catch(()=>({}));
+      errEl.textContent=d.msg||d.message||'Could not send link.';errEl.style.display='block';
+    }
+  }catch(e){ errEl.textContent='Connection error.'; errEl.style.display='block'; }
 }
 
 function doLogout(){
@@ -1950,6 +2004,8 @@ function timeAgo(dateStr){
 
 // Auto-restore session from localStorage on page load
 (async function restoreSession(){
+  // If a magic/invite link is in the hash, let the hash handler at the bottom take over
+  if(window.location.hash.includes('access_token')) return;
   const savedToken=localStorage.getItem('cs_token');
   const savedUserId=localStorage.getItem('cs_user_id');
   const savedEmail=localStorage.getItem('cs_user_email');
@@ -2574,26 +2630,54 @@ async function changePassword(){
   }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
 }
 
-// Auth redirect handler
-const hash=window.location.hash;
-if(hash&&hash.includes('access_token')){
-  const params=new URLSearchParams(hash.replace('#',''));
-  token=params.get('access_token');
-  if(token){
-    fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}})
-      .then(r=>r.json()).then(async user=>{
-        if(user&&user.id){
-          userId=user.id;
-          document.getElementById('loginPage').style.display='none';
-          document.getElementById('appPage').style.display='block';
-          document.getElementById('userEmail').textContent=user.email;
-          window.history.replaceState(null,'',window.location.pathname);
-          await loadProfile();
-          renderCard();
-        }
-      });
-  }
-}
+// Auth redirect handler — magic links and invite links land here
+(async function handleAuthRedirect(){
+  const hash = window.location.hash;
+  if(!hash || !hash.includes('access_token')) return;
+  const params = new URLSearchParams(hash.replace('#',''));
+  token = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  const linkType = params.get('type'); // 'invite', 'magiclink', 'recovery', etc.
+  if(!token) return;
+
+  // Persist the session immediately so refresh works
+  if(refreshToken) localStorage.setItem('cs_refresh_token', refreshToken);
+  localStorage.setItem('cs_token', token);
+
+  try{
+    const res = await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
+    const user = await res.json();
+    if(user && user.id){
+      userId = user.id;
+      localStorage.setItem('cs_user_id', user.id);
+      localStorage.setItem('cs_user_email', user.email);
+
+      // Clean the hash from the URL
+      window.history.replaceState(null,'',window.location.pathname);
+
+      document.getElementById('loginPage').style.display='none';
+      document.getElementById('appPage').style.display='block';
+      document.getElementById('userEmail').textContent = user.email;
+      setAdminFlag(user.email);
+      syncMobileNav(user.email, ADMIN_EMAILS.includes(user.email.toLowerCase()));
+      await loadProfile();
+      initAfterLogin();
+
+      // New creator via invite — prompt them to set a password
+      if(linkType === 'invite'){
+        setTimeout(()=>{
+          openSettingsModal();
+          // Surface the password section with a welcome nudge
+          const passMsg = document.getElementById('passMsg');
+          if(passMsg){
+            passMsg.textContent = 'Welcome! Set a password so you can sign in next time.';
+            passMsg.style.color = '#4ade80';
+          }
+        }, 600);
+      }
+    }
+  }catch(e){ console.error('Auth redirect error:', e); }
+})();
 
 // ── NC MAP ──
 let mapLoaded = false;
