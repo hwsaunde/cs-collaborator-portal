@@ -73,6 +73,8 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .btn-preview:hover{background:#223366;}
 .btn-download{flex:1;padding:8px;background:var(--red);border:none;color:#fff;border-radius:6px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
 .btn-download:hover{opacity:.85;}
+.btn-remove{padding:8px 10px;background:none;border:1px solid rgba(200,16,46,0.3);color:#f87a8a;border-radius:6px;font-size:12px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;white-space:nowrap;}
+.btn-remove:hover{background:rgba(200,16,46,0.15);border-color:rgba(200,16,46,0.6);}
 
 /* SUBMISSIONS */
 .submissions-list{display:flex;flex-direction:column;gap:12px;}
@@ -772,6 +774,25 @@ async function sendInvite(){
   btn.disabled = false; btn.textContent = 'Send Invite';
 }
 
+async function removeCreator(userId, name){
+  if(!confirm(`Remove ${name} from the portal? This will delete their account and profile permanently and cannot be undone.`)) return;
+  try{
+    const res = await fetch('/api/remove-creator',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id: userId})
+    });
+    const data = await res.json();
+    if(data.ok){
+      loadAll();
+    } else {
+      alert('Could not remove creator: '+(data.error||'Unknown error'));
+    }
+  }catch(e){
+    alert('Connection error.');
+  }
+}
+
 async function loadAll(){
   await Promise.all([loadProfiles(), loadSubmissions()]);
 }
@@ -1082,6 +1103,7 @@ function renderCards(profiles){
         <div class="collab-actions">
           <button class="btn-preview" onclick="event.stopPropagation();openPreview(${i})">Preview card</button>
           <button class="btn-download" onclick="event.stopPropagation();downloadCard(${i})">Download PNG</button>
+          <button class="btn-remove" onclick="event.stopPropagation();removeCreator('${p.user_id}','${escHtml(p.name||'this creator')}')">Remove</button>
         </div>
       </div>
     </div>
