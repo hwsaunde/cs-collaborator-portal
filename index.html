@@ -1243,6 +1243,7 @@ function updateCrop(){
 function updateAvatarThumb(){
   if(!cardState.avatarImg)return;
   const thumb=document.getElementById('avatarThumb');
+  if(!thumb)return;
   let c=thumb.querySelector('canvas');
   if(!c){
     c=document.createElement('canvas');
