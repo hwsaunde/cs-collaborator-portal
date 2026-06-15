@@ -982,11 +982,26 @@ async function doLogin(){
           return;
         }
       }
+      // Verify this user is a creator — must have a collaborator_profiles row or be admin
+      const _isAdminLogin=ADMIN_EMAILS.includes(em);
+      if(!_isAdminLogin){
+        const roleCheck=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+data.user.id+'&select=id',{
+          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}
+        });
+        const roleData=await roleCheck.json();
+        if(!roleData||roleData.length===0){
+          // Not a creator — clear session and block
+          localStorage.removeItem('cs_token');localStorage.removeItem('cs_user_id');
+          localStorage.removeItem('cs_user_email');localStorage.removeItem('cs_refresh_token');
+          errEl.textContent='This portal is for County Sports creators only. Visit athletes.countysports.com for your athlete profile.';
+          errEl.style.display='block';
+          return;
+        }
+      }
       document.getElementById('loginPage').style.display='none';
       document.getElementById('appPage').style.display='block';
       document.getElementById('userEmail').textContent=data.user.email;
       setAdminFlag(data.user.email);
-      const _isAdminLogin=ADMIN_EMAILS.includes(data.user.email.toLowerCase());
       if(_isAdminLogin) document.getElementById('adminLink').style.display='inline-block';
       syncMobileNav(data.user.email,_isAdminLogin);
       await loadProfile();
@@ -2029,6 +2044,18 @@ function timeAgo(dateStr){
           sessionStorage.setItem('cs_admin_email',savedEmail);
           window.location.href='admin.html';
           return;
+        }
+        // Role check on session restore — block athletes
+        if(!ADMIN_EMAILS.includes(em)){
+          const roleCheck=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+savedUserId+'&select=id',{
+            headers:{'apikey':SB_KEY,'Authorization':'Bearer '+savedToken}
+          });
+          const roleData=await roleCheck.json();
+          if(!roleData||roleData.length===0){
+            localStorage.removeItem('cs_token');localStorage.removeItem('cs_user_id');
+            localStorage.removeItem('cs_user_email');localStorage.removeItem('cs_refresh_token');
+            return; // Stay on login page
+          }
         }
         document.getElementById('loginPage').style.display='none';
         document.getElementById('appPage').style.display='block';
