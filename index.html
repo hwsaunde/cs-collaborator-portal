@@ -1036,7 +1036,7 @@ async function sendMagicLink(){
     const res = await fetch(SB_URL+'/auth/v1/otp',{
       method:'POST',
       headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({email, options:{emailRedirectTo:'https://creators.countysports.com'}})
+      body:JSON.stringify({email, create_user:false, options:{emailRedirectTo:'https://creators.countysports.com'}})
     });
     if(res.ok||res.status===200){
       successEl.textContent='Check your email — a login link is on its way.';
