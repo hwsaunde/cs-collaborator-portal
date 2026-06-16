@@ -1103,18 +1103,20 @@ async function loadProfile(){
       if(p.color_accent){document.getElementById('c-accent').value=p.color_accent;cardState.accent=p.color_accent;}
       // Load images as data URLs
       if(p.avatar_url){
+        cardState.avatarUrl=p.avatar_url;cardState.avatarDirty=false;
         const img=new Image();img.crossOrigin='anonymous';
         img.onload=()=>{cardState.avatarImg=img;updateAvatarThumb();renderCard();};
         img.src=p.avatar_url;
       }
       if(p.header_bg_url){
+        cardState.headerBgUrl=p.header_bg_url;cardState.headerBgDirty=false;
         const img=new Image();img.crossOrigin='anonymous';
         img.onload=()=>{cardState.headerBgImg=img;updateHeaderBgSlot(p.header_bg_url);renderCard();};
         img.src=p.header_bg_url;
       }
-      if(p.photo1_url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo1=img;setPhotoSlot(0,p.photo1_url);renderCard();};img.src=p.photo1_url;}
-      if(p.photo2_url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo2=img;setPhotoSlot(1,p.photo2_url);renderCard();};img.src=p.photo2_url;}
-      if(p.photo3_url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo3=img;setPhotoSlot(2,p.photo3_url);renderCard();};img.src=p.photo3_url;}
+      if(p.photo1_url){cardState.photo1Url=p.photo1_url;cardState.photo1Dirty=false;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo1=img;setPhotoSlot(0,p.photo1_url);renderCard();};img.src=p.photo1_url;}
+      if(p.photo2_url){cardState.photo2Url=p.photo2_url;cardState.photo2Dirty=false;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo2=img;setPhotoSlot(1,p.photo2_url);renderCard();};img.src=p.photo2_url;}
+      if(p.photo3_url){cardState.photo3Url=p.photo3_url;cardState.photo3Dirty=false;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{cardState.photo3=img;setPhotoSlot(2,p.photo3_url);renderCard();};img.src=p.photo3_url;}
       // Crop state
       // Services
       if(p.services && Array.isArray(p.services)){
@@ -1141,12 +1143,12 @@ async function loadProfile(){
 async function saveProfile(){
   const msg=document.getElementById('statusMsg');
   msg.textContent='Saving...';msg.className='status-msg';
-  // Render final card to get data URLs
-  const avatarDataUrl=getAvatarDataUrl();
-  const headerBgDataUrl=cardState.headerBgImg?getImageDataUrl(cardState.headerBgImg):null;
-  const photo1DataUrl=cardState.photo1?getImageDataUrl(cardState.photo1):null;
-  const photo2DataUrl=cardState.photo2?getImageDataUrl(cardState.photo2):null;
-  const photo3DataUrl=cardState.photo3?getImageDataUrl(cardState.photo3):null;
+  // Only re-encode images that were newly uploaded this session to keep payload small
+  const avatarDataUrl=cardState.avatarDirty?getAvatarDataUrl():(cardState.avatarUrl||null);
+  const headerBgDataUrl=cardState.headerBgDirty?(cardState.headerBgImg?getImageDataUrl(cardState.headerBgImg):null):(cardState.headerBgUrl||null);
+  const photo1DataUrl=cardState.photo1Dirty?(cardState.photo1?getImageDataUrl(cardState.photo1):null):(cardState.photo1Url||null);
+  const photo2DataUrl=cardState.photo2Dirty?(cardState.photo2?getImageDataUrl(cardState.photo2):null):(cardState.photo2Url||null);
+  const photo3DataUrl=cardState.photo3Dirty?(cardState.photo3?getImageDataUrl(cardState.photo3):null):(cardState.photo3Url||null);
 
   const payload={
     user_id:userId,
@@ -1175,7 +1177,7 @@ async function saveProfile(){
     });
     if(res.ok||res.status===201||res.status===200){msg.textContent='Profile saved!';msg.className='status-msg ok';}
     else{const err=await res.json();msg.textContent='Error: '+(err.message||'Could not save.');msg.className='status-msg err';}
-  }catch(e){msg.textContent='Connection error.';msg.className='status-msg err';}
+  }catch(e){console.error('saveProfile error:',e);msg.textContent='Error: '+(e.message||'Connection error.');msg.className='status-msg err';}
 }
 
 function getImageDataUrl(img){
@@ -1212,7 +1214,7 @@ function handleHeaderBg(input){
   const r=new FileReader();
   r.onload=ev=>{
     const img=new Image();
-    img.onload=()=>{cardState.headerBgImg=img;updateHeaderBgSlot(ev.target.result);renderCard();};
+    img.onload=()=>{cardState.headerBgImg=img;cardState.headerBgDirty=true;updateHeaderBgSlot(ev.target.result);renderCard();};
     img.src=ev.target.result;
   };
   r.readAsDataURL(file);
@@ -1224,7 +1226,7 @@ function updateHeaderBgSlot(src){
 }
 
 function clearHeaderBg(){
-  cardState.headerBgImg=null;
+  cardState.headerBgImg=null;cardState.headerBgDirty=true;cardState.headerBgUrl=null;
   document.getElementById('headerBgSlot').innerHTML=`
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
     <span>Click to upload header background</span>`;
@@ -1255,7 +1257,7 @@ function handleAvatar(input){
   r.onload=ev=>{
     const img=new Image();
     img.onload=()=>{
-      cardState.avatarImg=img;
+      cardState.avatarImg=img;cardState.avatarDirty=true;
       cardState.avatarZoom=100;
       cardState.avatarX=0;
       cardState.avatarY=0;
@@ -1315,9 +1317,9 @@ function handlePhoto(input,idx,slotId,cardId){
   r.onload=ev=>{
     const img=new Image();
     img.onload=()=>{
-      if(idx===0)cardState.photo1=img;
-      else if(idx===1)cardState.photo2=img;
-      else cardState.photo3=img;
+      if(idx===0){cardState.photo1=img;cardState.photo1Dirty=true;}
+      else if(idx===1){cardState.photo2=img;cardState.photo2Dirty=true;}
+      else{cardState.photo3=img;cardState.photo3Dirty=true;}
       setPhotoSlot(idx,ev.target.result);
       renderCard();
     };
