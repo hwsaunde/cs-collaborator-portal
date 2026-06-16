@@ -592,6 +592,30 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
             </div>
             <div class="field"><label>Teams involved <span style="color:var(--red)">*</span></label><input type="text" id="ev-teams" placeholder="e.g. Ardrey Kell, Providence Day"></div>
             <div class="two-col">
+              <div class="field"><label>County <span style="color:var(--red)">*</span></label>
+                <select id="ev-county">
+                  <option value="">Select county...</option>
+                  <option>Alamance</option><option>Alexander</option><option>Anson</option>
+                  <option>Ashe</option><option>Avery</option><option>Beaufort</option>
+                  <option>Brunswick</option><option>Buncombe</option><option>Burke</option>
+                  <option>Cabarrus</option><option>Caldwell</option><option>Carteret</option>
+                  <option>Catawba</option><option>Chatham</option><option>Cleveland</option>
+                  <option>Columbus</option><option>Cumberland</option><option>Davidson</option>
+                  <option>Davie</option><option>Durham</option><option>Forsyth</option>
+                  <option>Gaston</option><option>Guilford</option><option>Hoke</option>
+                  <option>Iredell</option><option>Johnston</option><option>Lee</option>
+                  <option>Lincoln</option><option>Mecklenburg</option><option>Moore</option>
+                  <option>New Hanover</option><option>Onslow</option><option>Orange</option>
+                  <option>Pitt</option><option>Randolph</option><option>Richmond</option>
+                  <option>Robeson</option><option>Rowan</option><option>Rutherford</option>
+                  <option>Stanly</option><option>Surry</option><option>Union</option>
+                  <option>Wake</option><option>Wayne</option><option>Wilkes</option>
+                  <option>Yadkin</option>
+                </select>
+              </div>
+              <div class="field" style="display:contents;"></div>
+            </div>
+            <div class="two-col">
               <div class="field"><label>Home score</label><input type="text" id="ev-score-home" placeholder="42"></div>
               <div class="field"><label>Away score</label><input type="text" id="ev-score-away" placeholder="38"></div>
             </div>
@@ -1661,7 +1685,8 @@ async function submitMedia(){
   const evTeams=document.getElementById('ev-teams').value.trim();
   const status=document.getElementById('submitStatus');
   const btn=document.getElementById('submitBtn');
-  if(!evName||!evDate||!evSport||!evTeams){status.textContent='Please fill in all required fields.';status.className='submit-status err';return;}
+  const evCounty=document.getElementById('ev-county').value;
+  if(!evName||!evDate||!evSport||!evTeams||!evCounty){status.textContent='Please fill in all required fields including county.';status.className='submit-status err';return;}
   btn.disabled=true;status.textContent='Creating submission...';status.className='submit-status';
   const progressWrap=document.getElementById('progressWrap');
   const progressBar=document.getElementById('progressBar');
@@ -1670,7 +1695,7 @@ async function submitMedia(){
   try{
     // Step 1: Create the submission record first to get an ID
     const payload={
-      user_id:userId,event_name:evName,event_date:evDate,sport:evSport,teams:evTeams,
+      user_id:userId,event_name:evName,event_date:evDate,sport:evSport,teams:evTeams,county:document.getElementById('ev-county').value,
       score_home:document.getElementById('ev-score-home').value,
       score_away:document.getElementById('ev-score-away').value,
       players:document.getElementById('ev-players').value,
@@ -1724,7 +1749,7 @@ async function submitMedia(){
       sport: evSport,
       description: document.getElementById('ev-notes').value.trim()
     });
-    ['ev-name','ev-date','ev-sport','ev-teams','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes','ev-song'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['ev-name','ev-date','ev-sport','ev-teams','ev-county','ev-score-home','ev-score-away','ev-players','ev-media-type','ev-notes','ev-song'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     selectedFiles=[];renderFileList();
     setTimeout(()=>{progressWrap.style.display='none';progressBar.style.width='0%';},1000);
   }catch(e){
