@@ -1167,13 +1167,11 @@ async function saveProfile(){
     updated_at:new Date().toISOString()
   };
   try{
-    const checkRes=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=id');
-    const existing=await checkRes.json();
-    const isNew=!existing||existing.length===0;
-    const method=isNew?'POST':'PATCH';
-    const url=isNew?'/rest/v1/collaborator_profiles':'/rest/v1/collaborator_profiles?user_id=eq.'+userId;
-    const res=await sbFetch(url,{
-      method,headers:{'Prefer':'return=representation'},body:JSON.stringify(payload)
+    payload.user_id = userId;
+    const res=await sbFetch('/rest/v1/collaborator_profiles',{
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates,return=representation'},
+      body:JSON.stringify(payload)
     });
     if(res.ok||res.status===201||res.status===200){msg.textContent='Profile saved!';msg.className='status-msg ok';}
     else{const err=await res.json();msg.textContent='Error: '+(err.message||'Could not save.');msg.className='status-msg err';}
@@ -1716,6 +1714,10 @@ async function submitMedia(){
     }
     const created=await res.json();
     const submissionId=Array.isArray(created)?created[0]?.id:created?.id;
+    if(!submissionId){
+      status.textContent='Error: Could not create submission record.';status.className='submit-status err';
+      progressWrap.style.display='none';return;
+    }
     progressBar.style.width='20%';
 
     // Step 2: Upload files if any
@@ -1755,8 +1757,9 @@ async function submitMedia(){
   }catch(e){
     status.textContent='Connection error. Please try again.';status.className='submit-status err';
     progressWrap.style.display='none';
+  }finally{
+    btn.disabled=false;
   }
-  btn.disabled=false;
 }
 
 // ── NOTIFICATIONS ──
@@ -1779,7 +1782,8 @@ async function loadDirectory(){
   grid.innerHTML = '<div class="empty-history">Loading creators...</div>';
   try{
     const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,services,website_url,photo1_url,photo2_url,photo3_url,coverage_counties&order=name.asc');
-    allCreators = await res.json() || [];
+    const dirData = await res.json();
+    allCreators = Array.isArray(dirData) ? dirData : [];
     renderDirectory();
   }catch(e){ grid.innerHTML = '<div class="empty-history">Could not load directory.</div>'; }
 }
@@ -1834,8 +1838,8 @@ function renderDirectory(){
   }).join('');
 }
 
-function openCreatorModal(userId){
-  const c = allCreators.find(x=>x.user_id===userId);
+function openCreatorModal(creatorUserId){
+  const c = allCreators.find(x=>x.user_id===creatorUserId);
   if(!c) return;
   const initials = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('creatorModalAvatar').innerHTML = c.avatar_url
@@ -1899,11 +1903,17 @@ async function loadGigs(){
   try{
     const [gigsRes, profileRes] = await Promise.all([
       sbFetch('/rest/v1/gigs?select=*&order=created_at.desc'),
-      sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=location')
+      sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=location,coverage_counties')
     ]);
     const gigsData = await gigsRes.json() || [];
     const profileData = await profileRes.json();
-    creatorCounty = (profileData&&profileData[0]?.location||'').toLowerCase().trim();
+    const prof = profileData&&profileData[0];
+    // Prefer coverage_counties for Near Me, fall back to location field
+    if(prof?.coverage_counties?.length){
+      creatorCounty = prof.coverage_counties[0].toLowerCase().trim();
+    } else {
+      creatorCounty = (prof?.location||'').toLowerCase().trim();
+    }
     // paid gigs always float to top, then newest first
     allGigs = gigsData.sort((a,b)=>{
       if(a.gig_type==='paid'&&b.gig_type!=='paid') return -1;
@@ -2327,9 +2337,10 @@ async function loadNews(){
     const profileData = await profileRes.json();
     currentUserProfile = profileData&&profileData[0] ? profileData[0] : null;
 
-    if(!posts||!posts.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
+    if(!Array.isArray(posts)||!posts.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
 
-    const postIds = posts.map(p=>p.id);
+    const postIds = posts.map(p=>p.id).filter(Boolean);
+    if(!postIds.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
     const [commentsRes, likesRes] = await Promise.all([
       sbFetch('/rest/v1/news_comments?post_id=in.('+postIds.join(',')+')'+'&select=*&order=created_at.asc'),
       sbFetch('/rest/v1/news_post_likes?post_id=in.('+postIds.join(',')+')'+'&select=post_id,user_id')
@@ -2623,18 +2634,9 @@ async function saveAccountProfile(){
     const payload = { name, instagram, email: localStorage.getItem('cs_user_email')||'' };
     if(settingsAvatarDataUrl) payload.avatar_url = settingsAvatarDataUrl;
 
-    // Check if profile exists
-    const check = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=id');
-    const existing = await check.json();
-    const isNew = !existing||!existing.length;
-
-    if(isNew){
-      payload.user_id = userId;
-      await sbFetch('/rest/v1/collaborator_profiles',{ method:'POST', headers:{'Prefer':'return=representation'}, body:JSON.stringify(payload) });
-    } else {
-      payload.updated_at = new Date().toISOString();
-      await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId,{ method:'PATCH', headers:{'Prefer':'return=representation'}, body:JSON.stringify(payload) });
-    }
+    payload.user_id = userId;
+    payload.updated_at = new Date().toISOString();
+    await sbFetch('/rest/v1/collaborator_profiles',{ method:'POST', headers:{'Prefer':'resolution=merge-duplicates,return=representation'}, body:JSON.stringify(payload) });
 
     msg.textContent='✓ Saved!'; msg.style.color='#4ade80';
     document.getElementById('setProfileName').textContent = name;
