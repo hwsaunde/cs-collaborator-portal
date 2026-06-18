@@ -774,6 +774,22 @@ async function sendInvite(){
   btn.disabled = false; btn.textContent = 'Send Invite';
 }
 
+async function togglePublic(userId, currentlyPublic){
+  const newVal = !currentlyPublic;
+  try{
+    const res = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({is_public: newVal})
+    });
+    if(res.ok || res.status===204 || res.status===200){
+      loadAll();
+    } else {
+      alert('Could not update visibility.');
+    }
+  }catch(e){ alert('Connection error.'); }
+}
+
 async function removeCreator(userId, name){
   if(!confirm(`Remove ${name} from the portal? This will delete their account and profile permanently and cannot be undone.`)) return;
   try{
@@ -1085,9 +1101,12 @@ function renderCards(profiles){
     <div class="collab-card" onclick="openCollabModal('${p.user_id}')">
       <div class="collab-card-header">
         <div class="collab-avatar">${p.avatar_url?`<img src="${p.avatar_url}" alt="Avatar">`:getInitials(p.name)}</div>
-        <div>
+        <div style="min-width:0;flex:1;">
           <div class="collab-name">${p.name||'Unnamed'}</div>
           <div class="collab-role">${p.role||'No role set'}</div>
+          <div style="margin-top:4px;">
+            <span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:${p.is_public?'rgba(74,222,128,0.15)':'rgba(255,255,255,0.07)'};color:${p.is_public?'#4ade80':'#8899aa'};border:1px solid ${p.is_public?'rgba(74,222,128,0.4)':'rgba(255,255,255,0.1)'};">${p.is_public?'Public':'Private'}</span>
+          </div>
         </div>
       </div>
       <div class="collab-card-body">
@@ -1103,6 +1122,7 @@ function renderCards(profiles){
         <div class="collab-actions">
           <button class="btn-preview" onclick="event.stopPropagation();openPreview(${i})">Preview card</button>
           <button class="btn-download" onclick="event.stopPropagation();downloadCard(${i})">Download PNG</button>
+          <button class="btn-preview" onclick="event.stopPropagation();togglePublic('${p.user_id}',${!!p.is_public})" style="background:${p.is_public?'rgba(74,222,128,0.15)':'rgba(100,150,255,0.15)'};color:${p.is_public?'#4ade80':'#6496ff'};border-color:${p.is_public?'rgba(74,222,128,0.3)':'rgba(100,150,255,0.3)'};">${p.is_public?'Make Private':'Make Public'}</button>
           <button class="btn-remove" onclick="event.stopPropagation();removeCreator('${p.user_id}','${escHtml(p.name||'this creator')}')">Remove</button>
         </div>
       </div>
