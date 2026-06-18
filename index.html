@@ -2710,8 +2710,9 @@ async function changePassword(){
     const user = await res.json();
     if(user && user.id){
       // Creator role check — block athletes and uninvited users
+      // Skip for invite links: the invite itself is the authorization, and no profile row exists yet
       const _isAdminRedirect=ADMIN_EMAILS.includes((user.email||'').toLowerCase());
-      if(!_isAdminRedirect){
+      if(!_isAdminRedirect && linkType !== 'invite'){
         const roleRes=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+user.id+'&select=id',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
         const roleData=await roleRes.json();
         if(!roleData||roleData.length===0){
