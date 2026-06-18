@@ -534,26 +534,28 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
           <div class="page-sub">Send a portal invitation email. The creator will receive a magic link that takes them directly to the creator portal.</div>
         </div>
       </div>
-      <div style="max-width:480px;">
-        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
-          <div style="margin-bottom:1rem;">
-            <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Creator name</label>
-            <input type="text" id="inviteName" placeholder="Full name" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+      <div style="display:flex;justify-content:center;">
+        <div style="width:100%;max-width:520px;">
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;">
+            <div style="margin-bottom:1rem;">
+              <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Creator Name</label>
+              <input type="text" id="inviteName" placeholder="Full name" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:11px 14px;font-size:14px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+            </div>
+            <div style="margin-bottom:1.5rem;">
+              <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Email Address</label>
+              <input type="email" id="inviteEmail" placeholder="creator@email.com" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:11px 14px;font-size:14px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+            </div>
+            <button onclick="sendInvite()" id="inviteBtn" style="width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 24px rgba(200,16,46,0.3);letter-spacing:.02em;">Send Invite</button>
+            <div id="inviteMsg" style="font-size:12px;text-align:center;margin-top:12px;min-height:18px;color:var(--muted);"></div>
           </div>
-          <div style="margin-bottom:1.25rem;">
-            <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Email address</label>
-            <input type="email" id="inviteEmail" placeholder="creator@email.com" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
-          </div>
-          <button onclick="sendInvite()" id="inviteBtn" style="width:100%;padding:11px;background:var(--red);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(200,16,46,0.3);">Send Invite</button>
-          <div id="inviteMsg" style="font-size:12px;text-align:center;margin-top:10px;min-height:18px;color:var(--muted);"></div>
-        </div>
-        <div style="margin-top:1.25rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">What happens when you send an invite</div>
-          <div style="font-size:12px;color:var(--text);line-height:1.8;">
-            1. Creator receives an email with a magic link<br>
-            2. They click the link → land on <strong style="color:#6496ff;">creators.countysports.com</strong><br>
-            3. They set a password and fill out their profile<br>
-            4. They appear in your Creator Profiles tab
+          <div style="margin-top:1.25rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">What happens when you send an invite</div>
+            <div style="font-size:13px;color:var(--text);line-height:2;">
+              1. Creator receives an email with a magic link<br>
+              2. They click the link → land on <strong style="color:#6496ff;">creators.countysports.com</strong><br>
+              3. They set a password and fill out their profile<br>
+              4. They appear in your Creator Profiles tab
+            </div>
           </div>
         </div>
       </div>
