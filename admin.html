@@ -777,16 +777,14 @@ async function sendInvite(){
 async function togglePublic(userId, currentlyPublic){
   const newVal = !currentlyPublic;
   try{
-    const res = await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId, {
-      method:'PATCH',
+    const res = await fetch('/api/set-creator-public', {
+      method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({is_public: newVal})
+      body:JSON.stringify({user_id: userId, is_public: newVal})
     });
-    if(res.ok || res.status===204 || res.status===200){
-      loadAll();
-    } else {
-      alert('Could not update visibility.');
-    }
+    const data = await res.json();
+    if(data.ok){ loadAll(); }
+    else{ alert('Could not update visibility: '+(data.error||'Unknown error')); }
   }catch(e){ alert('Connection error.'); }
 }
 
