@@ -1006,9 +1006,9 @@ async function doLogin(){
           return;
         }
       }
-      // Verify this user is a creator — must have a collaborator_profiles row or be admin
+      // Verify this user is a creator — must have a collaborator_profiles row, be invited, or be admin
       const _isAdminLogin=ADMIN_EMAILS.includes(em);
-      if(!_isAdminLogin){
+      if(!_isAdminLogin && !data.user.invited_at){
         const roleCheck=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+data.user.id+'&select=id',{
           headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}
         });
@@ -2710,9 +2710,10 @@ async function changePassword(){
     const user = await res.json();
     if(user && user.id){
       // Creator role check — block athletes and uninvited users
-      // Skip for invite links: the invite itself is the authorization, and no profile row exists yet
+      // Skip for invite links (no profile row exists yet) and for users who were invited (invited_at set)
       const _isAdminRedirect=ADMIN_EMAILS.includes((user.email||'').toLowerCase());
-      if(!_isAdminRedirect && linkType !== 'invite'){
+      const _wasInvited = !!user.invited_at;
+      if(!_isAdminRedirect && linkType !== 'invite' && !_wasInvited){
         const roleRes=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+user.id+'&select=id',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
         const roleData=await roleRes.json();
         if(!roleData||roleData.length===0){
