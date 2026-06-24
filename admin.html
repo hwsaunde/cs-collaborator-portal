@@ -121,6 +121,31 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .inbox-thumb-icon{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 .inbox-more{width:64px;height:64px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);font-weight:600;flex-shrink:0;}
 
+/* MEDIA GALLERY MODAL */
+.gallery-modal{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:450;display:none;flex-direction:column;}
+.gallery-modal.open{display:flex;}
+.gallery-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+.gallery-header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.04em;}
+.gallery-header-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.gallery-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;padding:4px 8px;}
+.gallery-close:hover{color:#fff;}
+.gallery-grid{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;align-content:start;}
+.gallery-thumb{aspect-ratio:1;border-radius:6px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);position:relative;}
+.gallery-thumb:hover{border-color:rgba(100,150,255,0.5);}
+.gallery-thumb img,.gallery-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+.gallery-thumb .vid-badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.7);border-radius:4px;padding:2px 6px;font-size:10px;color:#fff;font-weight:600;}
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:500;display:none;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lightbox-media{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:6px;}
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:28px;width:48px;height:64px;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.lightbox-nav:hover{background:rgba(255,255,255,0.2);}
+.lightbox-prev{left:16px;}
+.lightbox-next{right:16px;}
+.lightbox-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:.7;}
+.lightbox-close:hover{opacity:1;}
+.lightbox-counter{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(255,255,255,0.6);}
+
 /* DENIAL REASON MODAL */
 .deny-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;padding:2rem;}
 .deny-modal.open{display:flex;}
@@ -629,6 +654,27 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   </div>
 </div>
 
+<!-- MEDIA GALLERY MODAL -->
+<div class="gallery-modal" id="galleryModal">
+  <div class="gallery-header">
+    <div>
+      <div class="gallery-header-title" id="galleryTitle">Media Files</div>
+      <div class="gallery-header-meta" id="galleryMeta"></div>
+    </div>
+    <button class="gallery-close" onclick="closeGallery()">✕</button>
+  </div>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOnBg(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">&#8249;</button>
+  <div id="lightboxMedia"></div>
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">&#8250;</button>
+  <div class="lightbox-counter" id="lightboxCounter"></div>
+</div>
+
 <!-- ACCOUNT SETTINGS MODAL -->
 <div class="settings-modal" id="settingsModal" onclick="closeSettingsOnBg(event)">
   <div class="settings-inner" style="max-width:500px;">
@@ -1130,7 +1176,8 @@ function renderCards(profiles){
 
 // ── SUBMISSIONS ──
 let currentSubTab = 'pending';
-let profilesByUserId = {}; // cache: userId -> profile
+let profilesByUserId = {};
+let allSubmissions = [];
 
 function switchSubTab(tab){
   currentSubTab = tab;
@@ -1207,19 +1254,21 @@ function buildSubmitterChip(s){
 }
 
 function buildInlinePreviews(s){
-  const urls = s.file_urls ? s.file_urls.split(',').filter(Boolean) : [];
+  const urls = s.file_urls ? s.file_urls.split(',').map(u=>u.trim()).filter(Boolean) : [];
   if(!urls.length) return '';
   const preview = urls.slice(0,3);
   const remaining = urls.length - 3;
+  const sid = s.id;
   const thumbs = preview.map(url=>{
     const isImage = /\.(jpg|jpeg|png|gif|webp|heic)$/i.test(url);
     const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(url);
-    if(isImage) return `<div class="inbox-thumb" onclick="window.open('${url}','_blank')"><img src="${url}" alt=""></div>`;
+    if(isImage) return `<div class="inbox-thumb"><img src="${url}" alt=""></div>`;
     if(isVideo) return `<div class="inbox-thumb"><video src="${url}" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
     return `<div class="inbox-thumb"><div class="inbox-thumb-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div></div>`;
   }).join('');
   const moreEl = remaining>0 ? `<div class="inbox-more">+${remaining}</div>` : '';
-  return `<div class="inbox-previews">${thumbs}${moreEl}</div>`;
+  return `<div class="inbox-previews" onclick="openGallery('${sid}')" style="cursor:pointer;" title="Click to view all files">${thumbs}${moreEl}</div>
+  <div style="font-size:11px;color:#6496ff;margin-top:4px;cursor:pointer;" onclick="openGallery('${sid}')">View all ${urls.length} file${urls.length!==1?'s':''} →</div>`;
 }
 
 function renderSubmissions(subs){
@@ -1288,6 +1337,90 @@ async function confirmDeny(){
     await updateStatus(id, 'denied', reason);
   }
 }
+
+// ── MEDIA GALLERY ──
+let _galleryUrls = [];
+let _lightboxIndex = 0;
+
+function openGallery(submissionId){
+  const s = allSubmissions.find(x=>x.id===submissionId);
+  if(!s) return;
+  _galleryUrls = s.file_urls ? s.file_urls.split(',').map(u=>u.trim()).filter(Boolean) : [];
+  if(!_galleryUrls.length) return;
+
+  document.getElementById('galleryTitle').textContent = s.event_name || 'Media Files';
+  document.getElementById('galleryMeta').textContent = `${_galleryUrls.length} file${_galleryUrls.length!==1?'s':''} · ${s.sport||''} · ${s.event_date||''}`.replace(/·\s*·/g,'·').trim().replace(/·$/,'').trim();
+
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = _galleryUrls.map((url, i) => {
+    const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(url);
+    const isImage = /\.(jpg|jpeg|png|gif|webp|heic)$/i.test(url);
+    if(isVideo) return `<div class="gallery-thumb" onclick="openLightbox(${i})">
+      <video src="${url}" preload="metadata" style="width:100%;height:100%;object-fit:cover;pointer-events:none;"></video>
+      <span class="vid-badge">▶ Video</span>
+    </div>`;
+    if(isImage) return `<div class="gallery-thumb" onclick="openLightbox(${i})"><img src="${url}" alt="File ${i+1}" loading="lazy"></div>`;
+    return `<div class="gallery-thumb" onclick="openLightbox(${i})" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      File ${i+1}
+    </div>`;
+  }).join('');
+
+  document.getElementById('galleryModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeGallery(){
+  document.getElementById('galleryModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openLightbox(index){
+  _lightboxIndex = index;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function renderLightbox(){
+  const url = _galleryUrls[_lightboxIndex];
+  const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(url);
+  const container = document.getElementById('lightboxMedia');
+  if(isVideo){
+    container.innerHTML = `<video class="lightbox-media" src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;"></video>`;
+  } else {
+    container.innerHTML = `<img class="lightbox-media" src="${url}" alt="File ${_lightboxIndex+1}">`;
+  }
+  document.getElementById('lightboxCounter').textContent = `${_lightboxIndex+1} / ${_galleryUrls.length}`;
+  document.querySelector('.lightbox-prev').style.visibility = _lightboxIndex===0?'hidden':'visible';
+  document.querySelector('.lightbox-next').style.visibility = _lightboxIndex===_galleryUrls.length-1?'hidden':'visible';
+}
+
+function lightboxNav(dir){
+  const next = _lightboxIndex + dir;
+  if(next < 0 || next >= _galleryUrls.length) return;
+  _lightboxIndex = next;
+  renderLightbox();
+}
+
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightboxMedia').innerHTML = '';
+}
+
+function closeLightboxOnBg(e){
+  if(e.target === document.getElementById('lightbox')) closeLightbox();
+}
+
+// Keyboard nav for lightbox
+document.addEventListener('keydown', e => {
+  if(document.getElementById('lightbox').classList.contains('open')){
+    if(e.key==='ArrowRight') lightboxNav(1);
+    else if(e.key==='ArrowLeft') lightboxNav(-1);
+    else if(e.key==='Escape') closeLightbox();
+  } else if(document.getElementById('galleryModal').classList.contains('open')){
+    if(e.key==='Escape') closeGallery();
+  }
+});
 
 async function updateStatus(id, status, denial_reason){
   try{
