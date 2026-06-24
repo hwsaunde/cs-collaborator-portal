@@ -554,36 +554,38 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 
     <!-- ── MEDIA ARCHIVE TAB ── -->
     <div class="tab-page" id="tabPage-archive">
-      <div class="page-header" style="margin-bottom:1.5rem;">
-        <div>
-          <div class="page-title">Media Archive</div>
-          <div class="page-sub">All media submissions — search, filter, and review by any status.</div>
+      <div style="max-width:900px;margin:0 auto;">
+        <div class="page-header" style="margin-bottom:1.5rem;">
+          <div>
+            <div class="page-title">Media Archive</div>
+            <div class="page-sub">All media submissions — search, filter, and review by any status.</div>
+          </div>
         </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;">
+          <input type="text" id="archiveSearch" placeholder="Search event, sport, creator..." oninput="filterArchive()" style="flex:1;min-width:160px;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
+          <select id="archiveStatusFilter" onchange="filterArchive()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="denied">Denied</option>
+            <option value="posted">Posted</option>
+            <option value="archived">Skipped</option>
+          </select>
+          <select id="archiveSportFilter" onchange="filterArchive()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+            <option value="">All Sports</option>
+            <option value="Football">Football</option>
+            <option value="Basketball">Basketball</option>
+            <option value="Baseball">Baseball</option>
+            <option value="Softball">Softball</option>
+            <option value="Soccer">Soccer</option>
+            <option value="Volleyball">Volleyball</option>
+            <option value="Lacrosse">Lacrosse</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div id="archiveCount" style="font-size:12px;color:var(--muted);margin-bottom:1rem;"></div>
+        <div id="archiveList"></div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;">
-        <input type="text" id="archiveSearch" placeholder="Search event, sport, creator..." oninput="filterArchive()" style="flex:1;min-width:200px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;">
-        <select id="archiveStatusFilter" onchange="filterArchive()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="denied">Denied</option>
-          <option value="posted">Posted</option>
-          <option value="archived">Skipped</option>
-        </select>
-        <select id="archiveSportFilter" onchange="filterArchive()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--text);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
-          <option value="">All Sports</option>
-          <option value="Football">Football</option>
-          <option value="Basketball">Basketball</option>
-          <option value="Baseball">Baseball</option>
-          <option value="Softball">Softball</option>
-          <option value="Soccer">Soccer</option>
-          <option value="Volleyball">Volleyball</option>
-          <option value="Lacrosse">Lacrosse</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-      <div id="archiveCount" style="font-size:12px;color:var(--muted);margin-bottom:1rem;"></div>
-      <div id="archiveList"></div>
     </div>
 
     <!-- ── INVITE TAB ── -->
