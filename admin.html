@@ -146,6 +146,25 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .lightbox-close:hover{opacity:1;}
 .lightbox-counter{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(255,255,255,0.6);}
 
+/* SUBMISSION DETAIL MODAL */
+.sub-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:420;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.sub-detail-modal.open{display:flex;}
+.sub-detail-inner{background:#0d1826;border:1px solid rgba(255,255,255,0.09);border-top:3px solid var(--red);border-radius:14px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;position:relative;display:flex;flex-direction:column;}
+.sub-detail-header{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-shrink:0;}
+.sub-detail-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;}
+.sub-detail-meta{font-size:12px;color:var(--muted);margin-top:4px;}
+.sub-detail-body{padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1.25rem;}
+.sub-detail-section{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:1rem 1.25rem;}
+.sub-detail-section-label{font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;}
+.sub-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem .75rem;}
+.sub-detail-field{display:flex;flex-direction:column;gap:3px;}
+.sub-detail-field-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.sub-detail-field-val{font-size:13px;color:var(--text);line-height:1.5;}
+.sub-detail-field-val.empty{color:rgba(255,255,255,0.2);font-style:italic;}
+.sub-detail-players{font-size:12px;color:var(--text);line-height:1.9;white-space:pre-wrap;}
+.sub-detail-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;}
+@media(max-width:600px){.sub-detail-grid{grid-template-columns:1fr;}}
+
 /* DENIAL REASON MODAL */
 .deny-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;padding:2rem;}
 .deny-modal.open{display:flex;}
@@ -712,6 +731,70 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
   <div class="lightbox-counter" id="lightboxCounter"></div>
 </div>
 
+<!-- SUBMISSION DETAIL MODAL -->
+<div class="sub-detail-modal" id="subDetailModal" onclick="closeSubDetailOnBg(event)">
+  <div class="sub-detail-inner">
+    <div class="sub-detail-header">
+      <div>
+        <div class="sub-detail-title" id="sdTitle"></div>
+        <div class="sub-detail-meta" id="sdMeta"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <span class="badge" id="sdBadge"></span>
+        <button onclick="closeSubDetail()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+    </div>
+    <div class="sub-detail-body">
+      <!-- Creator -->
+      <div class="sub-detail-section">
+        <div class="sub-detail-section-label">Creator</div>
+        <div id="sdCreator"></div>
+      </div>
+      <!-- Event Info -->
+      <div class="sub-detail-section">
+        <div class="sub-detail-section-label">Event Information</div>
+        <div class="sub-detail-grid">
+          <div class="sub-detail-field"><div class="sub-detail-field-label">Sport</div><div class="sub-detail-field-val" id="sdSport"></div></div>
+          <div class="sub-detail-field"><div class="sub-detail-field-label">Event Date</div><div class="sub-detail-field-val" id="sdDate"></div></div>
+          <div class="sub-detail-field"><div class="sub-detail-field-label">County</div><div class="sub-detail-field-val" id="sdCounty"></div></div>
+          <div class="sub-detail-field"><div class="sub-detail-field-label">Media Type</div><div class="sub-detail-field-val" id="sdMediaType"></div></div>
+          <div class="sub-detail-field" style="grid-column:1/-1;"><div class="sub-detail-field-label">Teams</div><div class="sub-detail-field-val" id="sdTeams"></div></div>
+          <div class="sub-detail-field"><div class="sub-detail-field-label">Home Score</div><div class="sub-detail-field-val" id="sdScoreHome"></div></div>
+          <div class="sub-detail-field"><div class="sub-detail-field-label">Away Score</div><div class="sub-detail-field-val" id="sdScoreAway"></div></div>
+        </div>
+      </div>
+      <!-- Players -->
+      <div class="sub-detail-section" id="sdPlayersSection">
+        <div class="sub-detail-section-label">Players to Tag</div>
+        <div class="sub-detail-players" id="sdPlayers"></div>
+      </div>
+      <!-- Notes & Song -->
+      <div class="sub-detail-section">
+        <div class="sub-detail-section-label">Additional Details</div>
+        <div class="sub-detail-grid">
+          <div class="sub-detail-field" style="grid-column:1/-1;"><div class="sub-detail-field-label">Notes / Context</div><div class="sub-detail-field-val" id="sdNotes"></div></div>
+          <div class="sub-detail-field" style="grid-column:1/-1;"><div class="sub-detail-field-label">Song Recommendation</div><div class="sub-detail-field-val" id="sdSong"></div></div>
+        </div>
+      </div>
+      <!-- Files -->
+      <div class="sub-detail-section">
+        <div class="sub-detail-section-label">Files</div>
+        <div class="sub-detail-grid">
+          <div class="sub-detail-field"><div class="sub-detail-field-label">File Count</div><div class="sub-detail-field-val" id="sdFileCount"></div></div>
+          <div class="sub-detail-field"><div class="sub-detail-field-label">File Names</div><div class="sub-detail-field-val" id="sdFileNames" style="word-break:break-all;"></div></div>
+        </div>
+        <div style="margin-top:.75rem;" id="sdViewFiles"></div>
+      </div>
+      <!-- Denial reason if denied -->
+      <div class="sub-detail-section" id="sdDenialSection" style="display:none;border-color:rgba(248,122,138,0.2);">
+        <div class="sub-detail-section-label" style="color:#f87a8a;">Denial Reason</div>
+        <div class="sub-detail-field-val" id="sdDenialReason"></div>
+      </div>
+    </div>
+    <div class="sub-detail-footer" id="sdFooter"></div>
+  </div>
+</div>
+
 <!-- ACCOUNT SETTINGS MODAL -->
 <div class="settings-modal" id="settingsModal" onclick="closeSettingsOnBg(event)">
   <div class="settings-inner" style="max-width:500px;">
@@ -1045,7 +1128,7 @@ function filterArchive(){
     const avatarHtml=prof?.avatar_url?`<img src="${prof.avatar_url}" alt="">`:`<span style="font-size:9px;">${initials}</span>`;
     const fileUrls=s.file_urls?s.file_urls.split(',').map(u=>u.trim()).filter(Boolean):[];
     const viewFiles=fileUrls.length?`<span style="font-size:11px;color:#6496ff;cursor:pointer;" onclick="openGallery('${s.id}')">View ${fileUrls.length} file${fileUrls.length!==1?'s':''} →</span>`:'';
-    return `<div class="sub-card">
+    return `<div class="sub-card" onclick="openSubDetail('${s.id}')" style="cursor:pointer;">
       <div class="sub-card-header">
         <div class="sub-card-header-left">
           <div class="sub-event">${s.event_name||'Untitled event'}</div>
@@ -1065,7 +1148,7 @@ function filterArchive(){
       </div>
       ${s.notes?`<div class="sub-notes">"${s.notes}"</div>`:''}
       ${s.denial_reason?`<div style="padding:0 1.25rem .5rem;font-size:11px;color:#f87a8a;">Denied: ${s.denial_reason}</div>`:''}
-      ${viewFiles?`<div style="padding:0 1.25rem 1rem;">${viewFiles}</div>`:''}
+      ${viewFiles?`<div style="padding:0 1.25rem 1rem;" onclick="event.stopPropagation();">${viewFiles}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1388,15 +1471,15 @@ function buildInlinePreviews(s){
     return `<div class="inbox-thumb"><div class="inbox-thumb-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div></div>`;
   }).join('');
   const moreEl = remaining>0 ? `<div class="inbox-more">+${remaining}</div>` : '';
-  return `<div class="inbox-previews" onclick="openGallery('${sid}')" style="cursor:pointer;" title="Click to view all files">${thumbs}${moreEl}</div>
-  <div style="font-size:11px;color:#6496ff;margin-top:4px;cursor:pointer;" onclick="openGallery('${sid}')">View all ${urls.length} file${urls.length!==1?'s':''} →</div>`;
+  return `<div class="inbox-previews" onclick="event.stopPropagation();openGallery('${sid}')" style="cursor:pointer;" title="Click to view all files">${thumbs}${moreEl}</div>
+  <div style="font-size:11px;color:#6496ff;margin-top:4px;cursor:pointer;" onclick="event.stopPropagation();openGallery('${sid}')">View all ${urls.length} file${urls.length!==1?'s':''} →</div>`;
 }
 
 function renderSubmissions(subs){
   const list=document.getElementById('submissionsList');
   if(!subs.length){list.innerHTML='<div class="empty-state">No submissions found.</div>';return;}
   list.innerHTML=subs.map(s=>`
-    <div class="sub-card" id="sub-${s.id}">
+    <div class="sub-card" id="sub-${s.id}" onclick="openSubDetail('${s.id}')" style="cursor:pointer;">
       <div class="sub-card-header">
         <div class="sub-card-header-left">
           <div class="sub-event">${s.event_name||'Untitled event'}</div>
@@ -1421,14 +1504,14 @@ function renderSubmissions(subs){
       <div class="sub-actions">
         <div class="sub-files"><strong>Files:</strong> ${s.file_names||'None listed'}</div>
         ${s.status==='pending'?`
-          <button class="btn-approve" onclick="updateStatus('${s.id}','approved')">✓ Approve</button>
-          <button class="btn-deny" onclick="openDenyModal('${s.id}')">✕ Deny</button>
+          <button class="btn-approve" onclick="event.stopPropagation();updateStatus('${s.id}','approved')">✓ Approve</button>
+          <button class="btn-deny" onclick="event.stopPropagation();openDenyModal('${s.id}')">✕ Deny</button>
         `:s.status==='approved'?`
-          <button class="btn-deny" onclick="openDenyModal('${s.id}')">✕ Deny</button>
-          <button class="btn-pending" onclick="updateStatus('${s.id}','pending')">↩ Reset</button>
+          <button class="btn-deny" onclick="event.stopPropagation();openDenyModal('${s.id}')">✕ Deny</button>
+          <button class="btn-pending" onclick="event.stopPropagation();updateStatus('${s.id}','pending')">↩ Reset</button>
         `:`
-          <button class="btn-approve" onclick="updateStatus('${s.id}','approved')">✓ Approve</button>
-          <button class="btn-pending" onclick="updateStatus('${s.id}','pending')">↩ Reset</button>
+          <button class="btn-approve" onclick="event.stopPropagation();updateStatus('${s.id}','approved')">✓ Approve</button>
+          <button class="btn-pending" onclick="event.stopPropagation();updateStatus('${s.id}','pending')">↩ Reset</button>
         `}
       </div>
     </div>
@@ -1444,6 +1527,94 @@ function openDenyModal(id){
 function closeDenyModal(){
   _denyTargetId = null;
   document.getElementById('denyModal').classList.remove('open');
+}
+
+// ── SUBMISSION DETAIL MODAL ──
+let _sdCurrentId = null;
+
+function openSubDetail(id){
+  const s = allSubmissions.find(x=>x.id===id);
+  if(!s) return;
+  _sdCurrentId = id;
+  const prof = profilesByUserId[s.user_id];
+  const name = prof?.name||'Unknown Creator';
+  const statusLabel={pending:'Pending',approved:'Approved',denied:'Denied',posted:'Posted',archived:'Skipped'};
+  const statusClass={pending:'pending',approved:'approved',denied:'denied',posted:'approved',archived:'pending'};
+
+  document.getElementById('sdTitle').textContent = s.event_name||'Untitled Event';
+  document.getElementById('sdMeta').textContent = `Submitted ${timeAgo(s.submitted_at)}${s.reviewed_at?' · Reviewed '+timeAgo(s.reviewed_at):''}`;
+
+  const badge = document.getElementById('sdBadge');
+  badge.textContent = statusLabel[s.status]||s.status||'Pending';
+  badge.className = `badge badge-${statusClass[s.status]||'pending'}`;
+
+  // Creator chip
+  const initials = name.trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+  const avatarHtml = prof?.avatar_url?`<img src="${prof.avatar_url}" alt="">`:`<span style="font-size:9px;">${initials}</span>`;
+  document.getElementById('sdCreator').innerHTML = `<div class="submitter-chip"><div class="submitter-avatar">${avatarHtml}</div><div><div class="submitter-name">${name}</div>${prof?.email?`<div class="submitter-email">${prof.email}</div>`:''}</div></div>`;
+
+  // Event fields
+  const val = (v) => v ? `<div class="sub-detail-field-val">${escHtml(String(v))}</div>` : `<div class="sub-detail-field-val empty">—</div>`;
+  document.getElementById('sdSport').outerHTML = `<div class="sub-detail-field-val" id="sdSport">${s.sport||'<span class="empty">—</span>'}</div>`;
+  document.getElementById('sdSport').textContent = s.sport||'';
+  if(!s.sport) document.getElementById('sdSport').classList.add('empty');
+  const setField = (id, v) => { const el=document.getElementById(id); el.textContent=v||'—'; el.className='sub-detail-field-val'+(v?'':' empty'); };
+  setField('sdSport', s.sport);
+  setField('sdDate', s.event_date);
+  setField('sdCounty', s.county);
+  setField('sdMediaType', s.media_type);
+  setField('sdTeams', s.teams);
+  setField('sdScoreHome', s.score_home);
+  setField('sdScoreAway', s.score_away);
+  setField('sdNotes', s.notes);
+  setField('sdSong', s.song_recommendation);
+
+  // Players
+  const playersSection = document.getElementById('sdPlayersSection');
+  if(s.players && s.players.trim()){
+    document.getElementById('sdPlayers').textContent = s.players;
+    playersSection.style.display = 'block';
+  } else { playersSection.style.display = 'none'; }
+
+  // Files
+  const fileUrls = s.file_urls ? s.file_urls.split(',').map(u=>u.trim()).filter(Boolean) : [];
+  setField('sdFileCount', `${s.file_count||fileUrls.length||0} file${(s.file_count||fileUrls.length)!==1?'s':''}`);
+  const fileNamesEl = document.getElementById('sdFileNames');
+  fileNamesEl.textContent = s.file_names||'—';
+  fileNamesEl.className = 'sub-detail-field-val'+(s.file_names?'':' empty');
+  document.getElementById('sdViewFiles').innerHTML = fileUrls.length
+    ? `<span style="font-size:12px;color:#6496ff;cursor:pointer;font-weight:600;" onclick="openGallery('${s.id}')">▶ View all ${fileUrls.length} file${fileUrls.length!==1?'s':''} in gallery</span>`
+    : '';
+
+  // Denial
+  const denialSection = document.getElementById('sdDenialSection');
+  if(s.denial_reason){ document.getElementById('sdDenialReason').textContent=s.denial_reason; denialSection.style.display='block'; }
+  else { denialSection.style.display='none'; }
+
+  // Footer actions
+  const footer = document.getElementById('sdFooter');
+  if(s.status==='pending'){
+    footer.innerHTML = `<button class="btn-approve" onclick="updateStatus('${s.id}','approved');closeSubDetail();">✓ Approve</button><button class="btn-deny" onclick="closeSubDetail();openDenyModal('${s.id}')">✕ Deny</button>`;
+  } else if(s.status==='approved'){
+    footer.innerHTML = `<button class="btn-deny" onclick="closeSubDetail();openDenyModal('${s.id}')">✕ Deny</button><button class="btn-pending" onclick="updateStatus('${s.id}','pending');closeSubDetail();">↩ Reset to Pending</button>`;
+  } else if(s.status==='denied'){
+    footer.innerHTML = `<button class="btn-approve" onclick="updateStatus('${s.id}','approved');closeSubDetail();">✓ Approve</button><button class="btn-pending" onclick="updateStatus('${s.id}','pending');closeSubDetail();">↩ Reset to Pending</button>`;
+  } else {
+    footer.innerHTML = '';
+  }
+
+  document.getElementById('subDetailModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeSubDetail(){
+  document.getElementById('subDetailModal').classList.remove('open');
+  document.body.style.overflow='';
+  _sdCurrentId=null;
+}
+
+function closeSubDetailOnBg(e){
+  if(e.target===document.getElementById('subDetailModal')) closeSubDetail();
 }
 async function confirmDeny(){
   const reason = document.getElementById('denyReasonSelect').value;
