@@ -2058,8 +2058,9 @@ function timeAgo(dateStr){
 
 // Auto-restore session from localStorage on page load
 (async function restoreSession(){
-  // If a magic/invite link is in the hash, let the hash handler at the bottom take over
+  // If a magic/invite link is in the hash or PKCE code in query, let the hash handler take over
   if(window.location.hash.includes('access_token')) return;
+  if(new URLSearchParams(window.location.search).get('code')) return;
   const savedToken=localStorage.getItem('cs_token');
   const savedUserId=localStorage.getItem('cs_user_id');
   const savedEmail=localStorage.getItem('cs_user_email');
@@ -2692,21 +2693,57 @@ async function changePassword(){
 }
 
 // Auth redirect handler — magic links and invite links land here
+// Handles both implicit flow (#access_token=...) and PKCE flow (?code=...)
 (async function handleAuthRedirect(){
   const hash = window.location.hash;
+  const search = window.location.search;
+  const codeParams = new URLSearchParams(search);
+  const pkceCode = codeParams.get('code');
+  let linkType = codeParams.get('type') || null;
+
+  // ── PKCE flow: exchange code for session ──
+  if(pkceCode && !hash.includes('access_token')){
+    try{
+      const exchRes = await fetch(SB_URL+'/auth/v1/token?grant_type=pkce', {
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({auth_code: pkceCode})
+      });
+      const exchData = await exchRes.json();
+      if(exchData.access_token){
+        token = exchData.access_token;
+        if(exchData.refresh_token) localStorage.setItem('cs_refresh_token', exchData.refresh_token);
+        localStorage.setItem('cs_token', token);
+        linkType = linkType || exchData.token_type || 'magiclink';
+        window.history.replaceState(null,'',window.location.pathname);
+        // Fall through to user verification below
+        await finishAuthRedirect(token, linkType);
+      }
+    }catch(e){ console.error('PKCE exchange error:', e); }
+    return;
+  }
+
+  // ── Implicit flow: token in hash ──
   if(!hash || !hash.includes('access_token')) return;
   const params = new URLSearchParams(hash.replace('#',''));
   token = params.get('access_token');
   const refreshToken = params.get('refresh_token');
-  const linkType = params.get('type'); // 'invite', 'magiclink', 'recovery', etc.
+  linkType = params.get('type'); // 'invite', 'magiclink', 'recovery', etc.
   if(!token) return;
 
   // Persist the session immediately so refresh works
   if(refreshToken) localStorage.setItem('cs_refresh_token', refreshToken);
   localStorage.setItem('cs_token', token);
 
+  if(refreshToken) localStorage.setItem('cs_refresh_token', refreshToken);
+  localStorage.setItem('cs_token', token);
+  window.history.replaceState(null,'',window.location.pathname);
+  await finishAuthRedirect(token, linkType);
+})();
+
+async function finishAuthRedirect(accessToken, linkType){
   try{
-    const res = await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
+    const res = await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+accessToken}});
     const user = await res.json();
     if(user && user.id){
       // Creator role check — block athletes and uninvited users
@@ -2714,7 +2751,7 @@ async function changePassword(){
       const _isAdminRedirect=ADMIN_EMAILS.includes((user.email||'').toLowerCase());
       const _wasInvited = !!user.invited_at;
       if(!_isAdminRedirect && linkType !== 'invite' && !_wasInvited){
-        const roleRes=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+user.id+'&select=id',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
+        const roleRes=await fetch(SB_URL+'/rest/v1/collaborator_profiles?user_id=eq.'+user.id+'&select=id',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+accessToken}});
         const roleData=await roleRes.json();
         if(!roleData||roleData.length===0){
           localStorage.removeItem('cs_token');localStorage.removeItem('cs_user_id');localStorage.removeItem('cs_user_email');
@@ -2725,12 +2762,10 @@ async function changePassword(){
         }
       }
 
+      token = accessToken;
       userId = user.id;
       localStorage.setItem('cs_user_id', user.id);
       localStorage.setItem('cs_user_email', user.email);
-
-      // Clean the hash from the URL
-      window.history.replaceState(null,'',window.location.pathname);
 
       document.getElementById('loginPage').style.display='none';
       document.getElementById('appPage').style.display='block';
@@ -2740,11 +2775,10 @@ async function changePassword(){
       await loadProfile();
       initAfterLogin();
 
-      // New creator via invite — prompt them to set a password
-      if(linkType === 'invite'){
+      // New creator via invite or first magic link — prompt to set a password
+      if(linkType === 'invite' || (linkType === 'magiclink' && _wasInvited)){
         setTimeout(()=>{
           openSettingsModal();
-          // Surface the password section with a welcome nudge
           const passMsg = document.getElementById('passMsg');
           if(passMsg){
             passMsg.textContent = 'Welcome! Set a password so you can sign in next time.';
@@ -2754,7 +2788,7 @@ async function changePassword(){
       }
     }
   }catch(e){ console.error('Auth redirect error:', e); }
-})();
+}
 
 // ── NC MAP ──
 let mapLoaded = false;
