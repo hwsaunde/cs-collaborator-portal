@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (!SB_SERVICE_KEY) return res.status(500).json({ error: 'SUPABASE_SERVICE_KEY not configured' })
 
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/collaborator_profiles?select=*&order=updated_at.desc`, {
+    const r = await fetch(`${SB_URL}/rest/v1/collaborator_profiles?select=*&limit=200`, {
       headers: {
         apikey: SB_SERVICE_KEY,
         Authorization: `Bearer ${SB_SERVICE_KEY}`
