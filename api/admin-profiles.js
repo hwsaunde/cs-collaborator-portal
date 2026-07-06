@@ -3,6 +3,7 @@ const SB_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+  if (!SB_SERVICE_KEY) return res.status(500).json({ error: 'SUPABASE_SERVICE_KEY not configured' })
 
   try {
     const r = await fetch(`${SB_URL}/rest/v1/collaborator_profiles?select=*&order=updated_at.desc`, {

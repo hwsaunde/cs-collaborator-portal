@@ -983,11 +983,15 @@ async function loadProfiles(){
   const grid=document.getElementById('collabGrid');
   try{
     const res=await fetch('/api/admin-profiles');
-    allProfiles=await res.json();
-    if(!Array.isArray(allProfiles)) allProfiles=[];
+    const raw=await res.json();
+    if(!res.ok){
+      grid.innerHTML=`<div class="empty-state">API error ${res.status}: ${raw.error||JSON.stringify(raw)}</div>`;
+      return;
+    }
+    allProfiles=Array.isArray(raw)?raw:[];
     document.getElementById('totalProfiles').textContent=allProfiles.length;
     renderCards(allProfiles);
-  }catch(e){grid.innerHTML='<div class="empty-state">Could not load profiles.</div>';}
+  }catch(e){grid.innerHTML=`<div class="empty-state">Load error: ${e.message}</div>`;}
 }
 
 function filterCards(){
