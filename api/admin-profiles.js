@@ -13,7 +13,10 @@ export default async function handler(req, res) {
       }
     })
     const data = await r.json()
-    return res.status(200).json(Array.isArray(data) ? data : [])
+    if (!Array.isArray(data)) {
+      return res.status(500).json({ error: 'Supabase returned non-array', sbStatus: r.status, sbBody: data })
+    }
+    return res.status(200).json(data)
   } catch (err) {
     return res.status(500).json({ error: err.message })
   }
