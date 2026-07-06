@@ -986,7 +986,7 @@ async function loadProfiles(){
     const raw=await res.json();
     console.log('[admin-profiles] status='+res.status+' rows='+JSON.stringify(raw).slice(0,300));
     if(!res.ok){
-      grid.innerHTML=`<div class="empty-state">API error ${res.status}: ${raw.error||JSON.stringify(raw)}</div>`;
+      grid.innerHTML=`<div class="empty-state">API error ${res.status}: ${JSON.stringify(raw)}</div>`;
       return;
     }
     allProfiles=Array.isArray(raw)?raw:[];
