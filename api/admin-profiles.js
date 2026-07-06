@@ -1,0 +1,19 @@
+const SB_URL = 'https://alvcxrsxkicjdktzcbee.supabase.co'
+const SB_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/collaborator_profiles?select=*&order=updated_at.desc`, {
+      headers: {
+        apikey: SB_SERVICE_KEY,
+        Authorization: `Bearer ${SB_SERVICE_KEY}`
+      }
+    })
+    const data = await r.json()
+    return res.status(200).json(Array.isArray(data) ? data : [])
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+}

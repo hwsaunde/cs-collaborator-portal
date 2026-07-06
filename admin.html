@@ -982,8 +982,9 @@ async function loadAll(){
 async function loadProfiles(){
   const grid=document.getElementById('collabGrid');
   try{
-    const res=await sbFetch('/rest/v1/collaborator_profiles?select=*&order=updated_at.desc');
+    const res=await fetch('/api/admin-profiles');
     allProfiles=await res.json();
+    if(!Array.isArray(allProfiles)) allProfiles=[];
     document.getElementById('totalProfiles').textContent=allProfiles.length;
     renderCards(allProfiles);
   }catch(e){grid.innerHTML='<div class="empty-state">Could not load profiles.</div>';}
