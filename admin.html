@@ -984,11 +984,16 @@ async function loadProfiles(){
   try{
     const res=await fetch('/api/admin-profiles');
     const raw=await res.json();
+    console.log('[admin-profiles] status='+res.status+' rows='+JSON.stringify(raw).slice(0,300));
     if(!res.ok){
       grid.innerHTML=`<div class="empty-state">API error ${res.status}: ${raw.error||JSON.stringify(raw)}</div>`;
       return;
     }
     allProfiles=Array.isArray(raw)?raw:[];
+    if(!allProfiles.length){
+      grid.innerHTML=`<div class="empty-state">No creators found. (API returned: ${JSON.stringify(raw).slice(0,200)})</div>`;
+      return;
+    }
     document.getElementById('totalProfiles').textContent=allProfiles.length;
     renderCards(allProfiles);
   }catch(e){grid.innerHTML=`<div class="empty-state">Load error: ${e.message}</div>`;}
