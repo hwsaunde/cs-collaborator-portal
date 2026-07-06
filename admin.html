@@ -68,12 +68,13 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .collab-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
 .collab-updated{font-size:11px;color:var(--muted);margin-bottom:12px;}
 .collab-updated span{color:var(--text);}
-.collab-actions{display:flex;gap:8px;}
-.btn-preview{flex:1;padding:8px;background:var(--navy);border:1px solid rgba(255,255,255,0.1);color:var(--text);border-radius:6px;font-size:12px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;}
+.collab-actions{display:flex;flex-direction:column;gap:6px;}
+.collab-actions-row{display:flex;gap:6px;}
+.btn-preview{flex:1;padding:6px 4px;background:var(--navy);border:1px solid rgba(255,255,255,0.1);color:var(--text);border-radius:6px;font-size:11px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;white-space:nowrap;}
 .btn-preview:hover{background:#223366;}
-.btn-download{flex:1;padding:8px;background:var(--red);border:none;color:#fff;border-radius:6px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+.btn-download{flex:1;padding:6px 4px;background:var(--red);border:none;color:#fff;border-radius:6px;font-size:11px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;white-space:nowrap;}
 .btn-download:hover{opacity:.85;}
-.btn-remove{padding:8px 10px;background:none;border:1px solid rgba(200,16,46,0.3);color:#f87a8a;border-radius:6px;font-size:12px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;white-space:nowrap;}
+.btn-remove{flex:1;padding:6px 4px;background:none;border:1px solid rgba(200,16,46,0.3);color:#f87a8a;border-radius:6px;font-size:11px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;white-space:nowrap;}
 .btn-remove:hover{background:rgba(200,16,46,0.15);border-color:rgba(200,16,46,0.6);}
 
 /* SUBMISSIONS */
@@ -370,8 +371,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 @media(max-width:480px){
   .collaborator-grid{grid-template-columns:1fr;}
   .sub-card-body{grid-template-columns:1fr;}
-  .collab-actions{flex-direction:column;}
-  .btn-preview,.btn-download{width:100%;}
+  .collab-actions-row .btn-preview,.collab-actions-row .btn-download,.collab-actions-row .btn-remove{font-size:10px;}
   .sub-actions{flex-direction:column;}
   .btn-approve,.btn-deny,.btn-pending{width:100%;text-align:center;}
   .inbox-previews{gap:4px;}
@@ -1379,10 +1379,14 @@ function renderCards(profiles){
         </div>
         <div class="collab-updated">Updated: <span>${timeAgo(p.updated_at)}</span></div>
         <div class="collab-actions">
-          <button class="btn-preview" onclick="event.stopPropagation();openPreview(${i})">Preview card</button>
-          <button class="btn-download" onclick="event.stopPropagation();downloadCard(${i})">Download PNG</button>
-          <button class="btn-preview" onclick="event.stopPropagation();togglePublic('${p.user_id}',${!!p.is_public})" style="background:${p.is_public?'rgba(74,222,128,0.15)':'rgba(100,150,255,0.15)'};color:${p.is_public?'#4ade80':'#6496ff'};border-color:${p.is_public?'rgba(74,222,128,0.3)':'rgba(100,150,255,0.3)'};">${p.is_public?'Make Private':'Make Public'}</button>
-          <button class="btn-remove" onclick="event.stopPropagation();removeCreator('${p.user_id}','${escHtml(p.name||'this creator')}')">Remove</button>
+          <div class="collab-actions-row">
+            <button class="btn-preview" onclick="event.stopPropagation();openPreview(${i})">Preview</button>
+            <button class="btn-download" onclick="event.stopPropagation();downloadCard(${i})">Download PNG</button>
+          </div>
+          <div class="collab-actions-row">
+            <button class="btn-preview" onclick="event.stopPropagation();togglePublic('${p.user_id}',${!!p.is_public})" style="background:${p.is_public?'rgba(74,222,128,0.15)':'rgba(100,150,255,0.15)'};color:${p.is_public?'#4ade80':'#6496ff'};border-color:${p.is_public?'rgba(74,222,128,0.3)':'rgba(100,150,255,0.3)'};">${p.is_public?'Make Private':'Make Public'}</button>
+            <button class="btn-remove" onclick="event.stopPropagation();removeCreator('${p.user_id}','${escHtml(p.name||'this creator')}')">Remove</button>
+          </div>
         </div>
       </div>
     </div>
