@@ -110,6 +110,17 @@ export default async function handler(req, res) {
         break
       }
 
+      case 'gigs_bulk_posted': {
+        const { creator_emails, gig_count } = payload
+        if (!creator_emails?.length) break
+        await send(creator_emails, `${gig_count} new gig${gig_count!==1?'s':''} just dropped on the County Sports Gig Board`, wrap(`
+          <h2 style="color:#fff;margin:0 0 12px;font-size:22px;text-transform:uppercase;font-family:'Arial Black',Arial,sans-serif;">New Gigs Available</h2>
+          <p><strong style="color:#facc15;font-size:18px;">${gig_count} new coverage gig${gig_count!==1?'s have':' has'} been posted</strong> to the County Sports Gig Board.</p>
+          <p>Log in to your portal to see what's available in your coverage area — gigs are first come, first served.</p>
+          <p style="margin-top:24px;"><a href="https://creators.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Gig Board</a></p>`))
+        break
+      }
+
       default:
         return res.status(400).json({ error: 'Unknown notification type' })
     }

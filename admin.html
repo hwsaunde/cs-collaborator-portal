@@ -2015,17 +2015,17 @@ async function submitGig(){
     if(res.ok||res.status===201||res.status===204){
       closeGigModal(); loadAdminGigs();
       if(!editingGigId){
-        // Notify all creators about the new gig
-        const creatorsRes = await sbFetch('/rest/v1/collaborator_profiles?select=email,location');
+        // Notify creators whose coverage counties include this gig's county
+        const creatorsRes = await sbFetch('/rest/v1/collaborator_profiles?select=email,coverage_counties');
         const creators = await creatorsRes.json() || [];
-        const gigCounty = (payload.county||'').toLowerCase();
-        const targetEmails = creators
-          .map(c=>c.email).filter(Boolean)
-          .filter((_,i)=>{
-            if(!gigCounty) return true;
-            const loc = (creators[i]?.location||'').toLowerCase();
-            return !loc || loc.includes(gigCounty) || gigCounty.includes(loc.split(',')[0]?.trim()||'__');
-          });
+        const gigCounty = (payload.county||'').toLowerCase().trim();
+        const targetEmails = creators.filter(c=>{
+          if(!c.email) return false;
+          if(!gigCounty) return true; // no county set on gig → notify everyone
+          const covered = Array.isArray(c.coverage_counties) ? c.coverage_counties.map(x=>x.toLowerCase().trim()) : [];
+          if(!covered.length) return true; // creator hasn't set counties → notify them
+          return covered.some(cc=>cc===gigCounty||gigCounty.includes(cc)||cc.includes(gigCounty));
+        }).map(c=>c.email);
         if(targetEmails.length) sendNotification('gig_posted',{
           gig_title:payload.title, gig_type:payload.gig_type, event_type:payload.event_type,
           event_date:payload.event_date, county:payload.county, location:payload.location,

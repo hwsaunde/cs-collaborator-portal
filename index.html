@@ -702,9 +702,9 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
           <div class="page-sub" style="margin-bottom:0;">Available coverage opportunities — first come, first served.</div>
         </div>
         <div class="gig-filters">
-          <button class="gig-filter-btn active" id="gig-filter-all" onclick="setGigFilter('all')">All</button>
+          <button class="gig-filter-btn active" id="gig-filter-my-counties" onclick="setGigFilter('my-counties')">My Counties</button>
+          <button class="gig-filter-btn" id="gig-filter-all" onclick="setGigFilter('all')">All Gigs</button>
           <button class="gig-filter-btn" id="gig-filter-open" onclick="setGigFilter('open')">Open</button>
-          <button class="gig-filter-btn" id="gig-filter-nearby" onclick="setGigFilter('nearby')">Near Me</button>
           <button class="gig-filter-btn" id="gig-filter-mine" onclick="setGigFilter('mine')">My Gigs</button>
         </div>
       </div>
@@ -1900,6 +1900,8 @@ function setGigFilter(f){
   renderGigs();
 }
 
+let creatorCoverageCounties = [];
+
 async function loadGigs(){
   const list = document.getElementById('gigList');
   list.innerHTML = '<div class="empty-history">Loading gigs...</div>';
@@ -1911,12 +1913,12 @@ async function loadGigs(){
     const gigsData = await gigsRes.json() || [];
     const profileData = await profileRes.json();
     const prof = profileData&&profileData[0];
-    // Prefer coverage_counties for Near Me, fall back to location field
-    if(prof?.coverage_counties?.length){
-      creatorCounty = prof.coverage_counties[0].toLowerCase().trim();
-    } else {
-      creatorCounty = (prof?.location||'').toLowerCase().trim();
-    }
+    creatorCoverageCounties = Array.isArray(prof?.coverage_counties) ? prof.coverage_counties.map(c=>c.toLowerCase().trim()) : [];
+    creatorCounty = creatorCoverageCounties[0] || (prof?.location||'').toLowerCase().trim();
+    // default filter: my-counties if they have counties set, otherwise all
+    gigFilter = creatorCoverageCounties.length ? 'my-counties' : 'all';
+    document.querySelectorAll('.gig-filter-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('gig-filter-'+gigFilter)?.classList.add('active');
     // paid gigs always float to top, then newest first
     allGigs = gigsData.sort((a,b)=>{
       if(a.gig_type==='paid'&&b.gig_type!=='paid') return -1;
@@ -1938,18 +1940,21 @@ function updateGigsBadge(){
 function renderGigs(){
   const list = document.getElementById('gigList');
   let gigs = allGigs;
+  if(gigFilter==='my-counties'){
+    if(creatorCoverageCounties.length){
+      gigs = gigs.filter(g=>{
+        const gc = (g.county||'').toLowerCase().trim();
+        return creatorCoverageCounties.some(c=>c===gc||gc.includes(c)||c.includes(gc));
+      });
+    }
+    // no counties set → show all so board isn't blank
+  }
   if(gigFilter==='open') gigs = gigs.filter(g=>g.status==='open');
   if(gigFilter==='mine') gigs = gigs.filter(g=>g.claimed_by===userId);
-  if(gigFilter==='nearby'){
-    if(creatorCounty){
-      gigs = gigs.filter(g=>g.county&&g.county.toLowerCase().includes(creatorCounty)||creatorCounty.includes((g.county||'').toLowerCase()));
-    }
-    // if no county on profile, fall through and show all
-  }
   if(!gigs.length){
     const emptyMsg = gigFilter==='mine' ? 'You haven\'t claimed any gigs yet.'
-      : gigFilter==='nearby' && creatorCounty ? 'No gigs in your area right now — check back soon.'
-      : gigFilter==='nearby' ? 'Set your location in Profile Card to see nearby gigs.'
+      : gigFilter==='my-counties' && creatorCoverageCounties.length ? 'No gigs in your coverage counties right now — check back soon or tap <strong>All Gigs</strong> to browse everything.'
+      : gigFilter==='my-counties' ? 'Set your coverage counties on the Map tab to filter gigs to your area.'
       : 'No gigs available right now — check back soon.';
     list.innerHTML='<div class="empty-history">'+emptyMsg+'</div>';
     return;
