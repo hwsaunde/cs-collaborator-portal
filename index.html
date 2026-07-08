@@ -1973,7 +1973,7 @@ function renderGigs(){
       <div class="gig-card-header">
         <div>
           <div class="gig-title">${escHtml(g.title)}</div>
-          <div class="gig-meta">${escHtml(g.event_type||'Event')} &nbsp;·&nbsp; Posted ${timeAgo(g.created_at)}</div>
+          <div class="gig-meta">${g.sport?escHtml(g.sport)+' &nbsp;·&nbsp; ':''}${escHtml(g.event_type||'Event')} &nbsp;·&nbsp; Posted ${timeAgo(g.created_at)}</div>
         </div>
         <span class="gig-type-badge ${badgeClass}">${badgeLabel}</span>
       </div>
