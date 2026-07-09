@@ -1784,7 +1784,7 @@ async function loadDirectory(){
   const grid = document.getElementById('directoryGrid');
   grid.innerHTML = '<div class="empty-history">Loading creators...</div>';
   try{
-    const res = await sbFetch('/rest/v1/collaborator_profiles?select=user_id,name,role,location,instagram,bio,avatar_url,services,website_url,photo1_url,photo2_url,photo3_url,coverage_counties&order=name.asc');
+    const res = await fetch('/api/directory');
     const dirData = await res.json();
     allCreators = Array.isArray(dirData) ? dirData : [];
     renderDirectory();
@@ -1811,9 +1811,7 @@ function renderDirectory(){
   grid.innerHTML = creators.map(c=>{
     const isYou = c.user_id === userId;
     const initials = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    const avatarHtml = c.avatar_url
-      ? `<img class="dir-avatar" src="${escHtml(c.avatar_url)}" alt="${escHtml(c.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="dir-avatar-initials" style="display:none">${initials}</div>`
-      : `<div class="dir-avatar-initials">${initials}</div>`;
+    const avatarHtml = `<div class="dir-avatar-initials">${initials}</div>`;
     const igHandle = c.instagram ? c.instagram.replace(/^@/,'') : null;
     const igHtml = igHandle
       ? `<a class="dir-ig-link" href="https://instagram.com/${encodeURIComponent(igHandle)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
@@ -1845,9 +1843,7 @@ function openCreatorModal(creatorUserId){
   const c = allCreators.find(x=>x.user_id===creatorUserId);
   if(!c) return;
   const initials = (c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('creatorModalAvatar').innerHTML = c.avatar_url
-    ? `<img class="creator-modal-avatar" src="${escHtml(c.avatar_url)}" alt="${escHtml(c.name)}" onerror="this.outerHTML='<div class=creator-modal-avatar-initials>${initials}</div>'">`
-    : `<div class="creator-modal-avatar-initials">${initials}</div>`;
+  document.getElementById('creatorModalAvatar').innerHTML = `<div class="creator-modal-avatar-initials">${initials}</div>`;
   document.getElementById('creatorModalName').textContent = c.name||'Unnamed Creator';
   document.getElementById('creatorModalRole').textContent = c.role||'Creator';
   const locEl = document.getElementById('creatorModalLoc');
