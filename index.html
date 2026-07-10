@@ -135,6 +135,11 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .gig-filters{display:flex;gap:6px;}
 .gig-filter-btn{padding:5px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Poppins',sans-serif;transition:all .15s;}
 .gig-filter-btn.active{background:rgba(200,16,46,0.12);border-color:rgba(200,16,46,0.4);color:#fff;}
+.gig-search-wrap{position:relative;margin-bottom:14px;}
+.gig-search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);}
+.gig-search-input{width:100%;box-sizing:border-box;background:var(--card-bg);border:1px solid var(--border);border-radius:9px;padding:9px 13px 9px 38px;color:#fff;font-size:13px;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.gig-search-input:focus{border-color:rgba(200,16,46,0.5);}
+.gig-search-input::placeholder{color:var(--muted);}
 .gig-list{display:flex;flex-direction:column;gap:12px;}
 .gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.35);transition:border-color .2s,box-shadow .2s;}
 .gig-card:hover{border-color:rgba(200,16,46,0.3);box-shadow:0 4px 32px rgba(200,16,46,0.1),0 8px 40px rgba(0,0,0,0.45);}
@@ -707,6 +712,10 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
           <button class="gig-filter-btn" id="gig-filter-open" onclick="setGigFilter('open')">Open</button>
           <button class="gig-filter-btn" id="gig-filter-mine" onclick="setGigFilter('mine')">My Gigs</button>
         </div>
+      </div>
+      <div class="gig-search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="gig-search-input" id="gigSearch" type="text" placeholder="Search by title, sport, county, location…" oninput="renderGigs()">
       </div>
       <div class="gig-list" id="gigList"><div class="empty-history">Loading gigs...</div></div>
     </div>
@@ -1935,7 +1944,16 @@ function updateGigsBadge(){
 
 function renderGigs(){
   const list = document.getElementById('gigList');
+  const q = (document.getElementById('gigSearch')?.value||'').toLowerCase().trim();
   let gigs = allGigs;
+  if(q) gigs = gigs.filter(g=>
+    (g.title||'').toLowerCase().includes(q)||
+    (g.sport||'').toLowerCase().includes(q)||
+    (g.county||'').toLowerCase().includes(q)||
+    (g.location||'').toLowerCase().includes(q)||
+    (g.event_type||'').toLowerCase().includes(q)||
+    (g.description||'').toLowerCase().includes(q)
+  );
   if(gigFilter==='my-counties'){
     if(creatorCoverageCounties.length){
       gigs = gigs.filter(g=>{

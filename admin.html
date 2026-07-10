@@ -186,6 +186,11 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
 .gig-post-btn{display:flex;align-items:center;gap:6px;padding:10px 22px;background:var(--red);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(200,16,46,0.35);transition:box-shadow .2s;}
 .gig-post-btn:hover{box-shadow:0 0 36px rgba(200,16,46,0.6);}
 .admin-gig-list{display:flex;flex-direction:column;gap:16px;max-width:900px;margin:0 auto;}
+.gig-search-wrap{max-width:900px;margin:0 auto 18px;position:relative;}
+.gig-search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);}
+.gig-search-input{width:100%;box-sizing:border-box;background:var(--card-bg);border:1px solid var(--border);border-radius:9px;padding:10px 14px 10px 40px;color:#fff;font-size:13px;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.gig-search-input:focus{border-color:rgba(200,16,46,0.5);}
+.gig-search-input::placeholder{color:var(--muted);}
 .admin-gig-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.35);transition:border-color .2s,box-shadow .2s;}
 .admin-gig-card:hover{border-color:rgba(200,16,46,0.25);box-shadow:0 4px 32px rgba(200,16,46,0.1),0 8px 40px rgba(0,0,0,0.45);}
 .admin-gig-card.paid-gig{border-color:rgba(250,204,21,0.3);box-shadow:0 0 30px rgba(250,204,21,0.12),0 8px 40px rgba(0,0,0,0.45);}
@@ -567,6 +572,10 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Post a Gig
         </button>
+      </div>
+      <div class="gig-search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="gig-search-input" id="adminGigSearch" type="text" placeholder="Search by title, sport, county, location…" oninput="renderAdminGigs()">
       </div>
       <div class="admin-gig-list" id="adminGigList"><div style="text-align:center;padding:3rem;color:var(--muted);">Loading gigs...</div></div>
     </div>
@@ -2055,8 +2064,18 @@ async function loadAdminGigs(){
 
 function renderAdminGigs(){
   const list = document.getElementById('adminGigList');
-  if(!adminGigs.length){ list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">No gigs posted yet. Click "Post a Gig" to get started.</div>'; return; }
-  list.innerHTML = adminGigs.map(g=>{
+  const q = (document.getElementById('adminGigSearch')?.value||'').toLowerCase().trim();
+  let gigs = adminGigs;
+  if(q) gigs = gigs.filter(g=>
+    (g.title||'').toLowerCase().includes(q)||
+    (g.sport||'').toLowerCase().includes(q)||
+    (g.county||'').toLowerCase().includes(q)||
+    (g.location||'').toLowerCase().includes(q)||
+    (g.event_type||'').toLowerCase().includes(q)||
+    (g.description||'').toLowerCase().includes(q)
+  );
+  if(!gigs.length){ list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted);">'+(q?'No gigs match your search.':'No gigs posted yet. Click "Post a Gig" to get started.')+'</div>'; return; }
+  list.innerHTML = gigs.map(g=>{
     const isPaid = g.gig_type==='paid';
     const badgeClass = isPaid ? 'gig-type-paid' : 'gig-type-standard';
     const badgeLabel = isPaid ? '💰 Paid Gig' : 'Standard';
