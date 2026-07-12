@@ -1098,7 +1098,7 @@ function doLogout(){
 // ── PROFILE LOAD/SAVE ──
 async function loadProfile(){
   try{
-    const res=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=*');
+    const res=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=user_id,name,role,location,email,instagram,bio,services,website_url,color_primary,color_secondary,color_bg,color_text,color_accent,avatar_url,header_bg_url,photo1_url,photo2_url,photo3_url,avatar_zoom,avatar_x,avatar_y,coverage_counties,is_public');
     const data=await res.json();
     if(data&&data[0]){
       const p=data[0];
