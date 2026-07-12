@@ -1158,6 +1158,10 @@ async function saveProfile(){
   const photo1DataUrl=cardState.photo1Dirty?(cardState.photo1?getImageDataUrl(cardState.photo1):null):(cardState.photo1Url||null);
   const photo2DataUrl=cardState.photo2Dirty?(cardState.photo2?getImageDataUrl(cardState.photo2):null):(cardState.photo2Url||null);
   const photo3DataUrl=cardState.photo3Dirty?(cardState.photo3?getImageDataUrl(cardState.photo3):null):(cardState.photo3Url||null);
+  // Snapshot the current card canvas as JPEG for admin preview/download
+  const cardCanvas=document.getElementById('theCardCanvas');
+  renderCard();
+  const card_png_url=cardCanvas?cardCanvas.toDataURL('image/jpeg',0.82):null;
 
   const payload={
     user_id:userId,
@@ -1175,6 +1179,7 @@ async function saveProfile(){
     avatar_x:document.getElementById('avatarX').value,
     avatar_y:document.getElementById('avatarY').value,
     coverage_counties:selectedCoverageCounties,
+    card_png_url,
     updated_at:new Date().toISOString()
   };
   try{

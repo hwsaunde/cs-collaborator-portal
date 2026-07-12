@@ -1918,6 +1918,7 @@ async function cmUpdateStatus(id, status, denial_reason){
 
 // ── CARD PREVIEW / DOWNLOAD ──
 function buildCardHTML(p){
+  if(p.card_png_url) return`<img src="${p.card_png_url}" style="width:100%;height:auto;display:block;border-radius:10px;" alt="${escHtml(p.name||'Creator')} profile card">`;
   return`<div class="card" style="display:flex;flex-direction:column;">
     <div class="c-header">
       <div class="header-lights"></div>
@@ -2299,6 +2300,16 @@ async function downloadCard(idx){
       if(full&&!full.error){p=Object.assign(p,full,{_fullLoaded:true});allProfiles[idx]=p;}
     }catch(e){}
   }
+  const filename=(p.name||'creator').toLowerCase().replace(/\s+/g,'-')+'-profile-card.jpg';
+  // If creator has saved a card snapshot, download it directly
+  if(p.card_png_url){
+    const a=document.createElement('a');
+    a.download=filename;
+    a.href=p.card_png_url;
+    a.click();
+    return;
+  }
+  // Fallback: render HTML card via html2canvas
   const container=document.createElement('div');
   container.style.cssText='position:fixed;left:-9999px;top:0;width:1080px;height:1350px;';
   const styleEl=document.createElement('style');
@@ -2315,7 +2326,7 @@ async function downloadCard(idx){
     html2canvas(cardWrap,{scale:1,width:1080,height:1350,backgroundColor:'#060c14',useCORS:true,allowTaint:true}).then(canvas=>{
       document.body.removeChild(container);
       const a=document.createElement('a');
-      a.download=(p.name||'creator').toLowerCase().replace(/\s+/g,'-')+'-profile-card.png';
+      a.download=filename;
       a.href=canvas.toDataURL('image/png');
       a.click();
     });
