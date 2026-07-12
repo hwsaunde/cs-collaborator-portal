@@ -1955,11 +1955,17 @@ function buildCardHTML(p){
   </div>`;
 }
 
-function openPreview(idx){
-  const p=allProfiles[idx];
-  document.getElementById('modalCardWrap').innerHTML=buildCardHTML(p);
+async function openPreview(idx){
+  const p=allProfiles[idx]; if(!p)return;
+  document.getElementById('modalCardWrap').innerHTML='<div style="padding:3rem;text-align:center;color:var(--muted);">Loading card…</div>';
   document.getElementById('modalOverlay').classList.add('open');
   document.getElementById('modalDlBtn').onclick=()=>downloadCard(idx);
+  try{
+    const r=await fetch('/api/creator-card?user_id='+encodeURIComponent(p.user_id));
+    const full=await r.json();
+    if(full&&!full.error) allProfiles[idx]=Object.assign(p,full);
+  }catch(e){}
+  document.getElementById('modalCardWrap').innerHTML=buildCardHTML(allProfiles[idx]);
 }
 
 function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalBtn();}
@@ -2284,7 +2290,15 @@ async function changePassword(){
 }
 
 async function downloadCard(idx){
-  const p=allProfiles[idx]; if(!p)return;
+  let p=allProfiles[idx]; if(!p)return;
+  // Fetch full profile (with images) if not already loaded
+  if(!p._fullLoaded){
+    try{
+      const r=await fetch('/api/creator-card?user_id='+encodeURIComponent(p.user_id));
+      const full=await r.json();
+      if(full&&!full.error){p=Object.assign(p,full,{_fullLoaded:true});allProfiles[idx]=p;}
+    }catch(e){}
+  }
   const container=document.createElement('div');
   container.style.cssText='position:fixed;left:-9999px;top:0;width:1080px;height:1350px;';
   const styleEl=document.createElement('style');
