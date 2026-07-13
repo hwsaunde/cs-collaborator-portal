@@ -1158,47 +1158,82 @@ async function loadProfile(){
 async function saveProfile(){
   const msg=document.getElementById('statusMsg');
   msg.textContent='Saving...';msg.className='status-msg';
-  // Only re-encode images that were newly uploaded this session to keep payload small
-  const avatarDataUrl=cardState.avatarDirty?getAvatarDataUrl():(cardState.avatarUrl||null);
-  const headerBgDataUrl=cardState.headerBgDirty?(cardState.headerBgImg?getImageDataUrl(cardState.headerBgImg):null):(cardState.headerBgUrl||null);
-  const photo1DataUrl=cardState.photo1Dirty?(cardState.photo1?getImageDataUrl(cardState.photo1):null):(cardState.photo1Url||null);
-  const photo2DataUrl=cardState.photo2Dirty?(cardState.photo2?getImageDataUrl(cardState.photo2):null):(cardState.photo2Url||null);
-  const photo3DataUrl=cardState.photo3Dirty?(cardState.photo3?getImageDataUrl(cardState.photo3):null):(cardState.photo3Url||null);
-  // Snapshot the current card canvas as JPEG for admin preview/download
-  const cardCanvas=document.getElementById('theCardCanvas');
-  renderCard();
-  const card_png_url=cardCanvas?cardCanvas.toDataURL('image/jpeg',0.82):null;
 
-  const payload={
+  // ── PASS 1: text + colors (small, fast) ──
+  const textPayload={
     user_id:userId,
     email:localStorage.getItem('cs_user_email')||'',
-    name:document.getElementById('f-name').value,role:document.getElementById('f-role').value,
+    name:document.getElementById('f-name').value,
+    role:document.getElementById('f-role').value,
     location:document.getElementById('f-loc').value,
-    instagram:document.getElementById('f-ig').value,bio:document.getElementById('f-bio').value,
-    services: profileServices,
-    website_url: (document.getElementById('f-website')||{}).value||'',
+    instagram:document.getElementById('f-ig').value,
+    bio:document.getElementById('f-bio').value,
+    services:profileServices,
+    website_url:(document.getElementById('f-website')||{}).value||'',
     color_primary:cardState.primary,color_secondary:cardState.secondary,
     color_bg:cardState.bg,color_text:cardState.textColor,color_accent:cardState.accent,
-    avatar_url:avatarDataUrl,header_bg_url:headerBgDataUrl,
-    photo1_url:photo1DataUrl,photo2_url:photo2DataUrl,photo3_url:photo3DataUrl,
     avatar_zoom:document.getElementById('avatarZoom').value,
     avatar_x:document.getElementById('avatarX').value,
     avatar_y:document.getElementById('avatarY').value,
     coverage_counties:selectedCoverageCounties,
-    card_png_url,
     updated_at:new Date().toISOString()
   };
   try{
-    payload.user_id = userId;
     const checkRes=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=id');
     const existing=await checkRes.json();
     const isNew=!existing||existing.length===0;
     const method=isNew?'POST':'PATCH';
     const url=isNew?'/rest/v1/collaborator_profiles':'/rest/v1/collaborator_profiles?user_id=eq.'+userId;
-    const res=await sbFetch(url,{method,headers:{'Prefer':'return=representation'},body:JSON.stringify(payload)});
-    if(res.ok||res.status===201||res.status===200){msg.textContent='Profile saved!';msg.className='status-msg ok';}
-    else{const err=await res.json();msg.textContent='Error: '+(err.message||'Could not save.');msg.className='status-msg err';}
-  }catch(e){console.error('saveProfile error:',e);msg.textContent='Error: '+(e.message||'Connection error.');msg.className='status-msg err';}
+    const res=await sbFetch(url,{method,headers:{'Prefer':'return=representation'},body:JSON.stringify(textPayload)});
+    if(!res.ok&&res.status!==201&&res.status!==200){
+      const err=await res.json();
+      msg.textContent='Error: '+(err.message||'Could not save.');msg.className='status-msg err';
+      return;
+    }
+  }catch(e){
+    console.error('saveProfile text error:',e);
+    msg.textContent='Error: '+(e.message||'Connection error.');msg.className='status-msg err';
+    return;
+  }
+
+  // ── PASS 2: images (only what changed this session) + card snapshot ──
+  msg.textContent='Saving images...';
+  const hasNewImages=cardState.avatarDirty||cardState.headerBgDirty||cardState.photo1Dirty||cardState.photo2Dirty||cardState.photo3Dirty;
+  const avatarDataUrl=cardState.avatarDirty?getAvatarDataUrl():(cardState.avatarUrl||null);
+  const headerBgDataUrl=cardState.headerBgDirty?(cardState.headerBgImg?getImageDataUrl(cardState.headerBgImg):null):(cardState.headerBgUrl||null);
+  const photo1DataUrl=cardState.photo1Dirty?(cardState.photo1?getImageDataUrl(cardState.photo1):null):(cardState.photo1Url||null);
+  const photo2DataUrl=cardState.photo2Dirty?(cardState.photo2?getImageDataUrl(cardState.photo2):null):(cardState.photo2Url||null);
+  const photo3DataUrl=cardState.photo3Dirty?(cardState.photo3?getImageDataUrl(cardState.photo3):null):(cardState.photo3Url||null);
+  const cardCanvas=document.getElementById('theCardCanvas');
+  renderCard();
+  const card_png_url=cardCanvas?cardCanvas.toDataURL('image/jpeg',0.75):null;
+
+  const imagePayload={
+    avatar_url:avatarDataUrl,
+    header_bg_url:headerBgDataUrl,
+    photo1_url:photo1DataUrl,
+    photo2_url:photo2DataUrl,
+    photo3_url:photo3DataUrl,
+    card_png_url,
+    updated_at:new Date().toISOString()
+  };
+  try{
+    const res=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId,{method:'PATCH',headers:{'Prefer':'return=representation'},body:JSON.stringify(imagePayload)});
+    if(res.ok||res.status===200){
+      // Mark images as no longer dirty
+      cardState.avatarDirty=false;cardState.headerBgDirty=false;
+      cardState.photo1Dirty=false;cardState.photo2Dirty=false;cardState.photo3Dirty=false;
+      msg.textContent='Profile saved!';msg.className='status-msg ok';
+    } else {
+      const err=await res.json();
+      msg.textContent='Text saved, but images failed: '+(err.message||'Try saving again.');
+      msg.className='status-msg err';
+    }
+  }catch(e){
+    console.error('saveProfile image error:',e);
+    msg.textContent='Text saved, but images timed out — try saving again.';
+    msg.className='status-msg err';
+  }
 }
 
 function getImageDataUrl(img){
