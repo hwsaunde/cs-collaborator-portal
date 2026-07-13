@@ -1966,7 +1966,16 @@ async function openPreview(idx){
     const full=await r.json();
     if(full&&!full.error) allProfiles[idx]=Object.assign(p,full);
   }catch(e){}
-  document.getElementById('modalCardWrap').innerHTML=buildCardHTML(allProfiles[idx]);
+  const profile=allProfiles[idx];
+  if(profile.card_png_url){
+    document.getElementById('modalCardWrap').innerHTML=`<img src="${profile.card_png_url}" style="width:100%;height:auto;display:block;border-radius:10px;" alt="Profile card">`;
+  } else {
+    document.getElementById('modalCardWrap').innerHTML=`<div style="padding:3rem;text-align:center;color:var(--muted);line-height:1.8;">
+      <div style="font-size:36px;margin-bottom:12px;">🎴</div>
+      <div style="color:#fff;font-weight:600;margin-bottom:8px;">${escHtml(profile.name||'This creator')} hasn't saved their card yet.</div>
+      <div style="font-size:13px;">Ask them to log in, open the <strong>Profile Card</strong> tab, and click <strong>Save Profile</strong>.</div>
+    </div>`;
+  }
 }
 
 function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalBtn();}
@@ -2292,7 +2301,6 @@ async function changePassword(){
 
 async function downloadCard(idx){
   let p=allProfiles[idx]; if(!p)return;
-  // Fetch full profile (with images) if not already loaded
   if(!p._fullLoaded){
     try{
       const r=await fetch('/api/creator-card?user_id='+encodeURIComponent(p.user_id));
@@ -2300,37 +2308,15 @@ async function downloadCard(idx){
       if(full&&!full.error){p=Object.assign(p,full,{_fullLoaded:true});allProfiles[idx]=p;}
     }catch(e){}
   }
-  const filename=(p.name||'creator').toLowerCase().replace(/\s+/g,'-')+'-profile-card.jpg';
-  // If creator has saved a card snapshot, download it directly
-  if(p.card_png_url){
-    const a=document.createElement('a');
-    a.download=filename;
-    a.href=p.card_png_url;
-    a.click();
+  if(!p.card_png_url){
+    alert((p.name||'This creator')+' hasn\'t saved their profile card yet.\n\nAsk them to log into the portal, open the Profile Card tab, and click Save Profile. The card will then be available to download.');
     return;
   }
-  // Fallback: render HTML card via html2canvas
-  const container=document.createElement('div');
-  container.style.cssText='position:fixed;left:-9999px;top:0;width:1080px;height:1350px;';
-  const styleEl=document.createElement('style');
-  styleEl.textContent=Array.from(document.styleSheets).map(s=>{try{return Array.from(s.cssRules).map(r=>r.cssText).join('');}catch(e){return '';}}).join('');
-  container.appendChild(styleEl);
-  const cardWrap=document.createElement('div');
-  cardWrap.style.cssText='width:1080px;height:1350px;overflow:hidden;display:flex;flex-direction:column;';
-  cardWrap.innerHTML=buildCardHTML(p);
-  const cardEl=cardWrap.querySelector('.card');
-  if(cardEl) cardEl.style.cssText='width:1080px;height:1350px;background:#060c14;border:2px solid #C8102E;border-radius:12px;overflow:hidden;font-family:Rajdhani,sans-serif;display:flex;flex-direction:column;';
-  container.appendChild(cardWrap);
-  document.body.appendChild(container);
-  setTimeout(()=>{
-    html2canvas(cardWrap,{scale:1,width:1080,height:1350,backgroundColor:'#060c14',useCORS:true,allowTaint:true}).then(canvas=>{
-      document.body.removeChild(container);
-      const a=document.createElement('a');
-      a.download=filename;
-      a.href=canvas.toDataURL('image/png');
-      a.click();
-    });
-  },300);
+  const filename=(p.name||'creator').toLowerCase().replace(/\s+/g,'-')+'-profile-card.jpg';
+  const a=document.createElement('a');
+  a.download=filename;
+  a.href=p.card_png_url;
+  a.click();
 }
 </script>
 </body>
