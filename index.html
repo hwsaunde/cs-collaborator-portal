@@ -1751,12 +1751,17 @@ function wrapText(ctx,text,maxWidth,fontSize){
 // ── DOWNLOAD ──
 function downloadCard(){
   const canvas=document.getElementById('theCardCanvas');
-  renderCard();// ensure fresh render
-  const a=document.createElement('a');
+  renderCard();
   const name=(cardState.name||'creator').toLowerCase().replace(/\s+/g,'-');
-  a.download=name+'-profile-card.png';
-  a.href=canvas.toDataURL('image/png');
-  a.click();
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=name+'-profile-card.png';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  },'image/png');
 }
 
 // ── MEDIA SUBMISSION ──

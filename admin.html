@@ -2313,10 +2313,19 @@ async function downloadCard(idx){
     return;
   }
   const filename=(p.name||'creator').toLowerCase().replace(/\s+/g,'-')+'-profile-card.jpg';
-  const a=document.createElement('a');
-  a.download=filename;
-  a.href=p.card_png_url;
-  a.click();
+  try{
+    const blob=await fetch(p.card_png_url).then(r=>r.blob());
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  }catch(e){
+    // Fallback: open in new tab so user can long-press save on mobile
+    window.open(p.card_png_url,'_blank');
+  }
 }
 </script>
 </body>
