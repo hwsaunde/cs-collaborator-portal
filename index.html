@@ -2464,14 +2464,19 @@ async function loadNews(){
 
   try{
     const [postsRes, profileRes] = await Promise.all([
-      sbFetch('/rest/v1/news_posts?select=id,title,body,image_url,pinned,created_at,author_name,author_id,category,media_urls&order=pinned.desc,created_at.desc'),
+      sbFetch('/rest/v1/news_posts?select=id,title,body,pinned,created_at,author_id,category,media_urls&order=pinned.desc,created_at.desc'),
       sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=name,avatar_url')
     ]);
     const posts = await postsRes.json();
     const profileData = await profileRes.json();
     currentUserProfile = profileData&&profileData[0] ? profileData[0] : null;
 
-    if(!Array.isArray(posts)||!posts.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
+    if(!Array.isArray(posts)){
+      console.error('news_posts error:', posts);
+      list.innerHTML='<div class="empty-history">Could not load news. Error: '+(posts?.message||posts?.hint||JSON.stringify(posts))+'</div>';
+      return;
+    }
+    if(!posts.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
 
     const postIds = posts.map(p=>p.id).filter(Boolean);
     if(!postIds.length){ list.innerHTML='<div class="empty-history">No updates yet — check back soon.</div>'; return; }
