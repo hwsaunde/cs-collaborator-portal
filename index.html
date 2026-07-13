@@ -2148,7 +2148,7 @@ async function loadHistory(){
   const list=document.getElementById('historyList');
   list.innerHTML='<div class="empty-history">Loading...</div>';
   try{
-    const res=await sbFetch('/rest/v1/media_submissions?user_id=eq.'+userId+'&select=id,user_id,creator_name,sport,description,status,denial_reason,submitted_at,file_urls&order=submitted_at.desc');
+    const res=await sbFetch('/rest/v1/media_submissions?user_id=eq.'+userId+'&select=id,user_id,creator_name,sport,event_name,event_date,teams,media_type,file_count,file_names,score_home,score_away,notes,description,status,denial_reason,submitted_at&order=submitted_at.desc');
     const data=await res.json();
     if(!data||!data.length){list.innerHTML='<div class="empty-history">No submissions yet. Head to Submit Media to get started.</div>';return;}
     list.innerHTML=data.map(s=>`
@@ -2459,7 +2459,7 @@ async function loadNews(){
 
   try{
     const [postsRes, profileRes] = await Promise.all([
-      sbFetch('/rest/v1/news_posts?select=id,title,body,image_url,pinned,created_at,author_name&order=pinned.desc,created_at.desc'),
+      sbFetch('/rest/v1/news_posts?select=id,title,body,image_url,pinned,created_at,author_name,author_id,category,media_urls&order=pinned.desc,created_at.desc'),
       sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId+'&select=name,avatar_url')
     ]);
     const posts = await postsRes.json();
