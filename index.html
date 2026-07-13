@@ -1196,33 +1196,68 @@ async function saveProfile(){
     return;
   }
 
-  // ── PASS 2: images (only what changed this session) + card snapshot ──
-  msg.textContent='Saving images...';
-  const hasNewImages=cardState.avatarDirty||cardState.headerBgDirty||cardState.photo1Dirty||cardState.photo2Dirty||cardState.photo3Dirty;
-  const avatarDataUrl=cardState.avatarDirty?getAvatarDataUrl():(cardState.avatarUrl||null);
-  const headerBgDataUrl=cardState.headerBgDirty?(cardState.headerBgImg?getImageDataUrl(cardState.headerBgImg):null):(cardState.headerBgUrl||null);
-  const photo1DataUrl=cardState.photo1Dirty?(cardState.photo1?getImageDataUrl(cardState.photo1):null):(cardState.photo1Url||null);
-  const photo2DataUrl=cardState.photo2Dirty?(cardState.photo2?getImageDataUrl(cardState.photo2):null):(cardState.photo2Url||null);
-  const photo3DataUrl=cardState.photo3Dirty?(cardState.photo3?getImageDataUrl(cardState.photo3):null):(cardState.photo3Url||null);
+  // ── PASS 2: upload images to Storage, save URLs ──
+  msg.textContent='Uploading images...';
+
+  async function uploadIfDirty(dirty, dataUrlFn, existingUrl, field){
+    if(!dirty) return existingUrl||null;
+    const dataUrl = dataUrlFn();
+    if(!dataUrl) return null;
+    try{
+      const ext = dataUrl.startsWith('data:image/png') ? 'png' : 'jpg';
+      const r = await fetch('/api/upload-image',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({dataUrl, path:`${userId}/${field}.${ext}`})
+      });
+      const j = await r.json();
+      // Bust cache so browser always loads latest version
+      return j.url ? j.url+'?t='+Date.now() : existingUrl||null;
+    }catch(e){ return existingUrl||null; }
+  }
+
+  const [avatarUrl, headerBgUrl, photo1Url, photo2Url, photo3Url] = await Promise.all([
+    uploadIfDirty(cardState.avatarDirty, getAvatarDataUrl, cardState.avatarUrl, 'avatar'),
+    uploadIfDirty(cardState.headerBgDirty, ()=>cardState.headerBgImg?getImageDataUrl(cardState.headerBgImg):null, cardState.headerBgUrl, 'header_bg'),
+    uploadIfDirty(cardState.photo1Dirty, ()=>cardState.photo1?getImageDataUrl(cardState.photo1):null, cardState.photo1Url, 'photo1'),
+    uploadIfDirty(cardState.photo2Dirty, ()=>cardState.photo2?getImageDataUrl(cardState.photo2):null, cardState.photo2Url, 'photo2'),
+    uploadIfDirty(cardState.photo3Dirty, ()=>cardState.photo3?getImageDataUrl(cardState.photo3):null, cardState.photo3Url, 'photo3'),
+  ]);
+
+  // Update cardState with new URLs so re-saves don't re-upload
+  if(cardState.avatarDirty){cardState.avatarUrl=avatarUrl;cardState.avatarDirty=false;}
+  if(cardState.headerBgDirty){cardState.headerBgUrl=headerBgUrl;cardState.headerBgDirty=false;}
+  if(cardState.photo1Dirty){cardState.photo1Url=photo1Url;cardState.photo1Dirty=false;}
+  if(cardState.photo2Dirty){cardState.photo2Url=photo2Url;cardState.photo2Dirty=false;}
+  if(cardState.photo3Dirty){cardState.photo3Url=photo3Url;cardState.photo3Dirty=false;}
+
+  // Snapshot card canvas for admin preview
+  msg.textContent='Saving...';
   const cardCanvas=document.getElementById('theCardCanvas');
   renderCard();
   const card_png_url=cardCanvas?cardCanvas.toDataURL('image/jpeg',0.75):null;
+  // Upload card snapshot to Storage too
+  let cardSnapshotUrl=null;
+  if(card_png_url){
+    try{
+      const r=await fetch('/api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dataUrl:card_png_url,path:`${userId}/card_snapshot.jpg`})});
+      const j=await r.json();
+      cardSnapshotUrl=j.url?j.url+'?t='+Date.now():null;
+    }catch(e){}
+  }
 
   const imagePayload={
-    avatar_url:avatarDataUrl,
-    header_bg_url:headerBgDataUrl,
-    photo1_url:photo1DataUrl,
-    photo2_url:photo2DataUrl,
-    photo3_url:photo3DataUrl,
-    card_png_url,
+    avatar_url:avatarUrl,
+    header_bg_url:headerBgUrl,
+    photo1_url:photo1Url,
+    photo2_url:photo2Url,
+    photo3_url:photo3Url,
+    card_png_url:cardSnapshotUrl||card_png_url,
     updated_at:new Date().toISOString()
   };
   try{
     const res=await sbFetch('/rest/v1/collaborator_profiles?user_id=eq.'+userId,{method:'PATCH',headers:{'Prefer':'return=representation'},body:JSON.stringify(imagePayload)});
     if(res.ok||res.status===200){
-      // Mark images as no longer dirty
-      cardState.avatarDirty=false;cardState.headerBgDirty=false;
-      cardState.photo1Dirty=false;cardState.photo2Dirty=false;cardState.photo3Dirty=false;
       msg.textContent='Profile saved!';msg.className='status-msg ok';
     } else {
       const err=await res.json();
