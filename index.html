@@ -1782,18 +1782,44 @@ function renderFileList(){
     </div>`).join('');
 }
 
+async function compressImage(file, maxPx=1920, quality=0.82){
+  // Skip non-images and GIFs (GIF compression loses animation)
+  if(!file.type.startsWith('image/')||file.type==='image/gif') return file;
+  return new Promise(resolve=>{
+    const img=new Image();
+    const objUrl=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(objUrl);
+      let {width:w,height:h}=img;
+      // Only resize if larger than maxPx on either dimension
+      if(w<=maxPx&&h<=maxPx){ resolve(file); return; }
+      const scale=Math.min(maxPx/w,maxPx/h);
+      w=Math.round(w*scale); h=Math.round(h*scale);
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>{
+        if(!blob||blob.size>=file.size){ resolve(file); return; }
+        resolve(new File([blob],file.name.replace(/\.[^.]+$/,'.jpg'),{type:'image/jpeg',lastModified:Date.now()}));
+      },'image/jpeg',quality);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(objUrl); resolve(file); };
+    img.src=objUrl;
+  });
+}
+
 async function uploadFileToStorage(file, submissionId){
-  const ext=file.name.split('.').pop();
-  const path=`${userId}/${submissionId}/${Date.now()}_${file.name}`;
+  const compressed=await compressImage(file);
+  const path=`${userId}/${submissionId}/${Date.now()}_${compressed.name}`;
   const res=await fetch(`${SB_URL}/storage/v1/object/media-submissions/${path}`,{
     method:'POST',
     headers:{
       'apikey':SB_KEY,
       'Authorization':'Bearer '+token,
-      'Content-Type':file.type||'application/octet-stream',
+      'Content-Type':compressed.type||'application/octet-stream',
       'x-upsert':'true'
     },
-    body:file
+    body:compressed
   });
   if(!res.ok) throw new Error('Upload failed: '+file.name);
   return`${SB_URL}/storage/v1/object/public/media-submissions/${path}`;
