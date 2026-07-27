@@ -2191,9 +2191,14 @@ async function loadHistory(){
   const list=document.getElementById('historyList');
   list.innerHTML='<div class="empty-history">Loading...</div>';
   try{
-    const res=await sbFetch('/rest/v1/media_submissions?user_id=eq.'+userId+'&select=id,user_id,creator_name,sport,event_name,event_date,teams,media_type,file_count,file_names,score_home,score_away,notes,description,status,denial_reason,submitted_at&order=submitted_at.desc');
+    const res=await sbFetch('/rest/v1/media_submissions?user_id=eq.'+userId+'&select=id,user_id,sport,event_name,event_date,teams,county,media_type,file_count,file_names,score_home,score_away,notes,status,denial_reason,submitted_at&order=submitted_at.desc');
     const data=await res.json();
-    if(!data||!data.length){list.innerHTML='<div class="empty-history">No submissions yet. Head to Submit Media to get started.</div>';return;}
+    if(!Array.isArray(data)){
+      console.error('loadHistory error:',data);
+      list.innerHTML='<div class="empty-history">Could not load submissions. Error: '+(data?.message||data?.hint||JSON.stringify(data))+'</div>';
+      return;
+    }
+    if(!data.length){list.innerHTML='<div class="empty-history">No submissions yet. Head to Submit Media to get started.</div>';return;}
     list.innerHTML=data.map(s=>`
       <div class="history-card">
         <div class="history-card-header">
