@@ -10,7 +10,7 @@ function wrap(body) {
 </td></tr>
 <tr><td style="padding:28px 32px;color:#c8d0dc;font-size:14px;line-height:1.7;">${body}</td></tr>
 <tr><td style="padding:18px 32px;border-top:1px solid rgba(255,255,255,0.07);font-size:11px;color:#556070;">
-County Sports Creator Portal &nbsp;·&nbsp; <a href="https://portal.countysports.com" style="color:#6496ff;text-decoration:none;">portal.countysports.com</a>
+County Sports Creator Portal &nbsp;·&nbsp; <a href="https://creators.countysports.com" style="color:#6496ff;text-decoration:none;">creators.countysports.com</a>
 </td></tr>
 </table></td></tr></table></body></html>`
 }
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
           <p><strong style="color:#fff;">${creator_name}</strong> submitted new media for review.</p>
           ${sport ? `<p><strong style="color:#aaa;">Sport:</strong> ${sport}</p>` : ''}
           ${description ? `<p><strong style="color:#aaa;">Notes:</strong> ${description}</p>` : ''}
-          <p style="margin-top:20px;"><a href="https://portal.countysports.com/admin.html" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Review in Admin</a></p>`))
+          <p style="margin-top:20px;"><a href="https://creators.countysports.com/admin.html" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Review in Admin</a></p>`))
         break
       }
 
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
           <p>Your media submission has been <strong style="color:${approved ? '#4ade80' : '#f87a8a'};">${approved ? 'approved' : 'denied'}</strong>.</p>
           ${!approved && denial_reason ? `<p><strong style="color:#aaa;">Reason:</strong> ${denial_reason}</p>` : ''}
           ${approved ? '<p>It\'s now live on the County Sports platform. Great work!</p>' : '<p>Please review the reason above and feel free to resubmit if applicable.</p>'}
-          <p style="margin-top:20px;"><a href="https://portal.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Portal</a></p>`))
+          <p style="margin-top:20px;"><a href="https://creators.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Portal</a></p>`))
         break
       }
 
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
             ${isPaid && pay_rate ? `<tr><td style="color:#aaa;padding:3px 16px 3px 0;font-size:13px;">Pay Rate</td><td style="color:#facc15;font-size:13px;font-weight:700;">${pay_rate}</td></tr>` : ''}
           </table>
           ${description ? `<p style="background:rgba(255,255,255,0.04);border-left:3px solid #C8102E;padding:10px 14px;border-radius:4px;font-size:13px;">${description}</p>` : ''}
-          <p style="margin-top:24px;"><a href="https://portal.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Claim This Gig</a></p>`))
+          <p style="margin-top:24px;"><a href="https://creators.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Claim This Gig</a></p>`))
         break
       }
 
@@ -83,7 +83,7 @@ export default async function handler(req, res) {
         await send(ADMIN_EMAILS, `${creator_name} claimed: ${gig_title}`, wrap(`
           <h2 style="color:#fff;margin:0 0 12px;font-size:20px;">Gig Claimed</h2>
           <p><strong style="color:#fff;">${creator_name}</strong> has claimed the gig <strong style="color:#fff;">${gig_title}</strong>${county ? ' in ' + county + ' County' : ''}.</p>
-          <p style="margin-top:20px;"><a href="https://portal.countysports.com/admin.html" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Gig Board</a></p>`))
+          <p style="margin-top:20px;"><a href="https://creators.countysports.com/admin.html" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Gig Board</a></p>`))
         break
       }
 
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
           <p><strong style="color:#fff;">${creator_name}</strong> has requested to claim the paid gig <strong style="color:#facc15;">${gig_title}</strong>${county ? ' in ' + county + ' County' : ''}.</p>
           ${pay_rate ? `<p><strong style="color:#aaa;">Pay Rate:</strong> <span style="color:#facc15;">${pay_rate}</span></p>` : ''}
           <p>Please review this creator and approve or reject their claim in the admin panel.</p>
-          <p style="margin-top:20px;"><a href="https://portal.countysports.com/admin.html" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Review Claim</a></p>`))
+          <p style="margin-top:20px;"><a href="https://creators.countysports.com/admin.html" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Review Claim</a></p>`))
         break
       }
 
@@ -106,7 +106,7 @@ export default async function handler(req, res) {
           <p>Your claim for <strong style="color:#facc15;">${gig_title}</strong> has been <strong style="color:${approved ? '#4ade80' : '#f87a8a'};">${approved ? 'approved' : 'not approved'}</strong>.</p>
           ${!approved && rejection_note ? `<p><strong style="color:#aaa;">Note:</strong> ${rejection_note}</p>` : ''}
           ${approved ? '<p>The gig is yours — check the Gig Board for full details. Good luck out there!</p>' : '<p>Keep an eye on the Gig Board for other opportunities.</p>'}
-          <p style="margin-top:20px;"><a href="https://portal.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Gig Board</a></p>`))
+          <p style="margin-top:20px;"><a href="https://creators.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">View Gig Board</a></p>`))
         break
       }
 
