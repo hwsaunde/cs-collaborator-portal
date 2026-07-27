@@ -648,7 +648,7 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
             <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('mediaFiles').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <p>Click or drag files here</p>
-              <span>Photos, videos, documents — multiple files supported</span>
+              <span>Photos, videos, documents — tap multiple times to add more files</span>
               <input type="file" id="mediaFiles" multiple accept="image/*,video/*,.pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(this)">
             </div>
             <div class="file-list" id="fileList"></div>
@@ -1779,7 +1779,8 @@ function renderFileList(){
       <div class="file-item-name">${f.name}</div>
       <div style="font-size:11px;color:var(--muted);margin-right:8px;">${(f.size/1024/1024).toFixed(1)}MB</div>
       <button class="file-remove" onclick="removeFile(${i})">✕</button>
-    </div>`).join('');
+    </div>`).join('')+`
+  <button type="button" onclick="document.getElementById('mediaFiles').click()" style="width:100%;margin-top:8px;padding:8px;background:rgba(255,255,255,0.04);border:1px dashed var(--border);border-radius:7px;color:var(--muted);font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;">+ Add more files</button>`;
 }
 
 async function compressImage(file, maxPx=1920, quality=0.82){
