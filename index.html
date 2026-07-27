@@ -1765,7 +1765,7 @@ function downloadCard(){
 }
 
 // ── MEDIA SUBMISSION ──
-function handleFileSelect(input){addFiles(Array.from(input.files));}
+function handleFileSelect(input){addFiles(Array.from(input.files));input.value='';}
 function handleDragOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('drag-over');}
 function handleDragLeave(e){document.getElementById('dropZone').classList.remove('drag-over');}
 function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('drag-over');addFiles(Array.from(e.dataTransfer.files));}
@@ -1784,29 +1784,32 @@ function renderFileList(){
 }
 
 async function compressImage(file, maxPx=1920, quality=0.82){
-  // Skip non-images and GIFs (GIF compression loses animation)
   if(!file.type.startsWith('image/')||file.type==='image/gif') return file;
-  return new Promise(resolve=>{
-    const img=new Image();
-    const objUrl=URL.createObjectURL(file);
-    img.onload=()=>{
-      URL.revokeObjectURL(objUrl);
-      let {width:w,height:h}=img;
-      // Only resize if larger than maxPx on either dimension
-      if(w<=maxPx&&h<=maxPx){ resolve(file); return; }
-      const scale=Math.min(maxPx/w,maxPx/h);
-      w=Math.round(w*scale); h=Math.round(h*scale);
-      const canvas=document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      canvas.toBlob(blob=>{
-        if(!blob||blob.size>=file.size){ resolve(file); return; }
-        resolve(new File([blob],file.name.replace(/\.[^.]+$/,'.jpg'),{type:'image/jpeg',lastModified:Date.now()}));
-      },'image/jpeg',quality);
-    };
-    img.onerror=()=>{ URL.revokeObjectURL(objUrl); resolve(file); };
-    img.src=objUrl;
-  });
+  return Promise.race([
+    new Promise(resolve=>{
+      const img=new Image();
+      const objUrl=URL.createObjectURL(file);
+      img.onload=()=>{
+        URL.revokeObjectURL(objUrl);
+        let {width:w,height:h}=img;
+        if(w<=maxPx&&h<=maxPx){ resolve(file); return; }
+        const scale=Math.min(maxPx/w,maxPx/h);
+        w=Math.round(w*scale); h=Math.round(h*scale);
+        const canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        canvas.toBlob(blob=>{
+          resolve(blob&&blob.size<file.size
+            ? new File([blob],file.name.replace(/\.[^.]+$/,'.jpg'),{type:'image/jpeg',lastModified:Date.now()})
+            : file);
+        },'image/jpeg',quality);
+      };
+      img.onerror=()=>{ URL.revokeObjectURL(objUrl); resolve(file); };
+      img.src=objUrl;
+    }),
+    // Safety timeout — if compression hangs for any reason, fall back to original
+    new Promise(resolve=>setTimeout(()=>resolve(file), 15000))
+  ]);
 }
 
 async function uploadFileToStorage(file, submissionId){
@@ -1873,6 +1876,7 @@ async function submitMedia(){
     // Step 2: Upload files if any
     if(selectedFiles.length>0&&submissionId){
       const fileUrls=[];
+      const failedFiles=[];
       for(let i=0;i<selectedFiles.length;i++){
         status.textContent=`Uploading file ${i+1} of ${selectedFiles.length}...`;
         try{
@@ -1880,8 +1884,15 @@ async function submitMedia(){
           fileUrls.push(url);
         }catch(uploadErr){
           console.warn('File upload failed:',uploadErr);
+          failedFiles.push(selectedFiles[i].name);
         }
         progressBar.style.width=`${20+((i+1)/selectedFiles.length)*70}%`;
+      }
+      if(failedFiles.length){
+        console.error('Failed uploads:',failedFiles);
+        status.textContent=`Warning: ${failedFiles.length} file(s) failed to upload: ${failedFiles.join(', ')}`;
+        status.className='submit-status err';
+        await new Promise(r=>setTimeout(r,2500));
       }
       // Step 3: Update submission with file URLs
       if(fileUrls.length>0&&submissionId){
