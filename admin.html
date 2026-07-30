@@ -742,7 +742,10 @@ body{background:#080d18;background-image:radial-gradient(ellipse at 50% 0%,rgba(
       <div class="gallery-header-title" id="galleryTitle">Media Files</div>
       <div class="gallery-header-meta" id="galleryMeta"></div>
     </div>
-    <button class="gallery-close" onclick="closeGallery()">✕</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button id="galleryDlAllBtn" onclick="downloadAllFiles()" style="padding:7px 16px;background:var(--red);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;white-space:nowrap;">↓ Download All</button>
+      <button class="gallery-close" onclick="closeGallery()">✕</button>
+    </div>
   </div>
   <div class="gallery-grid" id="galleryGrid"></div>
 </div>
@@ -1704,6 +1707,33 @@ function openGallery(submissionId){
 function closeGallery(){
   document.getElementById('galleryModal').classList.remove('open');
   document.body.style.overflow = '';
+}
+
+async function downloadAllFiles(){
+  if(!_galleryUrls.length) return;
+  const btn = document.getElementById('galleryDlAllBtn');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  for(let i=0; i<_galleryUrls.length; i++){
+    btn.textContent = `↓ ${i+1}/${_galleryUrls.length}`;
+    try{
+      const url = _galleryUrls[i];
+      const ext = url.split('?')[0].split('/').pop();
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = obj;
+      a.download = ext || `file-${i+1}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(obj), 5000);
+    } catch(e){ console.warn('download failed for file',i,e); }
+    if(i < _galleryUrls.length-1) await new Promise(r=>setTimeout(r,400));
+  }
+  btn.textContent = '✓ Done';
+  setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; }, 2500);
 }
 
 function openLightbox(index){
