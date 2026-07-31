@@ -1423,8 +1423,8 @@ function renderCards(profiles){
         <div class="collab-updated">Updated: <span>${timeAgo(p.updated_at)}</span></div>
         <div class="collab-actions">
           <div class="collab-actions-row">
-            <button class="btn-preview" onclick="event.stopPropagation();openPreview(${i})">Preview</button>
-            <button class="btn-download" onclick="event.stopPropagation();downloadCard(${i})">Download PNG</button>
+            <button class="btn-preview" onclick="event.stopPropagation();openPreview('${p.user_id}')">Preview</button>
+            <button class="btn-download" onclick="event.stopPropagation();downloadCard('${p.user_id}')">Download PNG</button>
           </div>
           <div class="collab-actions-row">
             <button class="btn-preview" onclick="event.stopPropagation();togglePublic('${p.user_id}',${!!p.is_public})" style="background:${p.is_public?'rgba(74,222,128,0.15)':'rgba(100,150,255,0.15)'};color:${p.is_public?'#4ade80':'#6496ff'};border-color:${p.is_public?'rgba(74,222,128,0.3)':'rgba(100,150,255,0.3)'};">${p.is_public?'Make Private':'Make Public'}</button>
@@ -2001,17 +2001,19 @@ function buildCardHTML(p){
   </div>`;
 }
 
-async function openPreview(idx){
-  const p=allProfiles[idx]; if(!p)return;
+async function openPreview(userId){
+  let idx=allProfiles.findIndex(x=>x.user_id===userId);
+  if(idx===-1)return;
+  const p=allProfiles[idx];
   document.getElementById('modalCardWrap').innerHTML='<div style="padding:3rem;text-align:center;color:var(--muted);">Loading card…</div>';
   document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('modalDlBtn').onclick=()=>downloadCard(idx);
+  document.getElementById('modalDlBtn').onclick=()=>downloadCard(userId);
   try{
     const r=await fetch('/api/creator-card?user_id='+encodeURIComponent(p.user_id));
     const full=await r.json();
-    if(full&&!full.error) allProfiles[idx]=Object.assign(p,full);
+    if(full&&!full.error){idx=allProfiles.findIndex(x=>x.user_id===userId);allProfiles[idx]=Object.assign(p,full);}
   }catch(e){}
-  const profile=allProfiles[idx];
+  const profile=allProfiles[allProfiles.findIndex(x=>x.user_id===userId)];
   if(profile.card_png_url){
     document.getElementById('modalCardWrap').innerHTML=`<img src="${profile.card_png_url}" style="width:100%;height:auto;display:block;border-radius:10px;" alt="Profile card">`;
   } else {
@@ -2344,8 +2346,10 @@ async function changePassword(){
   }catch(e){ msg.textContent='Connection error.'; msg.style.color='#f87a8a'; }
 }
 
-async function downloadCard(idx){
-  let p=allProfiles[idx]; if(!p)return;
+async function downloadCard(userId){
+  let idx=allProfiles.findIndex(x=>x.user_id===userId);
+  if(idx===-1)return;
+  let p=allProfiles[idx];
   if(!p._fullLoaded){
     try{
       const r=await fetch('/api/creator-card?user_id='+encodeURIComponent(p.user_id));
