@@ -1595,46 +1595,79 @@ function renderCard(){
   const ctx=canvas.getContext('2d');
   const W=1080,H=1350;
   const p=cardState;
-  const primary=p.primary;
-  const secondary=p.secondary;
-  const bg=p.bg;
-  const textCol=p.textColor;
-  const accent=p.accent;
+  const primary=p.primary,secondary=p.secondary,bg=p.bg,textCol=p.textColor,accent=p.accent;
 
-  // Section heights (sum = H)
-  const bannerH=300;
-  const avR=80;              // avatar radius; center Y = bannerH (straddles seam)
-  const identityH=162;       // below banner: name + role, avatar extends up into banner
-  const contactH=56;
-  const aboutLabelH=52;
-  const bioLineH=30;
+  // ── TYPE SIZE CONSTANTS ──
+  const roleSz=30;
+  const contactSz=24;
+  const bioSz=25;
+  const bioLineH=37;       // 25px * ~1.48
   const maxBioLines=5;
-  const aboutH=aboutLabelH+maxBioLines*bioLineH; // 202
-  const servicesH=90;
+  const aboutLabelSz=34;
+  const aboutLabelH=60;    // 12 top + 34 label + 6 rule-gap + 8 bottom
+  const featLabelSz=26;
+  const featLabelH=42;     // 8 + 26 + 8
+  const servLabelSz=34;
+  const servLabelH=42;     // 8 + 26 + 8 (same strip style)
+  const pillSz=23;
+  const pillH=46;
+  const ctaBodySz=25;
   const ctaH=82;
-  // photos get remaining: 1350-300-162-56-202-90-82 = 458
+
+  // ── FIXED HEIGHTS ──
+  const bannerH=300;
+  const avR=80;
+  const identityH=162;
+  const servicesH=servLabelH+76; // 42 label strip + 76 pills zone = 118
+
+  // ── MEASURE PHASE (before any drawing) ──
+  const avCX=120;
+  const idX=avCX+avR+28;
+  const idMaxW=W-idX-44;
+
+  // Contact: measure whether all items fit on one line at contactSz
+  const contactItems=[p.loc,p.email,p.ig].filter(Boolean);
+  let contactLines=[];
+  if(contactItems.length){
+    ctx.font=`600 ${contactSz}px 'Barlow Condensed',sans-serif`;
+    const sep='  ·  ';
+    const full=contactItems.join(sep);
+    if(ctx.measureText(full).width<=W-idX-44){
+      contactLines=[full];
+    } else {
+      const mid=Math.ceil(contactItems.length/2);
+      contactLines=[contactItems.slice(0,mid).join(sep),contactItems.slice(mid).join(sep)];
+    }
+  }
+  const contactLineH_px=contactSz+10; // 34px per line
+  const contactH=contactLines.length>0 ? 16+contactLines.length*contactLineH_px+8 : 32;
+
+  // Bio: measure at 25px so aboutH reflects actual line count
+  const bioLinesArr=wrapText(ctx,p.bio||'Your bio will appear here...',W-100,bioSz).slice(0,maxBioLines);
+  const aboutH=aboutLabelH+bioLinesArr.length*bioLineH;
+
+  // Flex: photos absorb the remainder — guaranteed sum = H
   const photoH=H-bannerH-identityH-contactH-aboutH-servicesH-ctaH;
+  const photoAreaH=photoH-featLabelH;
   const photoGap=10,photoPad=24;
   const photoW=(W-photoPad*2-photoGap*2)/3;
 
+  // ── DRAW PHASE ──
   ctx.clearRect(0,0,W,H);
 
-  // ── BACKGROUND ──
+  // Background
   const bodyGrad=ctx.createLinearGradient(0,bannerH,0,H);
-  bodyGrad.addColorStop(0,lighten(bg,8));
-  bodyGrad.addColorStop(1,bg);
-  ctx.fillStyle=bodyGrad;
-  ctx.fillRect(0,0,W,H);
+  bodyGrad.addColorStop(0,lighten(bg,8));bodyGrad.addColorStop(1,bg);
+  ctx.fillStyle=bodyGrad;ctx.fillRect(0,0,W,H);
   for(let y=0;y<H;y+=4){ctx.fillStyle='rgba(0,0,0,0.016)';ctx.fillRect(0,y,W,1);}
 
-  // ── BANNER ──
+  // Banner
   if(p.headerBgImg){
     const iw=p.headerBgImg.naturalWidth||p.headerBgImg.width;
     const ih=p.headerBgImg.naturalHeight||p.headerBgImg.height;
     const scale=Math.max(W/iw,bannerH/ih);
     const sw=iw*scale,sh=ih*scale;
-    ctx.save();
-    ctx.beginPath();ctx.rect(0,0,W,bannerH);ctx.clip();
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W,bannerH);ctx.clip();
     ctx.drawImage(p.headerBgImg,(W-sw)/2,(bannerH-sh)/2,sw,sh);
     ctx.fillStyle='rgba(0,0,0,0.52)';ctx.fillRect(0,0,W,bannerH);
     ctx.fillStyle=withAlpha(primary,0.18);ctx.fillRect(0,0,W,bannerH);
@@ -1649,45 +1682,33 @@ function renderCard(){
     for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,bannerH);ctx.stroke();}
     for(let y=0;y<bannerH;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
   }
-  // Banner bottom scrim (fades into body bg)
   const scrimY=bannerH*0.55;
   const scrimGrad=ctx.createLinearGradient(0,scrimY,0,bannerH+40);
-  scrimGrad.addColorStop(0,'rgba(0,0,0,0)');
-  scrimGrad.addColorStop(1,withAlpha(bg,0.9));
+  scrimGrad.addColorStop(0,'rgba(0,0,0,0)');scrimGrad.addColorStop(1,withAlpha(bg,0.9));
   ctx.fillStyle=scrimGrad;ctx.fillRect(0,scrimY,W,bannerH+40-scrimY);
-  // Top glow line
   const tg=ctx.createLinearGradient(0,0,W,0);
   tg.addColorStop(0,'transparent');tg.addColorStop(0.5,primary);tg.addColorStop(1,'transparent');
   ctx.fillStyle=tg;ctx.fillRect(0,0,W,3);
 
-  // ── AVATAR (straddles banner/body seam) ──
-  const avCX=120,avCY=bannerH;
-  // Glow (behind avatar)
-  ctx.save();
-  ctx.shadowColor=primary;ctx.shadowBlur=30;
+  // Avatar
+  const avCY=bannerH;
+  ctx.save();ctx.shadowColor=primary;ctx.shadowBlur=30;
   ctx.strokeStyle=primary;ctx.lineWidth=4;
-  ctx.beginPath();ctx.arc(avCX,avCY,avR+2,0,Math.PI*2);ctx.stroke();
-  ctx.restore();
-  // Image
-  ctx.save();
-  ctx.beginPath();ctx.arc(avCX,avCY,avR,0,Math.PI*2);ctx.clip();
+  ctx.beginPath();ctx.arc(avCX,avCY,avR+2,0,Math.PI*2);ctx.stroke();ctx.restore();
+  ctx.save();ctx.beginPath();ctx.arc(avCX,avCY,avR,0,Math.PI*2);ctx.clip();
   if(p.avatarImg){
     drawAvatarInBox(ctx,p.avatarImg,avCX,avCY,avR);
   } else {
-    ctx.fillStyle=darken(secondary,10);
-    ctx.fillRect(avCX-avR,avCY-avR,avR*2,avR*2);
+    ctx.fillStyle=darken(secondary,10);ctx.fillRect(avCX-avR,avCY-avR,avR*2,avR*2);
     const initials=(p.name||'?').trim().split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
     ctx.font=`800 56px 'Barlow Condensed',sans-serif`;
-    ctx.fillStyle=primary;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(initials,avCX,avCY);
+    ctx.fillStyle=primary;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(initials,avCX,avCY);
   }
   ctx.restore();
   ctx.strokeStyle=withAlpha(primary,0.85);ctx.lineWidth=3;
   ctx.beginPath();ctx.arc(avCX,avCY,avR+1.5,0,Math.PI*2);ctx.stroke();
 
-  // ── IDENTITY BLOCK (right of avatar) ──
-  const idX=avCX+avR+28;
-  const idMaxW=W-idX-44;
+  // Identity (name + role)
   const nameY=bannerH+14;
   ctx.textAlign='left';ctx.textBaseline='top';
   const nameStr=(p.name||'YOUR NAME').toUpperCase();
@@ -1698,60 +1719,51 @@ function renderCard(){
     nameSz=sz;
   }
   ctx.font=`800 ${nameSz}px 'Barlow Condensed',sans-serif`;
-  ctx.fillStyle=textCol;
-  ctx.fillText(nameStr,idX,nameY,idMaxW);
+  ctx.fillStyle=textCol;ctx.fillText(nameStr,idX,nameY,idMaxW);
   const roleY=nameY+nameSz+8;
-  ctx.font=`italic 700 24px 'Barlow Condensed',sans-serif`;
-  ctx.fillStyle=primary;
-  ctx.fillText((p.role||'YOUR ROLE').toUpperCase(),idX,roleY,idMaxW);
+  ctx.font=`italic 700 ${roleSz}px 'Barlow Condensed',sans-serif`;
+  ctx.fillStyle=primary;ctx.fillText((p.role||'YOUR ROLE').toUpperCase(),idX,roleY,idMaxW);
 
-  // ── CONTACT STRIP ──
+  // Contact strip (measured lines, centered vertically in contactH)
   const contactY=bannerH+identityH;
   ctx.fillStyle=withAlpha(primary,0.1);ctx.fillRect(0,contactY,W,1);
-  const contactItems=[p.loc,p.email,p.ig].filter(Boolean);
-  if(contactItems.length){
-    ctx.font=`400 19px 'Barlow Condensed',sans-serif`;
-    ctx.fillStyle='rgba(180,200,225,0.82)';
-    ctx.textAlign='left';ctx.textBaseline='middle';
-    ctx.fillText(contactItems.join('  ·  '),idX,contactY+contactH/2,W-idX-44);
+  if(contactLines.length){
+    ctx.font=`600 ${contactSz}px 'Barlow Condensed',sans-serif`;
+    ctx.fillStyle='rgba(180,200,225,0.85)';
+    ctx.textAlign='left';ctx.textBaseline='top';
+    const blockH=contactLines.length*contactLineH_px;
+    const startY=contactY+(contactH-blockH)/2;
+    contactLines.forEach((line,i)=>ctx.fillText(line,idX,startY+i*contactLineH_px,W-idX-44));
   }
 
-  // ── FEATURED WORK (photos) ──
+  // Featured Work label strip
   const photoY=contactY+contactH;
-  // Label strip
-  ctx.fillStyle=withAlpha(primary,0.09);ctx.fillRect(0,photoY,W,30);
-  ctx.font=`800 13px 'Barlow Condensed',sans-serif`;
-  ctx.fillStyle=withAlpha(primary,0.65);ctx.textAlign='left';ctx.textBaseline='middle';
-  ctx.fillText('FEATURED WORK',50,photoY+15);
-  ctx.fillStyle=withAlpha(primary,0.22);ctx.fillRect(0,photoY+29,W,1);
+  ctx.fillStyle=withAlpha(primary,0.09);ctx.fillRect(0,photoY,W,featLabelH);
+  ctx.font=`800 ${featLabelSz}px 'Barlow Condensed',sans-serif`;
+  ctx.fillStyle=withAlpha(primary,0.72);ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('FEATURED WORK',50,photoY+featLabelH/2);
+  ctx.fillStyle=withAlpha(primary,0.22);ctx.fillRect(0,photoY+featLabelH-1,W,1);
 
-  const photoAreaY=photoY+30;
-  const photoAreaH=photoH-30;
+  // Photos
+  const photoAreaY=photoY+featLabelH;
   const photos=[p.photo1,p.photo2,p.photo3];
   photos.forEach((photo,i)=>{
     const px=photoPad+i*(photoW+photoGap);
-    const py=photoAreaY;
-    const ph=photoAreaH;
-    ctx.save();
-    ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=14;ctx.shadowOffsetY=4;
-    ctx.fillStyle='#0c1420';roundRect(ctx,px,py,photoW,ph,5);ctx.fill();
-    ctx.restore();
+    const py=photoAreaY,ph=photoAreaH;
+    ctx.save();ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=14;ctx.shadowOffsetY=4;
+    ctx.fillStyle='#0c1420';roundRect(ctx,px,py,photoW,ph,5);ctx.fill();ctx.restore();
     if(photo){
-      ctx.save();
-      roundRect(ctx,px,py,photoW,ph,5);ctx.clip();
+      ctx.save();roundRect(ctx,px,py,photoW,ph,5);ctx.clip();
       const iw=photo.naturalWidth||photo.width,ih=photo.naturalHeight||photo.height;
-      const scale=Math.max(photoW/iw,ph/ih);
-      const sw=iw*scale,sh=ih*scale;
-      ctx.drawImage(photo,px+(photoW-sw)/2,py+(ph-sh)/2,sw,sh);
-      ctx.restore();
+      const scale=Math.max(photoW/iw,ph/ih),sw=iw*scale,sh=ih*scale;
+      ctx.drawImage(photo,px+(photoW-sw)/2,py+(ph-sh)/2,sw,sh);ctx.restore();
     } else {
       ctx.strokeStyle='#1e2f4a';ctx.lineWidth=1;ctx.setLineDash([4,4]);
       roundRect(ctx,px,py,photoW,ph,5);ctx.stroke();ctx.setLineDash([]);
-      ctx.font=`600 13px 'Barlow Condensed',sans-serif`;
+      ctx.font=`600 22px 'Barlow Condensed',sans-serif`;
       ctx.fillStyle='#1e2f4a';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('WORK SAMPLE',px+photoW/2,py+ph/2);
     }
-    // Corner accents
     ctx.strokeStyle=withAlpha(accent,0.55);ctx.lineWidth=2.5;ctx.setLineDash([]);
     ctx.beginPath();ctx.moveTo(px,py+20);ctx.lineTo(px,py);ctx.lineTo(px+20,py);ctx.stroke();
     ctx.beginPath();ctx.moveTo(px+photoW-20,py+ph);ctx.lineTo(px+photoW,py+ph);ctx.lineTo(px+photoW,py+ph-20);ctx.stroke();
@@ -1759,72 +1771,95 @@ function renderCard(){
     roundRect(ctx,px,py,photoW,ph,5);ctx.stroke();
   });
 
-  // ── ABOUT ──
+  // About
   const aboutY=photoY+photoH;
   ctx.fillStyle=withAlpha(primary,0.14);ctx.fillRect(0,aboutY,W,1);
-  ctx.font=`800 30px 'Barlow Condensed',sans-serif`;
+  ctx.font=`800 ${aboutLabelSz}px 'Barlow Condensed',sans-serif`;
   ctx.fillStyle=primary;ctx.textAlign='left';ctx.textBaseline='top';
   const aboutLabel='ABOUT '+(p.name||'').split(' ')[0].toUpperCase();
-  ctx.fillText(aboutLabel,50,aboutY+14);
+  ctx.fillText(aboutLabel,50,aboutY+12);
   const ruleX=50+ctx.measureText(aboutLabel).width+14;
-  ctx.fillStyle=withAlpha(primary,0.5);ctx.fillRect(ruleX,aboutY+26,80,3);
-  ctx.fillStyle=withAlpha(primary,0.22);ctx.fillRect(ruleX+88,aboutY+26,40,3);
-  ctx.font=`400 20px 'Barlow',sans-serif`;
+  ctx.fillStyle=withAlpha(primary,0.5);ctx.fillRect(ruleX,aboutY+28,80,3);
+  ctx.fillStyle=withAlpha(primary,0.22);ctx.fillRect(ruleX+88,aboutY+28,40,3);
+  ctx.font=`400 ${bioSz}px 'Barlow',sans-serif`;
   ctx.fillStyle='rgba(200,212,232,0.86)';
-  const bioLines=wrapText(ctx,p.bio||'Your bio will appear here...',W-100,20).slice(0,maxBioLines);
-  bioLines.forEach((line,i)=>ctx.fillText(line,50,aboutY+aboutLabelH+i*bioLineH));
+  bioLinesArr.forEach((line,i)=>ctx.fillText(line,50,aboutY+aboutLabelH+i*bioLineH));
 
-  // ── SERVICES ──
+  // Services
   const servY=aboutY+aboutH;
-  ctx.fillStyle=withAlpha(primary,0.1);ctx.fillRect(0,servY,W,1);
+  ctx.fillStyle=withAlpha(primary,0.09);ctx.fillRect(0,servY,W,servLabelH);
+  ctx.font=`800 ${servLabelSz}px 'Barlow Condensed',sans-serif`;
+  ctx.fillStyle=withAlpha(primary,0.72);ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('SERVICES',50,servY+servLabelH/2);
+  ctx.fillStyle=withAlpha(primary,0.22);ctx.fillRect(0,servY+servLabelH-1,W,1);
+  const pillsY=servY+servLabelH; // pills zone starts here, height = 76
   const allSvcs=(p.services||[]).filter(s=>s&&s.type);
   const svcs=allSvcs.slice(0,4);
   const extra=allSvcs.length-svcs.length;
   if(svcs.length){
-    const pillH=40,pillR=20,gap=12;
-    ctx.font=`600 17px 'Barlow Condensed',sans-serif`;
-    const pills=[...svcs.map(s=>s.rate?`${s.type}  ·  ${s.rate}`:s.type)];
-    if(extra>0)pills.push(`+${extra} more`);
-    const pws=pills.map(label=>({label,pw:ctx.measureText(label).width+44}));
-    const totalW=pws.reduce((s,x)=>s+x.pw,0)+gap*(pws.length-1);
+    const pillR=23,gap=12;
+    // Measure each pill width with mixed fonts: type in BC pillSz, sep+rate in Anton 28px
+    const pillData=svcs.map(s=>({type:s.type,rate:s.rate||''}));
+    if(extra>0)pillData.push({type:`+${extra} more`,rate:'',isExtra:true});
+    const measuredPills=pillData.map(d=>{
+      if(d.isExtra){
+        ctx.font=`600 ${pillSz}px 'Barlow Condensed',sans-serif`;
+        return{...d,pw:ctx.measureText(d.type).width+44};
+      }
+      ctx.font=`600 ${pillSz}px 'Barlow Condensed',sans-serif`;
+      const typeW=ctx.measureText(d.type).width;
+      if(d.rate){
+        const sepW=ctx.measureText('  ·  ').width;
+        ctx.font=`400 28px 'Anton',sans-serif`;
+        const rateW=ctx.measureText(d.rate).width;
+        return{...d,pw:typeW+sepW+rateW+44,typeW,sepW,rateW};
+      }
+      return{...d,pw:typeW+44,typeW};
+    });
+    const totalW=measuredPills.reduce((s,d)=>s+d.pw,0)+gap*(measuredPills.length-1);
     let px=Math.max(50,(W-totalW)/2);
-    const py=servY+servicesH/2;
+    const py=pillsY+38; // center of pills zone
     ctx.textAlign='left';ctx.textBaseline='middle';
-    pws.forEach(({label,pw},idx)=>{
-      const isExtra=idx===pws.length-1&&extra>0;
-      ctx.fillStyle=isExtra?withAlpha(accent,0.12):withAlpha(primary,0.14);
-      roundRect(ctx,px,py-pillH/2,pw,pillH,pillR);ctx.fill();
-      ctx.strokeStyle=isExtra?withAlpha(accent,0.4):withAlpha(primary,0.5);ctx.lineWidth=1.5;
-      roundRect(ctx,px,py-pillH/2,pw,pillH,pillR);ctx.stroke();
-      ctx.fillStyle=isExtra?withAlpha(accent,0.8):withAlpha(textCol,0.88);
-      ctx.fillText(label,px+22,py);
-      px+=pw+gap;
+    measuredPills.forEach(d=>{
+      ctx.fillStyle=d.isExtra?withAlpha(accent,0.12):withAlpha(primary,0.14);
+      roundRect(ctx,px,py-pillH/2,d.pw,pillH,pillR);ctx.fill();
+      ctx.strokeStyle=d.isExtra?withAlpha(accent,0.4):withAlpha(primary,0.5);ctx.lineWidth=1.5;
+      roundRect(ctx,px,py-pillH/2,d.pw,pillH,pillR);ctx.stroke();
+      ctx.fillStyle=d.isExtra?withAlpha(accent,0.8):withAlpha(textCol,0.88);
+      if(d.rate&&!d.isExtra){
+        ctx.font=`600 ${pillSz}px 'Barlow Condensed',sans-serif`;
+        ctx.fillText(d.type,px+22,py);
+        ctx.fillText('  ·  ',px+22+d.typeW,py);
+        ctx.font=`400 28px 'Anton',sans-serif`;
+        ctx.fillText(d.rate,px+22+d.typeW+d.sepW,py);
+      } else {
+        ctx.font=`600 ${pillSz}px 'Barlow Condensed',sans-serif`;
+        ctx.fillText(d.type,px+22,py);
+      }
+      px+=d.pw+gap;
     });
   } else {
-    ctx.font=`italic 400 19px 'Barlow',sans-serif`;
+    ctx.font=`italic 400 22px 'Barlow',sans-serif`;
     ctx.fillStyle=withAlpha('#6a80a0',0.65);ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('Add your services to display them here',W/2,servY+servicesH/2);
+    ctx.fillText('Add your services to display them here',W/2,pillsY+38);
   }
 
-  // ── CTA BAR ──
+  // CTA bar
   const ctaY=H-ctaH;
   const ctaBand=ctx.createLinearGradient(0,ctaY,W,ctaY+ctaH);
-  ctaBand.addColorStop(0,withAlpha(primary,0.2));
-  ctaBand.addColorStop(1,withAlpha(primary,0.07));
+  ctaBand.addColorStop(0,withAlpha(primary,0.2));ctaBand.addColorStop(1,withAlpha(primary,0.07));
   ctx.fillStyle=ctaBand;ctx.fillRect(0,ctaY,W,ctaH);
   ctx.fillStyle=withAlpha(primary,0.4);ctx.fillRect(0,ctaY,W,1);
   ctx.font=`italic 800 28px 'Barlow Condensed',sans-serif`;
   ctx.fillStyle=primary;ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('INTERESTED IN BOOKING?',W/2,ctaY+10);
-  ctx.font=`400 18px 'Barlow',sans-serif`;
+  ctx.fillText('INTERESTED IN BOOKING?',W/2,ctaY+8);
+  ctx.font=`400 ${ctaBodySz}px 'Barlow',sans-serif`;
   ctx.fillStyle='rgba(200,212,232,0.88)';
-  ctx.fillText(`DM ${p.ig||'@handle'} on Instagram to book your coverage.`,W/2,ctaY+42);
+  ctx.fillText(`DM ${p.ig||'@handle'} on Instagram to book your coverage.`,W/2,ctaY+40);
 
-  // ── CARD FRAME ──
-  ctx.strokeStyle=withAlpha(primary,0.65);ctx.lineWidth=2;
-  ctx.strokeRect(1,1,W-2,H-2);
-  ctx.strokeStyle=withAlpha(primary,0.1);ctx.lineWidth=1;
-  ctx.strokeRect(6,6,W-12,H-12);
+  // Card frame
+  ctx.strokeStyle=withAlpha(primary,0.65);ctx.lineWidth=2;ctx.strokeRect(1,1,W-2,H-2);
+  ctx.strokeStyle=withAlpha(primary,0.1);ctx.lineWidth=1;ctx.strokeRect(6,6,W-12,H-12);
 }
 
 function roundRect(ctx,x,y,w,h,r){
