@@ -110,6 +110,42 @@ export default async function handler(req, res) {
         break
       }
 
+      case 'football_weekend_bulletin': {
+        const { creator_emails: bulletinEmails, gigs: bulletinGigs } = payload
+        if (!bulletinEmails?.length) break
+        const friday = (bulletinGigs || []).filter(g => g.event_date === '2025-08-07')
+        const saturday = (bulletinGigs || []).filter(g => g.event_date === '2025-08-08')
+        function renderGig(g) {
+          const lines = (g.description || '').split('\n').map(l => l.trim()).filter(Boolean)
+          return `
+            <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px;border-left:3px solid #C8102E;padding-left:14px;">
+              <tr><td>
+                <div style="font-family:'Arial Black',Arial,sans-serif;font-size:15px;font-weight:900;color:#ffffff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${g.title}</div>
+                <div style="font-size:12px;color:#9db0c8;margin-bottom:6px;">📍 ${g.location} &nbsp;·&nbsp; ${g.county} County</div>
+                ${lines.map(l => `<div style="font-size:13px;color:#c8d0dc;line-height:1.6;">⏰ ${l}</div>`).join('')}
+              </td></tr>
+            </table>`
+        }
+        const fridayHtml = friday.length ? `
+          <div style="font-family:'Arial Black',Arial,sans-serif;font-size:13px;color:#C8102E;text-transform:uppercase;letter-spacing:1px;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">🏈 Friday, August 7</div>
+          ${friday.map(renderGig).join('')}` : ''
+        const saturdayHtml = saturday.length ? `
+          <div style="font-family:'Arial Black',Arial,sans-serif;font-size:13px;color:#C8102E;text-transform:uppercase;letter-spacing:1px;margin:20px 0 14px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">🏈 Saturday, August 8</div>
+          ${saturday.map(renderGig).join('')}` : ''
+        await send(
+          bulletinEmails,
+          'Football Scrimmages & Jamborees This Weekend — Aug. 7–8',
+          wrap(`
+            <h2 style="color:#fff;margin:0 0 4px;font-size:22px;text-transform:uppercase;font-family:'Arial Black',Arial,sans-serif;">Football This Weekend</h2>
+            <p style="margin:0 0 24px;color:#9db0c8;">Coverage opportunities · Aug. 7–8, 2025 · ${bulletinGigs.length} scrimmages &amp; jamborees across NC</p>
+            ${fridayHtml}
+            ${saturdayHtml}
+            <p style="margin-top:28px;font-size:13px;color:#c8d0dc;">If any of these are in your coverage area, log in and claim the gig before someone else does. Gigs are first come, first served.</p>
+            <p style="margin-top:20px;"><a href="https://creators.countysports.com" style="display:inline-block;padding:12px 28px;background:#C8102E;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">View Gig Board →</a></p>`)
+        )
+        break
+      }
+
       case 'gigs_bulk_posted': {
         const { creator_emails, gig_count } = payload
         if (!creator_emails?.length) break
